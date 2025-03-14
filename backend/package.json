@@ -1,0 +1,25 @@
+{
+  "name": "flavorfleet-backend",
+  "version": "1.0.0",
+  "description": "Backend for FlavorFleet",
+  "scripts": {
+    "start": "concurrently \"npm run start:order\" \"npm run start:payment\" \"npm run start:delivery\" \"npm run start:restaurant\" \"npm run start:gateway\"",
+    "start:order": "cd microservices/order-service && npm start",
+    "start:payment": "cd microservices/payment-service && npm start",
+    "start:delivery": "cd microservices/delivery-service && npm start",
+    "start:restaurant": "cd microservices/restaurant-service && npm start",
+    "start:gateway": "cd gateway && npm start",
+    "dev": "concurrently \"npm run dev:order\" \"npm run dev:payment\" \"npm run dev:delivery\" \"npm run dev:restaurant\" \"npm run dev:gateway\"",
+    "dev:order": "cd microservices/order-service && npm run dev",
+    "dev:payment": "cd microservices/payment-service && npm run dev",
+    "dev:delivery": "cd microservices/delivery-service && npm run dev",
+    "dev:restaurant": "cd microservices/restaurant-service && npm run dev",
+    "dev:gateway": "cd gateway && npm run dev"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "dependencies": {
+    "cors": "^2.8.5"
+  }
+}

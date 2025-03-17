@@ -1,0 +1,10 @@
+services:
+  delivery-service:
+    container_name: delivery-service
+    build: ./backend/microservices/delivery-service
+    volumes:
+      - ./backend/microservices/delivery-service:/app
+    ports:
+      - "5001:5001"
+    environment:
+      - MONGO_URI=mongodb+srv://koshithahasindu:SecurePassword@cluster0.dfgkq.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0

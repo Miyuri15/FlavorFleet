@@ -15,7 +15,17 @@ mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('MongoDB connected'))
   .catch(err => console.log(err));
 
-// Test Route
+  const authRoutes = require("./routes/userRoutes");
+  app.use("/api/auth", authRoutes);
+
+  // Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ message: "Something went wrong!" });
+});
+
+
+  // Test Route
 app.get('/', (req, res) => {
   res.send('Welcome to FlavorFleet Backend!');
 });

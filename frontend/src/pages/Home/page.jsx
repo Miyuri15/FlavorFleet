@@ -1,9 +1,11 @@
 // src/pages/Home/page.jsx
 import React from 'react';
 import { Link } from 'react-router-dom';
+import Layout from '../../components/Layout';
 
 const Home = () => {
   return (
+    <Layout>
     <div className=" flex-1 p-4 bg-gray-100">
       <h1 className="text-3xl font-bold text-blue-900">Welcome to FlavorFleet!</h1>
       <p className="mt-2 text-gray-700">Order your favorite food with ease.</p>
@@ -21,6 +23,7 @@ const Home = () => {
       </Link>
 
     </div>
+    </Layout>
   );
 };
 

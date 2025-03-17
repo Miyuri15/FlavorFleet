@@ -3,7 +3,7 @@ services:
   order-service:
     build: ./microservices/order-service
     ports:
-      - "3001:3001"
+      - "5000:5000"
     environment:
       - MONGO_URI=mongodb://mongo:27017/order_db
     depends_on:
@@ -12,7 +12,7 @@ services:
   payment-service:
     build: ./microservices/payment-service
     ports:
-      - "3002:3002"
+      - "5001:5001"
     environment:
       - MONGO_URI=mongodb://mongo:27017/payment_db
     depends_on:
@@ -21,7 +21,7 @@ services:
   delivery-service:
     build: ./microservices/delivery-service
     ports:
-      - "3003:3003"
+      - "5002:5002"
     environment:
       - MONGO_URI=mongodb://mongo:27017/delivery_db
     depends_on:
@@ -30,21 +30,11 @@ services:
   restaurant-service:
     build: ./microservices/restaurant-service
     ports:
-      - "3004:3004"
+      - "5003:5003"
     environment:
       - MONGO_URI=mongodb://mongo:27017/restaurant_db
     depends_on:
       - mongo
-
-  gateway:
-    build: ./gateway
-    ports:
-      - "3000:3000"
-    depends_on:
-      - order-service
-      - payment-service
-      - delivery-service
-      - restaurant-service
 
   mongo:
     image: mongo:6.0

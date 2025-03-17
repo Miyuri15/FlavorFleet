@@ -18,7 +18,7 @@ mongoose
 
 // Test Route
 app.get("/", (req, res) => {
-  res.send("Welcome to FlavorFleet Backend 123!");
+  res.send("Welcome to FlavorFleet delivery-service!");
 });
 
 // New API Endpoint

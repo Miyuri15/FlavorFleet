@@ -17,16 +17,15 @@ const OrderDashboard = () => {
         // Fetch data from all APIs concurrently
         const [orderResponse, paymentResponse, deliveryResponse, restaurantResponse] = await Promise.all([
           fetch('http://localhost:5000/api/order').then((res) => res.json()),
-          fetch('http://localhost:5002/api/payment').then((res) => res.json()),
+         fetch('http://localhost:5002/api/payment').then((res) => res.json()),
           fetch('http://localhost:5001/api/delivery').then((res) => res.json()),
           fetch('http://localhost:5003/api/restaurant').then((res) => res.json()),
         ]);
-
         // Set the fetched data
-        setOrderData(orderResponse);
-        setPaymentData(paymentResponse);
+       setOrderData(orderResponse);
+       setPaymentData(paymentResponse);
         setDeliveryData(deliveryResponse);
-        setRestaurantData(restaurantResponse);
+       setRestaurantData(restaurantResponse);
       } catch (err) {
         setError(err); // Handle errors
       } finally {
@@ -52,25 +51,25 @@ const OrderDashboard = () => {
 
       {/* Display fetched data */}
       <div className="mt-4 space-y-4">
-        <div className="p-4 bg-white rounded shadow">
+         <div className="p-4 bg-white rounded shadow">
           <h2 className="text-xl font-semibold text-blue-800">Order Data</h2>
           <pre className="mt-2 text-gray-700">{JSON.stringify(orderData, null, 2)}</pre>
-        </div>
+        </div> 
 
-        <div className="p-4 bg-white rounded shadow">
+         <div className="p-4 bg-white rounded shadow">
           <h2 className="text-xl font-semibold text-blue-800">Payment Data</h2>
           <pre className="mt-2 text-gray-700">{JSON.stringify(paymentData, null, 2)}</pre>
-        </div>
+        </div> 
 
         <div className="p-4 bg-white rounded shadow">
           <h2 className="text-xl font-semibold text-blue-800">Delivery Data</h2>
           <pre className="mt-2 text-gray-700">{JSON.stringify(deliveryData, null, 2)}</pre>
         </div>
 
-        <div className="p-4 bg-white rounded shadow">
+         <div className="p-4 bg-white rounded shadow">
           <h2 className="text-xl font-semibold text-blue-800">Restaurant Data</h2>
           <pre className="mt-2 text-gray-700">{JSON.stringify(restaurantData, null, 2)}</pre>
-        </div>
+        </div> 
       </div>
     </div>
   );

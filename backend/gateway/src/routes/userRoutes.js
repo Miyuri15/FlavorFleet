@@ -6,7 +6,6 @@ const authMiddleware = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
-// Register Route
 router.post("/register", async (req, res) => {
   const {
     firstName,
@@ -18,9 +17,8 @@ router.post("/register", async (req, res) => {
     role,
     adminName,
     organization,
+    preferredRoute,
   } = req.body;
-
-  console.log("Registration request received:", req.body); // Debugging
 
   try {
     // Validate input
@@ -32,41 +30,42 @@ router.post("/register", async (req, res) => {
       !password ||
       !confirmPassword
     ) {
-      console.log("Validation failed: Missing fields"); // Debugging
       return res.status(400).json({ message: "All fields are required" });
     }
 
     if (password !== confirmPassword) {
-      console.log("Validation failed: Passwords do not match"); // Debugging
       return res.status(400).json({ message: "Passwords do not match" });
     }
 
     // Additional validation for admin
     if (role === "admin") {
       if (!adminName || !organization) {
-        console.log(
-          "Validation failed: Admin name and organization are required"
-        ); // Debugging
         return res
           .status(400)
           .json({ message: "Admin name and organization are required" });
       }
     }
 
+    // Additional validation for delivery person
+    if (role === "delivery") {
+      if (!preferredRoute) {
+        return res
+          .status(400)
+          .json({ message: "Preferred route is required for delivery persons" });
+      }
+    }
+
     // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      console.log("Validation failed: User already exists"); // Debugging
       return res.status(400).json({ message: "User already exists" });
     }
 
     // Generate username
-    const username = `${firstName}${lastName}`.replace(/\s+/g, ""); // Remove spaces
-    console.log("Generated username:", username); // Debugging
+    const username = `${firstName}${lastName}`.replace(/\s+/g, "");
 
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 12);
-    console.log("Password hashed successfully"); // Debugging
 
     // Create new user
     const newUser = new User({
@@ -75,13 +74,13 @@ router.post("/register", async (req, res) => {
       email,
       contactNumber,
       password: hashedPassword,
-      role: role || "user", // Default to 'user' if role is not provided
-      username, // Automatically generated username
-      ...(role === "admin" && { adminName, organization }), // Include admin-specific fields only for admins
+      role: role || "user",
+      username,
+      ...(role === "admin" && { adminName, organization }),
+      ...(role === "delivery" && { preferredRoute }),
     });
 
     await newUser.save();
-    console.log("User saved successfully:", newUser); // Debugging
 
     // Generate JWT token
     const token = jwt.sign(
@@ -89,40 +88,14 @@ router.post("/register", async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
-    console.log("JWT Token generated:", token); // Log the token to the terminal
 
-    // Return success response with token
+    // Return success response
     res.status(201).json({ message: "User registered successfully", token });
   } catch (error) {
-    console.error("Registration failed:", error); // Debugging
+    console.error("Registration failed:", error);
     res.status(500).json({ message: "Registration failed" });
   }
 });
-
-// Login Route
-// router.post("/login", async (req, res) => {
-//   const { email, password } = req.body;
-
-//   try {
-//     const user = await User.findOne({ email });
-//     if (!user) return res.status(400).json({ message: "Invalid credentials" });
-
-//     const isMatch = await bcrypt.compare(password, user.password);
-//     if (!isMatch)
-//       return res.status(400).json({ message: "Invalid credentials" });
-
-//     // Generate JWT token
-//     const token = jwt.sign(
-//       { id: user._id, role: user.role, username: user.username },
-//       process.env.JWT_SECRET,
-//       { expiresIn: "1h" }
-//     );
-
-//     res.json({ token });
-//   } catch (error) {
-//     res.status(500).json({ message: "Login failed" });
-//   }
-// });
 
 // Login Route
 router.post("/login", async (req, res) => {

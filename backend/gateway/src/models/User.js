@@ -6,10 +6,11 @@ const UserSchema = new mongoose.Schema({
     email: { type: String, unique: true, required: true },
     contactNumber: { type: String, required: true },
     password: { type: String, required: true },
-    role: { type: String, enum: ["admin", "user"], default: "user" },
+    role: { type: String, enum: ["admin", "user","delivery"], default: "user" },
     username: { type: String, unique: true }, // Automatically generated
     adminName: { type: String }, // Optional, only for admins
     organization: { type: String }, // Optional, only for admins
+    preferredRoute: { type: String },
     isRestricted: { type: Boolean, default: false }
 }, { timestamps: true });
 

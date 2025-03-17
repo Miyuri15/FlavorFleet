@@ -1,47 +1,35 @@
-version: '3.8'
+
 services:
-  order-service:
-    build: ./microservices/order-service
-    ports:
-      - "5000:5000"
-    environment:
-      - MONGO_URI=mongodb://mongo:27017/order_db
-    depends_on:
-      - mongo
-
-  payment-service:
-    build: ./microservices/payment-service
-    ports:
-      - "5001:5001"
-    environment:
-      - MONGO_URI=mongodb://mongo:27017/payment_db
-    depends_on:
-      - mongo
-
   delivery-service:
-    build: ./microservices/delivery-service
-    ports:
-      - "5002:5002"
-    environment:
-      - MONGO_URI=mongodb://mongo:27017/delivery_db
-    depends_on:
-      - mongo
+    delivery_container_name: delivery-service
+    delivery_build: ./backend/microservices/delivery-service
+    delivery_volumes:
+      - ./backend/microservices/delivery-service:/app
+    delivery_ports:
+      - "5001:5001"
+    delivery_env_file:
+      - ./backend/microservices/delivery-service/.env
 
-  restaurant-service:
-    build: ./microservices/restaurant-service
-    ports:
-      - "5003:5003"
-    environment:
-      - MONGO_URI=mongodb://mongo:27017/restaurant_db
-    depends_on:
-      - mongo
+    order-service:
+    order_container_name: order-service
+    order_build: ./backend/microservices/order-service
+    order_volumes:
+      - ./backend/microservices/order-service:/app
+    order_ports:
+      - "5000:5000"
+    order_env_file:
+      - ./backend/microservices/order-service/.env
 
-  mongo:
-    image: mongo:6.0
-    ports:
-      - "27017:27017"
+
+  frontend:
+    container_name: frontend
+    build: ./frontend
     volumes:
-      - mongo-data:/data/db
-
-volumes:
-  mongo-data:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+    stdin_open: true
+    tty: true

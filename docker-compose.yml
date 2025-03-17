@@ -1,25 +1,24 @@
 
 services:
   delivery-service:
-    delivery_container_name: delivery-service
-    delivery_build: ./backend/microservices/delivery-service
-    delivery_volumes:
+    container_name: delivery-service
+    build: ./backend/microservices/delivery-service
+    volumes:
       - ./backend/microservices/delivery-service:/app
-    delivery_ports:
+    ports:
       - "5001:5001"
-    delivery_env_file:
+    env_file:
       - ./backend/microservices/delivery-service/.env
 
-    order-service:
-    order_container_name: order-service
-    order_build: ./backend/microservices/order-service
-    order_volumes:
+  order-service:
+    container_name: order-service
+    build: ./backend/microservices/order-service
+    volumes:
       - ./backend/microservices/order-service:/app
-    order_ports:
+    ports:
       - "5000:5000"
-    order_env_file:
+    env_file:
       - ./backend/microservices/order-service/.env
-
 
   frontend:
     container_name: frontend

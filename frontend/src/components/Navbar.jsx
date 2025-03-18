@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { FiSun, FiMoon, FiBell } from 'react-icons/fi';
+import React from 'react';
+import { FiSun, FiMoon } from 'react-icons/fi';
 import { useTheme } from '../ThemeContext';
 import { FaUser } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';

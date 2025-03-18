@@ -1,19 +1,15 @@
-// ThemeContext.js
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const ThemeContext = createContext();
 
 export const ThemeProvider = ({ children }) => {
-  const [darkMode, setDarkMode] = useState(localStorage.getItem('theme') === 'dark');
+  const [darkMode, setDarkMode] = useState(false);
 
   useEffect(() => {
-    const htmlElement = document.documentElement;
     if (darkMode) {
-      htmlElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
+      document.documentElement.classList.add('dark');
     } else {
-      htmlElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
+      document.documentElement.classList.remove('dark');
     }
   }, [darkMode]);
 

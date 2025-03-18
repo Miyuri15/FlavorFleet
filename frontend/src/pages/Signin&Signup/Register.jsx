@@ -63,17 +63,17 @@ function Register() {
       {/* Left Side with Image and Intro Text */}
       <div
         className="relative hidden h-full md:flex md:w-3/5 bg-cover bg-center"
-        style={{ backgroundImage: "url('/img/logincover.jpg')" }}
+        style={{ backgroundImage: "url('/img/flavorfleetcover.jpg')" }}
       >
-        <div className="absolute inset-0 bg-gradient-to-br from-white via-transparent to-transparent opacity-70"></div>
+        <div className="absolute inset-0  opacity-10"></div>
         <div className="absolute top-9 left-9 cursor-pointer w-90 h-90">
           <img
-            src="/img/FintrackLogo.png"
+            src="/img/flavorfleetlogo.png"
             alt="Logo"
-            className="w-80 h-34 mx-5"
+            className="w-40 h-34 mx-5"
           />
         </div>
-        <div className="flex flex-col items-start justify-end p-10 bg-blue-900 bg-opacity-30 text-white h-full w-full">
+        <div className="flex flex-col items-start justify-end p-10 bg-gray-900 bg-opacity-30 text-white h-full w-full">
           <h1 className="text-3xl font-bold mb-5">Register</h1>
           <h2 className="text-4xl font-extrabold mb-3">FLAVORFLEET</h2>
           <p className="text-md leading-relaxed mb-9">
@@ -83,7 +83,7 @@ function Register() {
       </div>
 
       {/* Right Side with Form */}
-      <div className="flex flex-col justify-center md:w-2/5 p-8 bg-blue-200">
+      <div className="flex flex-col justify-center md:w-2/5 p-8 bg-blue-100">
         <div className="flex flex-col items-center">
           <p className="text-blue-900  text-center text-md font-semibold">
             Create your free account to Order your Meals, track orders,
@@ -138,13 +138,13 @@ function Register() {
                   type="text"
                   name="adminName"
                   placeholder="Admin Name"
-                  className="w-full p-3 border rounded-lg mt-1 outline-none focus:ring-2 focus:ring-blue-500 placeholder-blue-900 font-medium"
+                  className="w-full p-3 border rounded-lg mt-1 outline-none focus:ring-2 focus:ring-blue-500 bg-blue-200 placeholder-gray-500 font-medium"
                 />
                 <input
                   type="text"
                   name="organization"
                   placeholder="Organization"
-                  className="w-full p-3 border rounded-lg mt-1 outline-none focus:ring-2 focus:ring-blue-500 placeholder-blue-900 font-medium"
+                  className="w-full p-3 border rounded-lg mt-1 outline-none focus:ring-2 focus:ring-blue-500 bg-blue-200 placeholder-gray-500 font-medium"
                 />
               </>
             ) : null}
@@ -152,30 +152,30 @@ function Register() {
               type="text"
               name="firstName"
               placeholder="First Name"
-              className="w-full p-3 border rounded-lg mt-1 outline-none focus:ring-2 focus:ring-blue-500 placeholder-blue-900 font-medium"
+              className="w-full p-3 border rounded-lg mt-1 outline-none focus:ring-2 focus:ring-blue-500 bg-blue-200 placeholder-gray-500 font-medium"
             />
             <input
               type="text"
               name="lastName"
               placeholder="Last Name"
-              className="w-full p-3 border rounded-lg mt-1 outline-none focus:ring-2 focus:ring-blue-500 placeholder-blue-900 font-medium"
+              className="w-full p-3 border rounded-lg mt-1 outline-none focus:ring-2 focus:ring-blue-500 bg-blue-200 placeholder-gray-500 font-medium"
             />
             <input
               type="email"
               name="email"
               placeholder="Email"
-              className="w-full p-3 border rounded-lg mt-1 outline-none focus:ring-2 focus:ring-blue-500 placeholder-blue-900 font-medium"
+              className="w-full p-3 border rounded-lg mt-1 outline-none focus:ring-2 focus:ring-blue-500 bg-blue-200 placeholder-gray-500 font-medium"
             />
             <input
               type="text"
               name="contactNumber"
               placeholder="Contact Number"
-              className="w-full p-3 border rounded-lg mt-1 outline-none focus:ring-2 focus:ring-blue-500 placeholder-blue-900 font-medium"
+              className="w-full p-3 border rounded-lg mt-1 outline-none focus:ring-2 focus:ring-blue-500 bg-blue-200 placeholder-gray-500 font-medium"
             />
             {role === "delivery" && (
               <select
                 name="preferredRoute"
-                className="w-full p-3 border rounded-lg mt-1 outline-none focus:ring-2 focus:ring-blue-500 placeholder-blue-900 font-medium"
+                className="w-full p-3 border rounded-lg mt-1 outline-none focus:ring-2 focus:ring-blue-500 bg-blue-200 placeholder-gray-500 font-medium"
               >
                 <option value="">Select Preferred Route</option>
                 <option value="Colombo">Colombo</option>
@@ -194,13 +194,13 @@ function Register() {
               type="password"
               name="password"
               placeholder="Password"
-              className="w-full p-3 border rounded-lg mt-1 outline-none focus:ring-2 focus:ring-blue-500 placeholder-blue-900 font-medium"
+              className="w-full p-3 border rounded-lg mt-1 outline-none focus:ring-2 focus:ring-blue-500 bg-blue-200 placeholder-gray-500 font-medium"
             />
             <input
               type="password"
               name="confirmPassword"
               placeholder="Confirm Password"
-              className="w-full p-3 border rounded-lg mt-1 outline-none focus:ring-2 focus:ring-blue-500 placeholder-blue-900 font-medium"
+              className="w-full p-3 border rounded-lg mt-1 outline-none focus:ring-2 focus:ring-blue-500 bg-blue-200 placeholder-gray-500 font-medium"
             />
             <Button type="submit" disabled={isLoading}>
               {isLoading ? "Registering..." : "Register"}

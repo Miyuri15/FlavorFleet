@@ -76,37 +76,36 @@ function Login() {
       {/* Left Side with Image and Intro Text */}
       <div
         className="relative hidden h-full md:flex md:w-3/5 bg-cover bg-center"
-        style={{ backgroundImage: "url('/img/logincover.jpg')" }}
+        style={{ backgroundImage: "url('/img/flavorfleetcover.jpg')" }}
       >
-        <div className="absolute inset-0 bg-gradient-to-br from-white via-transparent to-transparent opacity-70"></div>
+        <div className="absolute inset-0"></div>
         <div className="absolute top-9 left-9 cursor-pointer w-90 h-90">
-          <img src="/img/FintrackLogo.png" alt="Logo" className="w-80 h-34 mx-5" />
+          <img src="/img/flavorfleetlogo.png" alt="Logo" className="w-40 h-34 mx-5" />
         </div>
-        <div className="flex flex-col items-start justify-end p-10 bg-blue-900 bg-opacity-30 text-white h-full w-full">
+        <div className="flex flex-col items-start justify-end p-10  bg-opacity-30 text-white h-full w-full">
           <h1 className="text-3xl font-bold mb-5">Login</h1>
-          <h2 className="text-4xl font-extrabold mb-3">FINTRACK</h2>
+          <h2 className="text-4xl font-extrabold mb-3">FLAVORFLEET</h2>
           <p className="text-md leading-relaxed mb-9">
-            Welcome to Skill Careers, where finding your dream job or the right
-            talent is just a click away.
+            Welcome to FlavorFleet, where finding your dream meals is just a click away.
           </p>
         </div>
       </div>
 
       {/* Right Side with Form */}
-      <div className="flex flex-col justify-center md:w-2/5 p-8 bg-blue-200">
+      <div className="flex flex-col justify-center md:w-2/5 p-8 bg-blue-100">
         <div className="flex flex-col items-center mb-4">
           <img
-            src="/img/FintrackLogo.png"
+            src="/img/flavorfleetlogo.png"
             alt="logo"
-            width={40}
+            width={200}
             height={40}
-            className="mb-5 ml-10 md:hidden"
+            className="mb-5 ml-10"
           />
           <h2 className="text-xl text-blue-900  font-semibold text-center mb-2">
             Welcome Back! Let's Get You Started.
           </h2>
           <p className="text-blue-900  text-center text-md mt-4 mb-4 font-medium">
-            Log in to access your account and continue your Financial Planing
+            Log in to access your account and continue your Ordering meals
           </p>
         </div>
 
@@ -117,7 +116,7 @@ function Login() {
               id="email"
               required
               ref={emailInputRef}
-              className="w-full px-3 py-2 border rounded-lg mt-1 outline-none focus:ring-2 focus:ring-blue-500 placeholder-blue-900 font-semibold"
+              className="w-full px-3 py-2 border rounded-lg mt-1 bg-blue-200 outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-500 font-semibold"
               placeholder="Email"
             />
           </label>
@@ -128,7 +127,7 @@ function Login() {
               id="password"
               required
               ref={passwordInputRef}
-              className="w-full px-3 py-2 border rounded-lg mt-1 outline-none focus:ring-2 focus:ring-blue-500 placeholder-blue-900 font-semibold"
+              className="w-full px-3 py-2 border rounded-lg mt-1 bg-blue-200 outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-500 font-semibold"
               placeholder="Password"
             />
           </label>

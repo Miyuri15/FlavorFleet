@@ -41,6 +41,16 @@ services:
     env_file:
       - ./backend/microservices/restaurant-service/.env
 
+  gateway:
+    container_name: gateway
+    build: ./backend/gateway
+    volumes:
+      - ./backend/gateway:/app
+    ports:
+      - "5004:5004"
+    env_file:
+      - ./backend/gateway/.env
+
 
 
   frontend:

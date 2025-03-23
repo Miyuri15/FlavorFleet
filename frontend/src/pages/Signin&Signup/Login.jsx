@@ -95,14 +95,15 @@ function Login() {
       </div>
 
       {/* Right Panel (Form) */}
-      <div className="flex flex-col justify-center md:w-2/5 p-8 bg-blue-100">
+      <div className="flex flex-col min-h-screen justify-center md:w-2/5 p-8 bg-blue-100">
         <div className="flex flex-col items-center mb-4">
           <img
             src="/img/flavorfleetlogo.png"
             alt="logo"
             width={200}
             height={40}
-            className="mb-5 ml-10"
+            // className="mb-5 ml-10"
+            className="center"
           />
           <h2 className="text-xl text-blue-900 font-semibold text-center mb-2">
             Welcome Back! Let's Get You Started.

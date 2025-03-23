@@ -4,11 +4,14 @@ import Button from "./Button";
 import Swal from "sweetalert2";
 import { useFormik } from "formik";
 import * as Yup from "yup";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 function Register() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [role, setRole] = useState("user");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const formik = useFormik({
     initialValues: {
@@ -246,24 +249,50 @@ function Register() {
               </>
             )}
 
-            <input
-              name="password"
-              type="password"
-              placeholder="Password"
-              className="input"
-              {...formik.getFieldProps("password")}
-            />
+            <div className="relative">
+              <input
+                name="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="Password"
+                className="input w-full"
+                {...formik.getFieldProps("password")}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5"
+              >
+                {showPassword ? (
+                  <FaEyeSlash className="text-gray-500" />
+                ) : (
+                  <FaEye className="text-gray-500" />
+                )}
+              </button>
+            </div>
             {formik.touched.password && formik.errors.password && (
               <p className="text-red-500">{formik.errors.password}</p>
             )}
 
-            <input
-              name="confirmPassword"
-              type="password"
-              placeholder="Confirm Password"
-              className="input"
-              {...formik.getFieldProps("confirmPassword")}
-            />
+            <div className="relative">
+              <input
+                name="confirmPassword"
+                type={showConfirmPassword ? "text" : "password"}
+                placeholder="Confirm Password"
+                className="input w-full"
+                {...formik.getFieldProps("confirmPassword")}
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5"
+              >
+                {showConfirmPassword ? (
+                  <FaEyeSlash className="text-gray-500" />
+                ) : (
+                  <FaEye className="text-gray-500" />
+                )}
+              </button>
+            </div>
             {formik.touched.confirmPassword &&
               formik.errors.confirmPassword && (
                 <p className="text-red-500">{formik.errors.confirmPassword}</p>

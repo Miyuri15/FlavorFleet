@@ -6,11 +6,13 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import Button from "./Button";
 import { useAuth } from "../../context/AuthContext";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 function Login() {
   const navigate = useNavigate();
   const { login } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   // Formik config
   const formik = useFormik({
@@ -102,7 +104,6 @@ function Login() {
             alt="logo"
             width={200}
             height={40}
-            // className="mb-5 ml-10"
             className="center"
           />
           <h2 className="text-xl text-blue-900 font-semibold text-center mb-2">
@@ -132,14 +133,25 @@ function Login() {
             ) : null}
           </label>
 
-          <label className="block">
+          <label className="block relative">
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               name="password"
               placeholder="Password"
               className="w-full px-3 py-2 border rounded-lg mt-1 bg-blue-200 outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-500 font-semibold"
               {...formik.getFieldProps("password")}
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute inset-y-0 right-0 pr-3 flex items-center justify-items-center text-sm leading-5"
+            >
+              {showPassword ? (
+                <FaEyeSlash className="text-gray-500" />
+              ) : (
+                <FaEye className="text-gray-500" />
+              )}
+            </button>
             {formik.touched.password && formik.errors.password ? (
               <p className="text-red-500 text-sm font-medium mt-1">
                 {formik.errors.password}

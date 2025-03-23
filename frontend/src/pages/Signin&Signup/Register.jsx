@@ -90,7 +90,7 @@ function Register() {
     <div className="register-form flex flex-col md:flex-row h-screen">
       {/* Left Panel */}
       <div
-        className="relative hidden h-full md:flex md:w-3/5 bg-cover bg-center"
+        className="relative hidden min-h-screen h-full md:flex md:w-3/5 bg-cover bg-center"
         style={{ backgroundImage: "url('/img/flavorfleetcover.jpg')" }}
       >
         <div className="absolute top-9 left-9 cursor-pointer w-90 h-90">
@@ -111,7 +111,7 @@ function Register() {
       </div>
 
       {/* Right Panel */}
-      <div className="flex flex-col justify-center md:w-2/5 p-8 bg-blue-100">
+      <div className="justify-center h-screen overflow-y-auto md:w-2/5 p-8 bg-blue-100">
         <div className="flex flex-col items-center mb-4">
           <p className="text-blue-900 text-center text-md font-semibold">
             Create your free account to order meals, track deliveries, and pay

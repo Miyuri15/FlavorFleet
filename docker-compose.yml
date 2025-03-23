@@ -10,6 +10,7 @@ services:
     env_file:
       - ./backend/microservices/delivery-service/.env
 
+
   order-service:
     container_name: order-service
     build: ./backend/microservices/order-service
@@ -19,6 +20,38 @@ services:
       - "5000:5000"
     env_file:
       - ./backend/microservices/order-service/.env
+
+  payment-service:
+    container_name: payment-service
+    build: ./backend/microservices/payment-service
+    volumes:
+      - ./backend/microservices/payment-service:/app
+    ports:
+      - "5002:5002"
+    env_file:
+      - ./backend/microservices/payment-service/.env
+
+  restaurant-service:
+    container_name: restaurant-service
+    build: ./backend/microservices/restaurant-service
+    volumes:
+      - ./backend/microservices/restaurant-service:/app
+    ports:
+      - "5003:5003"
+    env_file:
+      - ./backend/microservices/restaurant-service/.env
+
+  gateway:
+    container_name: gateway
+    build: ./backend/gateway
+    volumes:
+      - ./backend/gateway:/app
+    ports:
+      - "5004:5004"
+    env_file:
+      - ./backend/gateway/.env
+
+
 
   frontend:
     container_name: frontend

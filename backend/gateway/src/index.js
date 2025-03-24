@@ -1,13 +1,26 @@
-const express = require("express");
-const mongoose = require("mongoose");
-const cors = require("cors");
-require("dotenv").config();
+
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
+require('dotenv').config();
+const gatewayMiddleware = require('./middleware/gatewayMiddleware');
+
+
+
 
 const app = express();
 const PORT = process.env.PORT || 5004;
 
 // Middleware
 app.use(cors());
+
+app.use(cors({
+  origin: ['http://localhost:3000','http://localhost:5004'], // Your frontend URL
+  credentials: true,
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE']
+}));
+
 app.use(express.json());
 
 // MongoDB Connection
@@ -25,9 +38,13 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: "Something went wrong!" });
 });
 
-// Test Route
-app.get("/", (req, res) => {
-  res.send("Welcome to FlavorFleet Backend!");
+// Use the gateway middleware
+app.use('/', gatewayMiddleware);
+
+  // Test Route
+app.get('/', (req, res) => {
+  res.send('Welcome to FlavorFleet Backend!');
+
 });
 
 // New API Endpoint

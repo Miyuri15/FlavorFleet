@@ -1,12 +1,41 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Layout from "../Layout";
 import Slider from "react-slick"; // For the carousel
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import axios from "axios";
 
 const UserDashboard = () => {
   const [showOngoingOrders, setShowOngoingOrders] = useState(false);
+  const [featuredFoods, setFeaturedFoods] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const token = localStorage.getItem("token");
+  if (!token) return;
+
+
+  // Fetch food data from API
+  useEffect(() => {
+    const fetchFoods = async () => {
+      try {
+        const response = await axios.get('http://localhost:5003/api/foods',{
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+  
+        });
+        setFeaturedFoods(response.data);
+        setLoading(false);
+      } catch (err) {
+        setError(err.message);
+        setLoading(false);
+      }
+    };
+
+    fetchFoods();
+  }, []);
 
   // Dummy data for ongoing orders
   const ongoingOrders = [
@@ -44,34 +73,6 @@ const UserDashboard = () => {
       id: 3,
       title: "Buy 1 Get 1 Free",
       description: "Valid until 20th January",
-    },
-  ];
-
-  // Dummy data for featured foods
-  const featuredFoods = [
-    {
-      id: 1,
-      name: "Burger",
-      image: "/img/Cheeseburger.jpeg",
-      description: "Delicious beef burger",
-    },
-    {
-      id: 2,
-      name: "Pizza",
-      image: "/img/PepperoniPizza.jpg",
-      description: "Cheesy pepperoni pizza",
-    },
-    {
-      id: 3,
-      name: "Pasta",
-      image: "/img/ChickenWings.jpg",
-      description: "Creamy Alfredo pasta",
-    },
-    {
-      id: 4,
-      name: "Sushi",
-      image: "/img/VeggieWrap.jpeg",
-      description: "Fresh salmon sushi",
     },
   ];
 
@@ -208,21 +209,27 @@ const UserDashboard = () => {
             <h2 className="text-2xl font-bold mb-4 text-gray-800">
               Featured Foods
             </h2>
-            <Slider {...carouselSettings}>
-              {featuredFoods.map((food) => (
-                <div key={food.id} className="p-2">
-                  <div className="bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow text-center">
-                    <img
-                      src={food.image}
-                      alt={food.name}
-                      className="w-full h-32 object-cover mb-2 rounded-lg"
-                    />
-                    <p className="font-bold text-gray-800">{food.name}</p>
-                    <p className="text-gray-600">{food.description}</p>
+            {loading ? (
+              <p className="text-gray-600">Loading foods...</p>
+            ) : error ? (
+              <p className="text-red-500">Error loading foods: {error}</p>
+            ) : (
+              <Slider {...carouselSettings}>
+                {featuredFoods.map((food) => (
+                  <div key={food.id} className="p-2">
+                    <div className="bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow text-center">
+                      <img
+                        src={food.foodImage}
+                        alt={food.foodName}
+                        className="w-full h-40 object-cover mb-2 rounded-lg"
+                      />
+                      <p className="font-bold text-gray-800">{food.foodName}</p>
+                      <p className="text-gray-600">{food.restaurantName}</p>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </Slider>
+                ))}
+              </Slider>
+            )}
           </div>
 
         </div>

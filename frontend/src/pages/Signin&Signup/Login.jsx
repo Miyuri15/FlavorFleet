@@ -53,9 +53,11 @@ function Login() {
 
       // Redirect based on role
       if (decodedToken.role === "admin") {
-        navigate("/home");
-      } else {
-        navigate("/home");
+        navigate("/admindashboard");
+      } if (decodedToken.role === "delivery") {
+        navigate("/deliverydashboard");
+      }else {
+        navigate("/userdashboard");
       }
     } catch (error) {
       setErrorMessage(error.message);

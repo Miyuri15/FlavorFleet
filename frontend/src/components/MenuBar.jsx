@@ -31,13 +31,25 @@ const MenuBar = () => {
   };
 
   return (
-    <aside className="w-64 bg-[#eef3f6] dark:bg-gray-900 text-text-light dark:text-white h-min-screen p-4 shadow-md">
+    <aside className="w-64 bg-[#eef3f6] dark:bg-gray-900 text-text-light dark:text-white h-screen p-4 shadow-md">
       <ul className="space-y-4">
-      <MenuItem
-          to={isAdmin ? "/admindashboard" : isDelivery ? "/deliverydashboard" : "/userdashboard"}
+        <MenuItem
+          to={
+            isAdmin
+              ? "/admindashboard"
+              : isDelivery
+              ? "/deliverydashboard"
+              : "/userdashboard"
+          }
           icon={<FiHome />}
           text="Dashboard"
-          isActive={isActive(isAdmin ? "/admindashboard" : isDelivery ? "/deliverydashboard" : "/userdashboard")}
+          isActive={isActive(
+            isAdmin
+              ? "/admindashboard"
+              : isDelivery
+              ? "/deliverydashboard"
+              : "/userdashboard"
+          )}
         />
         {!isAdmin && !isDelivery && (
           <MenuItem
@@ -79,8 +91,7 @@ const MenuBar = () => {
             text="Delivery Orders"
             isActive={isActive("/delivery/orders")}
           />
-        )}      
-       
+        )}
 
         {/* Logout Button */}
         <li>

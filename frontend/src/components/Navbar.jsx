@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import { FiSun, FiMoon } from 'react-icons/fi';
-import { useTheme } from '../ThemeContext';
-import { FaUser, FaBell } from 'react-icons/fa';
-import { useAuth } from '../context/AuthContext';
+import React, { useEffect, useState } from "react";
+import { FiSun, FiMoon } from "react-icons/fi";
+import { useTheme } from "../ThemeContext";
+import { FaUser, FaBell } from "react-icons/fa";
+import { useAuth } from "../context/AuthContext";
 
 const Navbar = () => {
   const { darkMode, setDarkMode } = useTheme();
@@ -13,7 +13,7 @@ const Navbar = () => {
     if (user) {
       // Fetch notifications for the user
       fetch(`/api/users/${user.id}/notifications`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       })
         .then((res) => res.json())
         .then((data) => setNotifications(data));
@@ -21,9 +21,14 @@ const Navbar = () => {
   }, [user]);
 
   return (
-    <nav className="bg-background-light dark:bg-background-dark shadow-sm p-4 flex items-center justify-between mb-4 relative">
-      <div className="text-2xl font-bold text-blue-600 dark:text-white">
-        <img src="/img/flavorfleetlogo.png" alt="logo" width={100} height={50} />
+    <nav className="bg-background-light dark:bg-background-dark shadow-sm p-4 flex items-center justify-between mb-4 relative sticky top-0 z-50">
+      <div className="text-2xl font-bold text-blue-600 dark:text-white ">
+        <img
+          src="/img/flavorfleetlogo.png"
+          alt="logo"
+          width={100}
+          height={50}
+        />
       </div>
 
       <div className="flex-grow mx-4">
@@ -39,7 +44,11 @@ const Navbar = () => {
           onClick={() => setDarkMode(!darkMode)}
           className="p-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600"
         >
-          {darkMode ? <FiSun className="text-yellow-500" /> : <FiMoon className="text-gray-900" />}
+          {darkMode ? (
+            <FiSun className="text-yellow-500" />
+          ) : (
+            <FiMoon className="text-gray-900" />
+          )}
         </button>
 
         <div className="relative">

@@ -9,8 +9,8 @@ const Layout = ({ children, isAdmin }) => {
   return (
     <div className="flex min-h-screen bg-background-light dark:bg-gray-900 text-text-light dark:text-white">
       <MenuBar isAdmin={isAdmin} />
-      <div className="flex-grow">
-        <Navbar/>
+      <div className="flex-grow overflow-y-auto h-screen">
+        <Navbar />
         <div className="py-1 px-8">{children}</div>
       </div>
     </div>

@@ -12,11 +12,20 @@ const UserDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const token = localStorage.getItem("token");
+  if (!token) return;
+
+
   // Fetch food data from API
   useEffect(() => {
     const fetchFoods = async () => {
       try {
-        const response = await axios.get('http://localhost:5003/api/foods');
+        const response = await axios.get('http://localhost:5003/api/foods',{
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+  
+        });
         setFeaturedFoods(response.data);
         setLoading(false);
       } catch (err) {

@@ -1,6 +1,9 @@
 const express = require('express');
 const foodController = require('../controllers/foodController');
+const authMiddleware = require('../../../../gateway/src/middleware/authMiddleware');
+
 const router = express.Router();
+router.use(authMiddleware);
 
 // POST route to add a new food item
 router.post('/foods', foodController.addFood);

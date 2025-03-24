@@ -12,6 +12,8 @@ const OrderPage = () => {
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedRestaurants, setSelectedRestaurants] = useState([]);
   const [cartItemCount, setCartItemCount] = useState(0);
+  const token = localStorage.getItem("token");
+  if (!token) return;
 
   // Fetch cart item count from DB
   const fetchCartItemCount = async () => {
@@ -35,7 +37,12 @@ const OrderPage = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const foodResponse = await axios.get("http://localhost:5003/api/foods");
+        const foodResponse = await axios.get("http://localhost:5003/api/foods",{
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+  
+        });
         if (!foodResponse.data) throw new Error("Failed to fetch food items");
 
         const transformedData = foodResponse.data.map((item) => ({
@@ -138,28 +145,6 @@ const OrderPage = () => {
     }
   };
 
-  // Handle checkout
-  const handleCheckout = async () => {
-    try {
-      const response = await axios.post(
-        "http://localhost:5000/api/cart/checkout",
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
-
-      if (response.data.success) {
-        await fetchCartItemCount(); // Update cart count after checkout
-        Swal.fire("Success", "Your order has been placed!", "success");
-      }
-    } catch (error) {
-      console.error("Checkout error:", error);
-      Swal.fire("Error", "Checkout failed. Try again later.", "error");
-    }
-  };
 
   if (loading) {
     return (

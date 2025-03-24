@@ -29,6 +29,11 @@ app.get("/api/restaurant", (req, res) => {
   res.json({ message: "Hello from the backend restaurant-service!" });
 });
 
+// Use food routes
+const foodRoutes = require('./routes/foodRoutes');
+app.use('/api', foodRoutes);
+
+
 // Start Server
 app.listen(PORT, () => {
   console.log(`Server running on Port:${PORT}`);

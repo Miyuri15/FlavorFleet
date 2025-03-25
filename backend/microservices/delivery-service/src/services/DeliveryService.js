@@ -1,55 +1,5 @@
-// const Delivery = require("../models/Delivery");
-
-// class DeliveryService {
-//   async createDelivery(data) {
-//     const delivery = new Delivery(data);
-//     return await delivery.save();
-//   }
-
-//   async assignDriver(orderId, driverId) {
-//     return await Delivery.findOneAndUpdate(
-//       { orderId },
-//       { driverId, status: "assigned", assignedAt: new Date() },
-//       { new: true }
-//     );
-//   }
-
-//   async updateLocation(orderId, location) {
-//     return await Delivery.findOneAndUpdate(
-//       { orderId },
-//       { currentLocation: location },
-//       { new: true }
-//     );
-//   }
-
-//   async markInTransit(orderId) {
-//     return await Delivery.findOneAndUpdate(
-//       { orderId },
-//       { status: "in_transit" },
-//       { new: true }
-//     );
-//   }
-
-//   async markDelivered(orderId) {
-//     return await Delivery.findOneAndUpdate(
-//       { orderId },
-//       { status: "delivered", deliveredAt: new Date() },
-//       { new: true }
-//     );
-//   }
-
-//   async getDeliveryStatus(orderId) {
-//     return await Delivery.findOne({ orderId });
-//   }
-
-//   async getAllDeliveriesByDriver(driverId) {
-//     return await Delivery.find({ driverId }).sort({ createdAt: -1 });
-//   }
-// }
-
-// module.exports = new DeliveryService();
-
 const Delivery = require("../models/Delivery");
+const Driver = require("../models/Driver");
 
 class DeliveryService {
   // Create a new delivery entry
@@ -65,6 +15,52 @@ class DeliveryService {
       { driverId, status: "accepted", assignedAt: new Date() },
       { new: true }
     );
+  }
+
+  // Find nearest available driver to a given restaurant
+  async assignNearestDriver(orderId, restaurantId, customerAddress) {
+    // Step 1: Call restaurant service
+    const restaurantResponse = await axios.get(
+      `http://restaurant-service:3002/api/restaurants/${restaurantId}`
+    );
+    const restaurant = restaurantResponse.data;
+
+    if (!restaurant || !restaurant.address?.coordinates) {
+      throw new Error("Invalid restaurant data from Restaurant Service");
+    }
+
+    const { lat, lng } = restaurant.address.coordinates;
+
+    // Step 2: Find the nearest available driver
+    const driver = await Driver.findOne({
+      status: "available",
+      currentLocation: {
+        $near: {
+          $geometry: {
+            type: "Point",
+            coordinates: [lng, lat],
+          },
+          $maxDistance: restaurant.deliveryRadius * 1000,
+        },
+      },
+    });
+
+    if (!driver) throw new Error("No available drivers nearby");
+
+    // Step 3: Create delivery
+    const delivery = await this.createDelivery({
+      orderId,
+      driverId: driver.driverId,
+      pickupLocation: `Restaurant ${restaurant.name}`,
+      deliveryLocation: customerAddress,
+      assignedAt: new Date(),
+    });
+
+    // Step 4: Update driver status
+    driver.status = "busy";
+    await driver.save();
+
+    return { delivery, driver };
   }
 
   // Update status (e.g., to picked_up or delivered)

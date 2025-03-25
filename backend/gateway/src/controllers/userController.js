@@ -59,7 +59,7 @@ const registerUser = async (req, res) => {
     }
 
     // Generate username
-    const username = ${firstName}${lastName}.replace(/\s+/g, "");
+    const username = `${firstName}${lastName}`.replace(/\s+/g, "");
 
     // Hash the password
     const salt = await bcrypt.genSalt(10);

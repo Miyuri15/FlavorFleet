@@ -7,10 +7,12 @@ const app = express();
 const PORT = process.env.PORT || 5003;
 
 // Middleware
-app.use(cors({
-  origin: '*', // Allow requests from the frontend service
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: "*", // Allow requests from the frontend service
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 // MongoDB Connection
@@ -25,9 +27,12 @@ app.get("/", (req, res) => {
 });
 
 // New API Endpoint
-app.get("/api/restaurant", (req, res) => {
-  res.json({ message: "Hello from the backend restaurant-service!" });
-});
+// app.get("/api/restaurant", (req, res) => {
+//   res.json({ message: "Hello from the backend restaurant-service!" });
+// });
+
+const addRestuarant = require("./routes/restaurantRoutes");
+app.use("/api/restaurant", addRestuarant);
 
 // Use food routes
 const foodRoutes = require('./routes/foodRoutes');

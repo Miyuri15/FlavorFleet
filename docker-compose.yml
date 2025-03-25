@@ -23,6 +23,8 @@ services:
       - "5000:5000"
     networks:
       - app-network
+    environment:
+      - DOCKERIZED=true
     env_file:
       - ./backend/microservices/order-service/.env
 
@@ -47,6 +49,8 @@ services:
       - "5003:5003"
     networks:
       - app-network
+    environment:
+      - DOCKERIZED=true
     env_file:
       - ./backend/microservices/restaurant-service/.env
 

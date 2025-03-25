@@ -34,6 +34,7 @@ const getFoodById = async (id) => {
   }
 };
 
+
 module.exports = {
   addFood,
   getAllFoods,

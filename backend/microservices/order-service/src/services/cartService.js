@@ -1,61 +1,128 @@
 const CartItem = require("../models/cartModel");
+const axios = require('axios');
 
-const { getFoodItem } = require("./foodServiceClient");
+// More reliable Docker environment detection
+const isDockerEnvironment = () => {
+  // Explicit Docker environment variable (set in docker-compose)
+  if (process.env.DOCKERIZED === 'true') return true;
+  
+  // Filesystem check (Docker containers often have this file)
+  try {
+    require('fs').accessSync('/.dockerenv');
+    return true;
+  } catch (e) {
+    return false;
+  }
+};
+
+// Get service URL with better debugging
+const getRestaurantServiceUrl = () => {
+  const isDocker = isDockerEnvironment();
+  const url = isDocker 
+    ? 'http://restaurant-service:5003' 
+    : 'http://localhost:5003';
+  
+  console.log(`Using restaurant service URL: ${url} (Docker: ${isDocker})`);
+  return url;
+};
 
 const cartService = {
-  async getCartItems(userId) {
+  async getCartItems(userId, authToken) {
     const cartItems = await CartItem.find({ userId });
+    console.log(`Fetching cart items for user ${userId}`);
     
-    // Optionally enrich with latest food data
-    const enrichedItems = await Promise.all(
-      cartItems.map(async item => {
-        const foodData = await getFoodItem(item.foodId.toString());
-        return {
-          ...item.toObject(),
-          currentPrice: foodData?.price || item.price,
-          currentStock: foodData?.stockAvailability || false
-        };
-      })
-    );
-    
-    return enrichedItems;
+    try {
+      const enrichedItems = await Promise.all(
+        cartItems.map(async item => {
+          try {
+            const foodData = await this.getFoodItem(item.foodId.toString(), authToken);
+            return {
+              ...item.toObject(),
+              currentPrice: foodData?.price || item.price,
+              currentStock: foodData?.stockAvailability || false
+            };
+          } catch (error) {
+            console.error(`Error fetching food item ${item.foodId}:`, error);
+            return item.toObject();
+          }
+        })
+      );
+      return enrichedItems;
+    } catch (error) {
+      console.error('Error enriching cart items:', error);
+      return cartItems;
+    }
   },
 
-  async addToCart(userId, item) {
-    // First verify the food exists and get current details
-    const foodData = await getFoodItem(item.foodId);
-    if (!foodData) {
-      throw new Error('Food item not found');
+  async getFoodItem(foodId, authToken) {
+    try {
+      const restaurantServiceUrl = getRestaurantServiceUrl();
+      console.log(`Attempting to fetch food ${foodId} from ${restaurantServiceUrl}`);
+      
+      const response = await axios.get(`${restaurantServiceUrl}/api/foods/${foodId}`, {
+        headers: {
+          Authorization: `Bearer ${authToken}`
+        },
+        timeout: 5000 // Add timeout to prevent hanging
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching food item:', {
+        message: error.message,
+        code: error.code,
+        config: {
+          url: error.config?.url,
+          method: error.config?.method
+        },
+        response: error.response?.data
+      });
+      throw new Error('Failed to fetch food item details');
+    }
+  },
+
+  async addToCart(userId, item, authToken) {
+    if (!authToken) {
+      throw new Error('Authentication token is required');
     }
 
-    // Check stock availability
-    if (!foodData.stockAvailability) {
-      throw new Error('This item is out of stock');
+    try {
+      const foodData = await this.getFoodItem(item.foodId, authToken);
+      
+      if (!foodData) {
+        throw new Error('Food item not found');
+      }
+
+      if (!foodData.stockAvailability) {
+        throw new Error('This item is out of stock');
+      }
+
+      const existingItem = await CartItem.findOne({ 
+        userId, 
+        foodId: item.foodId 
+      });
+
+      if (existingItem) {
+        existingItem.quantity += item.quantity;
+        return await existingItem.save();
+      }
+
+      const newCartItem = new CartItem({
+        userId,
+        foodId: item.foodId,
+        foodName: foodData.foodName,
+        restaurantName: foodData.restaurantName,
+        location: foodData.location,
+        price: foodData.price,
+        quantity: item.quantity,
+        image: foodData.foodImage,
+        checked: true
+      });
+
+      return await newCartItem.save();
+    } catch (error) {
+      console.error('Error in addToCart:', error);
+      throw error;
     }
-
-    // Rest of your existing logic
-    const existingItem = await CartItem.findOne({ 
-      userId, 
-      foodId: item.foodId 
-    });
-
-    if (existingItem) {
-      existingItem.quantity += item.quantity;
-      return await existingItem.save();
-    }
-
-    const newCartItem = new CartItem({
-      userId,
-      foodId: item.foodId,
-      foodName: foodData.foodName, // Use data from food service
-      restaurantName: foodData.restaurantName,
-      location: foodData.location,
-      price: foodData.price, // Current price
-      quantity: item.quantity,
-      image: foodData.foodImage
-    });
-
-    return await newCartItem.save();
   },
 
   async updateCartItem(userId, itemId, updates) {
@@ -74,12 +141,10 @@ const cartService = {
     return await CartItem.deleteMany({ userId, checked: true });
   },
 
-  // Get cart item count for a user
   async getCartItemCount(userId) {
-    const cartItems = await Cart.find({ user: userId });
+    const cartItems = await CartItem.find({ userId });
     return cartItems.reduce((total, item) => total + item.quantity, 0);
   }
-
 };
 
 module.exports = cartService;

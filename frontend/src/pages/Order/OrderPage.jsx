@@ -12,6 +12,7 @@ const OrderPage = () => {
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedRestaurants, setSelectedRestaurants] = useState([]);
   const [cartItemCount, setCartItemCount] = useState(0);
+
   const token = localStorage.getItem("token");
   if (!token) return;
 
@@ -75,6 +76,7 @@ const OrderPage = () => {
 
   // Add item to cart
   const addToCart = async (item) => {
+    const token = localStorage.getItem("token");
     if (item.stockAvailability !== "In Stock") {
       Swal.fire({
         title: "Out of Stock!",
@@ -116,12 +118,12 @@ const OrderPage = () => {
           price: item.price,
           quantity: parseInt(quantity, 10),
           image: item.imageUrl,
+          authToken: token
         },
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
+            Authorization: `Bearer ${token}`,
+          },        }
       );
 
       await fetchCartItemCount(); // Refresh cart count after adding

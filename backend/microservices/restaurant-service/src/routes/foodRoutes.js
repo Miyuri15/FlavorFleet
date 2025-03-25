@@ -1,6 +1,6 @@
 const express = require('express');
 const foodController = require('../controllers/foodController');
-const authMiddleware = require('../../../../gateway/src/middleware/authMiddleware');
+const authMiddleware = require('../middleware/authMiddleware');
 
 const router = express.Router();
 router.use(authMiddleware);

@@ -4,13 +4,13 @@ require("dotenv").config();
 const authMiddleware = (req, res, next) => {
   console.log("Headers received:", req.headers);
 
-  const token = req.headers.authorization?.split(" ")[1]; // This is correct
+  const token = req.headers.authorization?.split(" ")[1]; // Extract token
   console.log("Extracted token:", token);
-  
+
   if (!token) {
     return res.status(401).json({ message: "No token, authorization denied" });
   }
-  
+
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     console.log("Decoded token:", decoded);

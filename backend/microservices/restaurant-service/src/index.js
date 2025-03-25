@@ -2,6 +2,8 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 require("dotenv").config();
+const foodRoutes = require('./routes/foodRoutes');
+
 
 const app = express();
 const PORT = process.env.PORT || 5003;
@@ -35,7 +37,6 @@ const addRestuarant = require("./routes/restaurantRoutes");
 app.use("/api/restaurant", addRestuarant);
 
 // Use food routes
-const foodRoutes = require('./routes/foodRoutes');
 app.use('/api', foodRoutes);
 
 

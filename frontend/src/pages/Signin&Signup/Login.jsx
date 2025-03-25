@@ -57,7 +57,15 @@ function Login() {
 
         // Set user in AuthContext
         login(user);
-        navigate("/home");
+
+        // Redirect based on role
+        if (decodedToken.role === "admin") {
+          navigate("/admindashboard");
+        } else if (decodedToken.role === "delivery") {
+          navigate("/deliverydashboard");
+        }else {
+          navigate("/userdashboard");
+        }
       } catch (error) {
         Swal.fire({
           icon: "error",

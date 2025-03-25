@@ -9,6 +9,7 @@ import {
   FiFileText,
   FiLogOut,
   FiSettings,
+  FiShoppingCart,
 } from "react-icons/fi";
 import { useAuth } from "../context/AuthContext";
 
@@ -16,6 +17,7 @@ const MenuBar = () => {
   const location = useLocation();
   const { user, logout } = useAuth();
   const isAdmin = user?.role === "admin";
+  const isDelivery = user?.role === "delivery";
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -29,62 +31,65 @@ const MenuBar = () => {
   };
 
   return (
-    <aside className="w-64 bg-[#eef3f6] dark:bg-gray-900 text-text-light dark:text-white h-min-screen p-4 shadow-md">
+    <aside className="w-64 bg-[#eef3f6] dark:bg-gray-900 text-text-light dark:text-white h-screen p-4 shadow-md">
       <ul className="space-y-4">
         <MenuItem
-          to={isAdmin ? "/admindashboard" : "/userdashboard"}
+          to={
+            isAdmin
+              ? "/admindashboard"
+              : isDelivery
+              ? "/deliverydashboard"
+              : "/userdashboard"
+          }
           icon={<FiHome />}
           text="Dashboard"
-          isActive={isActive(isAdmin ? "/admindashboard" : "/userdashboard")}
+          isActive={isActive(
+            isAdmin
+              ? "/admindashboard"
+              : isDelivery
+              ? "/deliverydashboard"
+              : "/userdashboard"
+          )}
         />
-        {!isAdmin && (
+        {!isAdmin && !isDelivery && (
           <MenuItem
-            to="/budget"
+            to="/orders"
             icon={<FiClipboard />}
-            text="Budget Planning"
-            isActive={isActive("/budget")}
+            text="My Orders"
+            isActive={isActive("/orders")}
           />
         )}
-        <MenuItem
-          to={isAdmin ? "/adminTransactions" : "/userTransactions"}
-          icon={<FiCreditCard />}
-          text="Transactions"
-          isActive={isActive(isAdmin ? "/adminTransactions" : "/userTransactions")}
-        />
-        <MenuItem
-          to={isAdmin ? "/adminReports" : "/userReports"}
-          icon={<FiFileText />}
-          text="Reports"
-          isActive={isActive(isAdmin ? "/adminReports" : "/userReports")}
-        />
-        <MenuItem
-          to="/analytics"
-          icon={<FiBarChart />}
-          text="Analytics"
-          isActive={isActive("/analytics")}
-        />
-        {isAdmin && (
-          <MenuItem
-            to="/allUsers"
-            icon={<FiUsers />}
-            text="All Users"
-            isActive={isActive("/allUsers")}
-          />
+        {!isAdmin && !isDelivery && (
+          <>
+            <MenuItem
+              to="/order"
+              icon={<FiClipboard />}
+              text="Order Food"
+              isActive={isActive("/order")}
+            />
+            <MenuItem
+              to="/cart"
+              icon={<FiShoppingCart />}
+              text="Cart"
+              isActive={isActive("/cart")}
+            />
+          </>
         )}
-        {isAdmin && (
+        {isDelivery && (
           <MenuItem
-            to="/settings"
-            icon={<FiSettings />}
-            text="Settings"
-            isActive={isActive("/settings")}
-          />
-        )}
-        {!isAdmin && (
-          <MenuItem
-            to="/goal"
+            to="/delivery/orders"
             icon={<FiClipboard />}
-            text="Goals"
-            isActive={isActive("/goal")}
+            text="Delivery Orders"
+            isActive={isActive("/delivery/orders")}
+          />
+        )}
+
+        {isDelivery && (
+          <MenuItem
+            to="/delivery/orders"
+            icon={<FiTruck />}
+            text="Delivery Orders"
+            isActive={isActive("/delivery/orders")}
           />
         )}
 

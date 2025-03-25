@@ -30,7 +30,7 @@ const cartService = {
 
   async getFoodItem(foodId, authToken) {
     try {
-      const response = await axios.get(`http://localhost:5003/api/foods/${foodId}`, {
+      const response = await axios.get(`http://restaurant-service:5003/api/foods/${foodId}`, {
         headers: {
           Authorization: `Bearer ${authToken}`
         }

@@ -1,4 +1,4 @@
-version: '3.8'
+
 services:
   order-service:
     build: ./microservices/order-service

@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const cartController = require('../controllers/cartController');
-const authMiddleware = require('../../../../gateway/src/middleware/authMiddleware');
+const authMiddleware = require('../middleware/authMiddleware');
 
 // Apply auth middleware to all cart routes
 router.use(authMiddleware);

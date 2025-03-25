@@ -5,11 +5,10 @@ require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-
 // Middleware
 // CORS configuration for cart service
 app.use(cors({
-  origin: ['http://localhost:3000','http://localhost:5004'], // Gateway service URL
+  origin: ['http://localhost:3000','http://frontend:3000'], // Gateway service URL
   credentials: true,
   allowedHeaders: ['Content-Type', 'Authorization'],
  // methods: ['GET', 'POST', 'PUT', 'DELETE']

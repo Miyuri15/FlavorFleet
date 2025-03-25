@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useEffect } from "react";
 
 const AuthContext = createContext();
 
@@ -7,7 +7,7 @@ export const AuthProvider = ({ children }) => {
 
   // Check localStorage for user on initial load
   useEffect(() => {
-    const storedUser = JSON.parse(localStorage.getItem('user'));
+    const storedUser = JSON.parse(localStorage.getItem("user"));
     if (storedUser) {
       setUser(storedUser);
     }
@@ -16,24 +16,23 @@ export const AuthProvider = ({ children }) => {
   // Save user to localStorage whenever it changes
   useEffect(() => {
     if (user) {
-      localStorage.setItem('user', JSON.stringify(user));
+      localStorage.setItem("user", JSON.stringify(user));
     } else {
-      localStorage.removeItem('user');
+      localStorage.removeItem("user");
     }
   }, [user]);
 
   // Login function
   const login = (userData) => {
     setUser(userData);
-    localStorage.setItem('user', JSON.stringify(userData));
+    localStorage.setItem("user", JSON.stringify(userData));
   };
 
   // Logout function
   const logout = () => {
     setUser(null);
-    localStorage.removeItem('user');
-    localStorage.removeItem('token'); // Clear token
-    window.location.href = '/login'; // Redirect to login
+    localStorage.removeItem("user");
+    localStorage.removeItem("token"); // Clear token
   };
 
   return (
@@ -44,6 +43,3 @@ export const AuthProvider = ({ children }) => {
 };
 
 export const useAuth = () => React.useContext(AuthContext);
-
-
-

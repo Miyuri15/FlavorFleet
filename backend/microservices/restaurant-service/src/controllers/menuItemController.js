@@ -1,58 +1,127 @@
-import MenuItem from "../models/MenuItem.js";
+const MenuItem = require("../models/MenuItem");
+const Restaurant = require("../models/Restaurant");
 
-// Restaurant Owner: Create menu item
-export const createMenuItem = async (req, res) => {
+// Add menu item (restaurant owner only)
+const addMenuItem = async (req, res) => {
   try {
-    const restaurant = await Restaurant.findOne({ owner: req.user._id });
-    if (!restaurant) return res.status(403).json({ error: "Not authorized" });
+    const restaurant = await Restaurant.findById(req.params.restaurantId);
 
-    const newItem = new MenuItem({
-      ...req.body,
-      restaurant: restaurant._id,
+    if (!restaurant) {
+      return res.status(404).json({ error: "Restaurant not found" });
+    }
+
+    // Check if user is owner
+    if (restaurant.owner !== req.user.id) {
+      return res
+        .status(403)
+        .json({ error: "Only restaurant owner can add menu items" });
+    }
+
+    const menuItemData = req.body;
+    menuItemData.restaurant = req.params.restaurantId;
+
+    const newMenuItem = new MenuItem(menuItemData);
+    await newMenuItem.save();
+
+    // Add menu item to restaurant's menuItems array
+    await Restaurant.findByIdAndUpdate(req.params.restaurantId, {
+      $push: { menuItems: newMenuItem._id },
     });
 
-    await newItem.save();
-    res.status(201).json(newItem);
+    res.status(201).json(newMenuItem);
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.status(500).json({ error: error.message });
   }
 };
 
-// Restaurant Owner: Update menu item
-export const updateMenuItem = async (req, res) => {
+// Get all menu items for a restaurant
+const getMenuItemsByRestaurant = async (req, res) => {
   try {
-    const item = await MenuItem.findById(req.params.id);
-    if (!item) return res.status(404).json({ error: "Item not found" });
+    const restaurant = await Restaurant.findById(req.params.restaurantId);
 
-    // Verify ownership
-    const restaurant = await Restaurant.findOne({ owner: req.user._id });
-    if (!restaurant || !restaurant._id.equals(item.restaurant)) {
-      return res.status(403).json({ error: "Not authorized" });
+    if (!restaurant) {
+      return res.status(404).json({ error: "Restaurant not found" });
     }
 
-    Object.assign(item, req.body);
-    await item.save();
-    res.status(200).json(item);
+    const menuItems = await MenuItem.find({
+      restaurant: req.params.restaurantId,
+      isAvailable: true,
+    });
+
+    res.json(menuItems);
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.status(500).json({ error: error.message });
   }
 };
 
-// Restaurant Owner: Delete menu item
-export const deleteMenuItem = async (req, res) => {
+// Update menu item (restaurant owner only)
+const updateMenuItem = async (req, res) => {
   try {
-    const item = await MenuItem.findById(req.params.id);
-    if (!item) return res.status(404).json({ error: "Item not found" });
-
-    // Verify ownership
-    const restaurant = await Restaurant.findOne({ owner: req.user._id });
-    if (!restaurant || !restaurant._id.equals(item.restaurant)) {
-      return res.status(403).json({ error: "Not authorized" });
+    const menuItem = await MenuItem.findById(req.params.menuItemId);
+    if (!menuItem) {
+      return res.status(404).json({ error: "Menu item not found" });
     }
 
-    await item.deleteOne();
-    res.status(200).json({ message: "Item deleted successfully" });
+    const restaurant = await Restaurant.findById(menuItem.restaurant);
+    if (!restaurant) {
+      return res.status(404).json({ error: "Restaurant not found" });
+    }
+
+    // Check if user is owner
+    if (restaurant.owner !== req.user.id) {
+      return res
+        .status(403)
+        .json({ error: "Only restaurant owner can update menu items" });
+    }
+
+    const updatedMenuItem = await MenuItem.findByIdAndUpdate(
+      req.params.menuItemId,
+      req.body,
+      { new: true }
+    );
+
+    res.json(updatedMenuItem);
   } catch (error) {
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({ error: error.message });
   }
+};
+
+// Delete menu item (restaurant owner only)
+const deleteMenuItem = async (req, res) => {
+  try {
+    const menuItem = await MenuItem.findById(req.params.menuItemId);
+    if (!menuItem) {
+      return res.status(404).json({ error: "Menu item not found" });
+    }
+
+    const restaurant = await Restaurant.findById(menuItem.restaurant);
+    if (!restaurant) {
+      return res.status(404).json({ error: "Restaurant not found" });
+    }
+
+    // Check if user is owner
+    if (restaurant.owner !== req.user.id) {
+      return res
+        .status(403)
+        .json({ error: "Only restaurant owner can delete menu items" });
+    }
+
+    // Remove menu item from restaurant's menuItems array
+    await Restaurant.findByIdAndUpdate(menuItem.restaurant, {
+      $pull: { menuItems: menuItem._id },
+    });
+
+    await MenuItem.findByIdAndDelete(req.params.menuItemId);
+
+    res.json({ message: "Menu item deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+module.exports = {
+  addMenuItem,
+  getMenuItemsByRestaurant,
+  updateMenuItem,
+  deleteMenuItem,
 };

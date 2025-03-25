@@ -9,6 +9,11 @@ router.use(authMiddleware);
 // Proxy requests to cart service
 router.all('/api/cart*', async (req, res) => {
   try {
+     // Verify token exists before forwarding
+     if (!req.headers.authorization) {
+      return res.status(401).json({ message: "No authorization token provided" });
+    }
+    
     const response = await axios({
       method: req.method,
       url: `http://localhost:5000${req.originalUrl}`,

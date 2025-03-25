@@ -1,61 +1,90 @@
 const CartItem = require("../models/cartModel");
-
-const { getFoodItem } = require("./foodServiceClient");
+const axios = require('axios');
 
 const cartService = {
-  async getCartItems(userId) {
+  async getCartItems(userId, authToken) { // Add authToken parameter
     const cartItems = await CartItem.find({ userId });
     
-    // Optionally enrich with latest food data
-    const enrichedItems = await Promise.all(
-      cartItems.map(async item => {
-        const foodData = await getFoodItem(item.foodId.toString());
-        return {
-          ...item.toObject(),
-          currentPrice: foodData?.price || item.price,
-          currentStock: foodData?.stockAvailability || false
-        };
-      })
-    );
-    
-    return enrichedItems;
+    try {
+      const enrichedItems = await Promise.all(
+        cartItems.map(async item => {
+          try {
+            const foodData = await this.getFoodItem(item.foodId.toString(), authToken);
+            return {
+              ...item.toObject(),
+              currentPrice: foodData?.price || item.price,
+              currentStock: foodData?.stockAvailability || false
+            };
+          } catch (error) {
+            console.error(`Error fetching food item ${item.foodId}:`, error.message);
+            return item.toObject(); // Return basic item if food service fails
+          }
+        })
+      );
+      return enrichedItems;
+    } catch (error) {
+      console.error('Error enriching cart items:', error);
+      return cartItems; // Fallback to unenriched items
+    }
   },
 
-  async addToCart(userId, item) {
-    // First verify the food exists and get current details
-    const foodData = await getFoodItem(item.foodId);
-    if (!foodData) {
-      throw new Error('Food item not found');
+  async getFoodItem(foodId, authToken) {
+    try {
+      const response = await axios.get(`http://localhost:5003/api/foods/${foodId}`, {
+        headers: {
+          Authorization: `Bearer ${authToken}`
+        }
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching food item:', error.message);
+      throw new Error('Failed to fetch food item details');
+    }
+  },
+
+  async addToCart(userId, item, authToken) { // Add authToken parameter
+    if (!authToken) {
+      throw new Error('Authentication token is required');
     }
 
-    // Check stock availability
-    if (!foodData.stockAvailability) {
-      throw new Error('This item is out of stock');
+    try {
+      const foodData = await this.getFoodItem(item.foodId, authToken);
+      
+      if (!foodData) {
+        throw new Error('Food item not found');
+      }
+
+      if (!foodData.stockAvailability) {
+        throw new Error('This item is out of stock');
+      }
+
+      const existingItem = await CartItem.findOne({ 
+        userId, 
+        foodId: item.foodId 
+      });
+
+      if (existingItem) {
+        existingItem.quantity += item.quantity;
+        return await existingItem.save();
+      }
+
+      const newCartItem = new CartItem({
+        userId,
+        foodId: item.foodId,
+        foodName: foodData.foodName,
+        restaurantName: foodData.restaurantName,
+        location: foodData.location,
+        price: foodData.price,
+        quantity: item.quantity,
+        image: foodData.foodImage,
+        checked: true // Default to checked
+      });
+
+      return await newCartItem.save();
+    } catch (error) {
+      console.error('Error in addToCart:', error);
+      throw error; // Re-throw for controller to handle
     }
-
-    // Rest of your existing logic
-    const existingItem = await CartItem.findOne({ 
-      userId, 
-      foodId: item.foodId 
-    });
-
-    if (existingItem) {
-      existingItem.quantity += item.quantity;
-      return await existingItem.save();
-    }
-
-    const newCartItem = new CartItem({
-      userId,
-      foodId: item.foodId,
-      foodName: foodData.foodName, // Use data from food service
-      restaurantName: foodData.restaurantName,
-      location: foodData.location,
-      price: foodData.price, // Current price
-      quantity: item.quantity,
-      image: foodData.foodImage
-    });
-
-    return await newCartItem.save();
   },
 
   async updateCartItem(userId, itemId, updates) {
@@ -74,12 +103,10 @@ const cartService = {
     return await CartItem.deleteMany({ userId, checked: true });
   },
 
-  // Get cart item count for a user
   async getCartItemCount(userId) {
-    const cartItems = await Cart.find({ user: userId });
+    const cartItems = await CartItem.find({ userId }); // Changed from Cart to CartItem
     return cartItems.reduce((total, item) => total + item.quantity, 0);
   }
-
 };
 
 module.exports = cartService;

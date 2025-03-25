@@ -12,7 +12,7 @@ app.use(cors({
   origin: ['http://localhost:3000','http://localhost:5004'], // Gateway service URL
   credentials: true,
   allowedHeaders: ['Content-Type', 'Authorization'],
-  methods: ['GET', 'POST', 'PUT', 'DELETE']
+ // methods: ['GET', 'POST', 'PUT', 'DELETE']
 }));
 app.use(express.json());
 

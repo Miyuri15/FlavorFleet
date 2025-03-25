@@ -5,7 +5,8 @@ const cartController = {
   async getCart(req, res) {
     try {
       const userId = req.user.id;
-      const cartItems = await cartService.getCartItems(userId);
+      const token = req.headers.authorization.split(' ')[1]; // Extract token
+      const cartItems = await cartService.getCartItems(userId, token);
       res.json(cartItems);
     } catch (error) {
       res.status(500).json({ message: error.message });
@@ -15,7 +16,8 @@ const cartController = {
   async addToCart(req, res) {
     try {
       const userId = req.user.id;
-      const cartItem = await cartService.addToCart(userId, req.body);
+      const token = req.headers.authorization.split(' ')[1]; // Extract token
+      const cartItem = await cartService.addToCart(userId, req.body, token);
       res.status(201).json(cartItem);
     } catch (error) {
       res.status(400).json({ message: error.message });

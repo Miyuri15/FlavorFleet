@@ -1,58 +1,53 @@
-
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-require('dotenv').config();
-const gatewayMiddleware = require('./middleware/gatewayMiddleware');
-
-
-
+const express = require("express");
+const { createProxyMiddleware } = require("http-proxy-middleware");
 
 const app = express();
-const PORT = process.env.PORT || 5004;
 
-// Middleware
-app.use(cors());
+// Delivery Service - running on port 5001
+app.use(
+  "/api/deliveries",
+  createProxyMiddleware({
+    target: "http://delivery-service:5001",
+    changeOrigin: true,
+  })
+);
 
-app.use(cors({
-  origin: ['http://localhost:3000','http://localhost:5004','http://localhost:5000'], // Your frontend URL
-  credentials: true,
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  methods: ['GET', 'POST', 'PUT', 'DELETE']
-}));
+// Order Service - running on port 5000
+app.use(
+  "/api/orders",
+  createProxyMiddleware({
+    target: "http://order-service:5000",
+    changeOrigin: true,
+  })
+);
 
-app.use(express.json());
+// Payment Service - running on port 5002
+app.use(
+  "/api/payments",
+  createProxyMiddleware({
+    target: "http://payment-service:5002",
+    changeOrigin: true,
+  })
+);
 
-// MongoDB Connection
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => console.log("MongoDB connected"))
-  .catch((err) => console.log(err));
+// Restaurant Service - running on port 5003
+app.use(
+  "/api/restaurants",
+  createProxyMiddleware({
+    target: "http://restaurant-service:5003",
+    changeOrigin: true,
+  })
+);
 
-const authRoutes = require("./routes/userRoutes");
-app.use("/api/auth", authRoutes);
+// User Service - also running on port 5004
+app.use(
+  "/api/users",
+  createProxyMiddleware({
+    target: "http://user-service:5004",
+    changeOrigin: true,
+  })
+);
 
-// Error handling middleware
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ message: "Something went wrong!" });
-});
-
-// Use the gateway middleware
-app.use('/', gatewayMiddleware);
-
-  // Test Route
-app.get('/', (req, res) => {
-  res.send('Welcome to FlavorFleet Backend!');
-
-});
-
-// New API Endpoint
-app.get("/api/message", (req, res) => {
-  res.json({ message: "Hello from the backend!" });
-});
-
-// Start Server
-app.listen(PORT, () => {
-  console.log(`Server running on Port:${PORT}`);
+app.listen(8000, () => {
+  console.log("API Gateway is running at http://localhost:8000");
 });

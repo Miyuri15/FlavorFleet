@@ -2,8 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 require("dotenv").config();
-const foodRoutes = require('./routes/foodRoutes');
-
+const foodRoutes = require("./routes/foodRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 5003;
@@ -23,22 +22,14 @@ mongoose
   .then(() => console.log("MongoDB connected"))
   .catch((err) => console.log(err));
 
-// Test Route
+app.use("/api/restaurants", require("./routes/restaurantRoutes"));
+
+// Use food routes
+app.use("/api", foodRoutes);
+
 app.get("/", (req, res) => {
   res.send("Welcome to FlavorFleet Backend!");
 });
-
-// New API Endpoint
-// app.get("/api/restaurant", (req, res) => {
-//   res.json({ message: "Hello from the backend restaurant-service!" });
-// });
-
-const addRestuarant = require("./routes/restaurantRoutes");
-app.use("/api/restaurant", addRestuarant);
-
-// Use food routes
-app.use('/api', foodRoutes);
-
 
 // Start Server
 app.listen(PORT, () => {

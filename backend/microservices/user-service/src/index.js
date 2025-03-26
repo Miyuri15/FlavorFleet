@@ -10,10 +10,9 @@ const PORT = process.env.PORT || 5004;
 app.use(
   cors({
     origin: [
-      "http://localhost:3000",
-      "http://localhost:5004",
-      "http://localhost:5000",
-    ], // Your frontend URL
+      "http://localhost:3000", // Dev Frontend
+      "http://localhost:8000", // Gateway (if you're accessing directly from browser)
+    ],
     credentials: true,
   })
 );
@@ -26,13 +25,7 @@ mongoose
   .then(() => console.log("MongoDB connected"))
   .catch((err) => console.log(err));
 
-app.use("/api/auth", require("./routes/userRoutes"));
-
-// Error handling middleware
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ message: "Something went wrong!" });
-});
+app.use("/auth", require("./routes/userRoutes"));
 
 // Test Route
 app.get("/", (req, res) => {

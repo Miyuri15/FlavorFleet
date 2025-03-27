@@ -56,74 +56,83 @@ const cartService = {
 
   async getFoodItem(foodId, authToken) {
     try {
-      const restaurantServiceUrl = getRestaurantServiceUrl();
-      console.log(`Attempting to fetch food ${foodId} from ${restaurantServiceUrl}`);
-      
-      const response = await axios.get(`${restaurantServiceUrl}/api/foods/${foodId}`, {
-        headers: {
-          Authorization: `Bearer ${authToken}`
-        },
-        timeout: 5000 // Add timeout to prevent hanging
-      });
+      const response = await axios.get(
+        `${getRestaurantServiceUrl()}/api/menu/${foodId}`,
+        { headers: { Authorization: `Bearer ${authToken}` } }
+      );
       return response.data;
     } catch (error) {
-      console.error('Error fetching food item:', {
-        message: error.message,
-        code: error.code,
-        config: {
-          url: error.config?.url,
-          method: error.config?.method
-        },
-        response: error.response?.data
-      });
+      console.error('Error fetching food item:', error.message);
       throw new Error('Failed to fetch food item details');
     }
   },
 
   async addToCart(userId, item, authToken) {
-    if (!authToken) {
-      throw new Error('Authentication token is required');
-    }
-
     try {
-      const foodData = await this.getFoodItem(item.foodId, authToken);
-      
-      if (!foodData) {
-        throw new Error('Food item not found');
-      }
-
-      if (!foodData.stockAvailability) {
-        throw new Error('This item is out of stock');
-      }
-
-      const existingItem = await CartItem.findOne({ 
-        userId, 
-        foodId: item.foodId 
-      });
-
-      if (existingItem) {
-        existingItem.quantity += item.quantity;
-        return await existingItem.save();
-      }
-
+      // Get basic item info without calling restaurant service
       const newCartItem = new CartItem({
         userId,
         foodId: item.foodId,
-        foodName: foodData.foodName,
-        restaurantName: foodData.restaurantName,
-        location: foodData.location,
-        price: foodData.price,
+        foodName: item.foodName,
+        restaurantName: item.restaurantName,
+        location: item.location,
+        price: item.price,
         quantity: item.quantity,
-        image: foodData.foodImage,
+        image: item.image,
         checked: true
       });
-
       return await newCartItem.save();
     } catch (error) {
       console.error('Error in addToCart:', error);
       throw error;
     }
   },
+
+  
+  // async addToCart(userId, item, authToken) {
+  //   if (!authToken) {
+  //     throw new Error('Authentication token is required');
+  //   }
+
+  //   try {
+  //     const foodData = await this.getFoodItem(item.foodId, authToken);
+      
+  //     if (!foodData) {
+  //       throw new Error('Food item not found');
+  //     }
+
+  //     if (!foodData.stockAvailability) {
+  //       throw new Error('This item is out of stock');
+  //     }
+
+  //     const existingItem = await CartItem.findOne({ 
+  //       userId, 
+  //       foodId: item.foodId 
+  //     });
+
+  //     if (existingItem) {
+  //       existingItem.quantity += item.quantity;
+  //       return await existingItem.save();
+  //     }
+
+  //     const newCartItem = new CartItem({
+  //       userId,
+  //       foodId: item.foodId,
+  //       foodName: foodData.foodName,
+  //       restaurantName: foodData.restaurantName,
+  //       location: foodData.location,
+  //       price: foodData.price,
+  //       quantity: item.quantity,
+  //       image: foodData.foodImage,
+  //       checked: true
+  //     });
+
+  //     return await newCartItem.save();
+  //   } catch (error) {
+  //     console.error('Error in addToCart:', error);
+  //     throw error;
+  //   }
+  // },
 
   async updateCartItem(userId, itemId, updates) {
     return await CartItem.findOneAndUpdate(

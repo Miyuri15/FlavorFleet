@@ -24,7 +24,6 @@ const registerUser = async (req, res) => {
       !firstName ||
       !lastName ||
       !email ||
-      !address ||
       !contactNumber ||
       !password ||
       !confirmPassword

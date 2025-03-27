@@ -9,22 +9,21 @@ import axios from "axios";
 const UserDashboard = () => {
   const [showOngoingOrders, setShowOngoingOrders] = useState(false);
   const [featuredFoods, setFeaturedFoods] = useState([]);
+  const [restuarants, setRestuarants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   const token = localStorage.getItem("token");
   if (!token) return;
 
-
   // Fetch food data from API
   useEffect(() => {
     const fetchFoods = async () => {
       try {
-        const response = await axios.get('http://localhost:5003/api/foods',{
+        const response = await axios.get("http://localhost:5003/api/restaurant/menu/all", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-  
         });
         setFeaturedFoods(response.data);
         setLoading(false);
@@ -35,6 +34,26 @@ const UserDashboard = () => {
     };
 
     fetchFoods();
+  }, []);
+
+  // Fetch restuarant data from API
+  useEffect(() => {
+    const fetchRestuarants = async () => {
+      try {
+        const response = await axios.get("http://localhost:5003/api/restaurant/", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setRestuarants(response.data);
+        setLoading(false);
+      } catch (err) {
+        setError(err.message);
+        setLoading(false);
+      }
+    };
+
+    fetchRestuarants();
   }, []);
 
   // Dummy data for ongoing orders
@@ -104,20 +123,19 @@ const UserDashboard = () => {
   return (
     <>
       <Layout>
-        <div className="p-6 max-w-7xl mx-auto bg-gray-50 min-h-screen">
-            <div className="flex flex-grow justify-between items-center">
-            <h1 className="text-3xl font-bold mb-6 text-gray-800">
-            Welcome to Your Dashboard
-          </h1>
+        <div className="p-4 max-w-7xl mx-auto min-h-screen">
+          <div className="flex flex-grow justify-between items-center">
+            <h1 className="text-3xl font-bold mb-6 text-red-800">
+              Welcome to FlavorFleet
+            </h1>
 
             <Link
-            to="/order"
-            className="bg-orange-500 text-white px-6 py-3 rounded-lg hover:bg-orange-600 transition-all mb-6 font-semibold"
-          >
-            Place New Order
-          </Link>
-
-            </div>
+              to="/order"
+              className="bg-orange-500 text-white px-6 py-3 rounded-lg hover:bg-orange-600 transition-all mb-6 font-semibold"
+            >
+              Place New Order
+            </Link>
+          </div>
 
           {/* Ongoing Orders Section */}
           <div className="mb-8 border border-green-400 rounded-lg">
@@ -159,7 +177,6 @@ const UserDashboard = () => {
                 )}
           </div>
 
-
           {/* Three Cards Section */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div className="bg-white p-6 rounded-lg shadow-sm text-center hover:shadow-md transition-shadow">
@@ -182,32 +199,84 @@ const UserDashboard = () => {
             </div>
           </div>
 
+          {/* Popular Categories */}
+
           {/* Promotions Section */}
           <div className="mb-8">
             <h2 className="text-2xl font-bold mb-4 text-gray-800">
               Promotions
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {promotions.length > 0 ? (
-                promotions.map((promotion) => (
-                  <div
-                    key={promotion.id}
-                    className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow"
-                  >
-                    <p className="font-bold text-gray-800">{promotion.title}</p>
-                    <p className="text-gray-600">{promotion.description}</p>
+            {loading ? (
+              <p className="text-gray-600">Loading restuarants...</p>
+            ) : error ? (
+              <p className="text-red-500">Error loading restuarants: {error}</p>
+            ) : (
+              <Slider {...carouselSettings}>
+                {promotions.length > 0 ? (
+                  promotions.map((promotion) => (
+                    <div
+                      key={promotion.id}
+                      className="p-2" >
+
+                    <div className="bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow text-center">
+                      <img
+                        src={promotion.foodImage}
+                        alt={promotion.foodName}
+                        className="w-full h-40 object-cover mb-2 rounded-lg"
+                      />
+                      <p className="font-bold text-gray-800">
+                        {promotion.title}
+                      </p>
+                      <p className="text-gray-600">
+                        {promotion.description}
+                      </p>
+                    </div>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-gray-600">No promotions found.</p>
+                )}
+              </Slider>
+               )}
+            
+          </div>
+
+          {/* Explore Restuarants Section */}
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold mb-4 text-gray-800">
+              Explore Restuarants
+            </h2>
+            {loading ? (
+              <p className="text-gray-600">Loading restuarants...</p>
+            ) : error ? (
+              <p className="text-red-500">Error loading restuarants: {error}</p>
+            ) : (
+              <Slider {...carouselSettings}>
+                {restuarants.map((restuarant) => (
+                  <div key={restuarant.id} className="p-2">
+                    <div className="bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow text-center">
+                      <img
+                        src={restuarant.banner}
+                        alt={restuarant.name}
+                        className="w-full h-40 object-cover mb-2 rounded-lg"
+                      />
+                      <p className="font-bold text-gray-800">
+                        {restuarant.name}
+                      </p>
+                      <p className="text-gray-600">
+                        {restuarant.email}
+                      </p>
+                    </div>
                   </div>
-                ))
-              ) : (
-                <p className="text-gray-600">No promotions found.</p>
-              )}
-            </div>
+                ))}
+              </Slider>
+            )}
           </div>
 
           {/* Featured Foods Section */}
           <div className="mb-8">
             <h2 className="text-2xl font-bold mb-4 text-gray-800">
-              Featured Foods
+              All Menu Items
             </h2>
             {loading ? (
               <p className="text-gray-600">Loading foods...</p>
@@ -219,19 +288,20 @@ const UserDashboard = () => {
                   <div key={food.id} className="p-2">
                     <div className="bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow text-center">
                       <img
-                        src={food.foodImage}
-                        alt={food.foodName}
+                        src={food.image}
+                        alt={food.name}
                         className="w-full h-40 object-cover mb-2 rounded-lg"
                       />
-                      <p className="font-bold text-gray-800">{food.foodName}</p>
-                      <p className="text-gray-600">{food.restaurantName}</p>
+                      <p className="font-bold text-gray-800">{food.name}</p>
+                      {food.restaurant && (
+              <p className="text-gray-600">{food.restaurant.name}</p>
+            )}
                     </div>
                   </div>
                 ))}
               </Slider>
             )}
           </div>
-
         </div>
       </Layout>
     </>

@@ -21,7 +21,7 @@ const Navbar = () => {
   }, [user]);
 
   return (
-    <nav className="bg-background-light dark:bg-background-dark shadow-sm p-4 flex items-center justify-between mb-4 relative sticky top-0 z-50">
+    <nav className="bg-gray-100 dark:bg-background-dark shadow-sm p-4 m-3 flex items-center justify-between mb-4 relative sticky top-0 z-50">
       <div className="text-2xl font-bold text-blue-600 dark:text-white ">
         <img
           src="/img/flavorfleetlogo.png"

@@ -119,9 +119,27 @@ const deleteMenuItem = async (req, res) => {
   }
 };
 
+// fetch all the menu items of all the restuarants
+const getAllMenuItems = async (req, res) => {
+  try {
+    const { category, dietaryTags } = req.query;
+    const filter = { isAvailable: true };
+    
+    if (category) filter.category = category;
+    if (dietaryTags) filter.dietaryTags = { $in: dietaryTags.split(',') };
+
+    const menuItems = await MenuItem.find(filter).populate('restaurant', 'name logo');
+    
+    res.json(menuItems);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   addMenuItem,
   getMenuItemsByRestaurant,
   updateMenuItem,
   deleteMenuItem,
+  getAllMenuItems,
 };

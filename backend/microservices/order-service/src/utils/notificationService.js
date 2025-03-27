@@ -1,6 +1,6 @@
 const nodemailer = require('nodemailer');
 const Notification = require('../models/notificationModel');
-const User = require('../../../../gateway/src/models/User');
+const User = require('../models/User');
 const logger = console; // Replace with your logger if needed
 
 // Email transporter configuration

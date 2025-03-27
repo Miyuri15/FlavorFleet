@@ -1,6 +1,6 @@
 const Order = require('../models/orderModel');
-const User = require('../../../../gateway/src/models/User');
-const Restaurant = require('../../../restaurant-service/src/models/Restaurant');
+const User = require('../models/User');
+// const Restaurant = require('../../../restaurant-service/src/models/Restaurant');
 const notificationService = require('../utils/notificationService');
 
 const OrderService = {

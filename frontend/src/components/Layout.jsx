@@ -11,7 +11,7 @@ const Layout = ({ children, isAdmin }) => {
       <MenuBar isAdmin={isAdmin} />
       <div className="flex-grow overflow-y-auto h-screen">
         <Navbar />
-        <div className="py-1 px-8">{children}</div>
+        <div className=" p-3 m-3 bg-gray-100 rounded-xl">{children}</div>
       </div>
     </div>
   );

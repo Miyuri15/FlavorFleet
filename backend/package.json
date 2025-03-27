@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "cors": "^2.8.5",
-    "jwt-token": "^1.0.9"
+    "jwt-token": "^1.0.9",
+    "nodemailer": "^6.10.0"
   }
 }

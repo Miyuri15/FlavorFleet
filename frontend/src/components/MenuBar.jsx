@@ -31,7 +31,7 @@ const MenuBar = () => {
   };
 
   return (
-    <aside className="w-64 bg-[#eef3f6] dark:bg-gray-900 text-text-light dark:text-white h-screen p-4 shadow-md">
+    <aside className="w-64 bg-gray-100 dark:bg-gray-900 text-text-light dark:text-white h-screen p-4 shadow-md">
       <ul className="space-y-4">
         <MenuItem
           to={

@@ -280,7 +280,7 @@ const CartPage = () => {
                 </div>
                 
                 <button 
-                  onClick={() => navigate('/checkout')}
+                  onClick={() => navigate('/placeorder')}
                   disabled={totalItems === 0}
                   className={`w-full py-3 rounded-lg transition-colors font-medium mb-4 ${
                     totalItems === 0 
@@ -288,7 +288,7 @@ const CartPage = () => {
                       : 'bg-blue-600 text-white hover:bg-blue-700'
                   }`}
                 >
-                  Proceed to Checkout
+                  Proceed to Place Order
                 </button>
                 
                 <div className="flex items-center justify-center text-sm text-gray-500">

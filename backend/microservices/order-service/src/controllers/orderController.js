@@ -1,58 +1,107 @@
-import Order from '../models/orderModel.js';
-import { verifyToken } from '../utils/auth.js';
+const OrderService = require('../services/orderService');
 
-// Create a new order
-export const createOrder = async (req, res) => {
-  try {
-    const { userId, items, totalAmount, deliveryAddress } = req.body;
-    const order = new Order({ userId, items, totalAmount, deliveryAddress });
-    await order.save();
-    res.status(201).json(order);
-  } catch (error) {
-    res.status(500).json({ message: 'Error creating order', error });
-  }
-};
+const OrderController = {
+  async createOrder(req, res) {
+    try {
+      const orderData = {
+        ...req.body,
+        userId: req.user.id
+      };
 
-// Modify an order before confirmation
-export const modifyOrder = async (req, res) => {
-  try {
-    const { orderId } = req.params;
-    const { items, totalAmount, deliveryAddress } = req.body;
-    const order = await Order.findById(orderId);
-    if (!order || order.status !== 'Pending') {
-      return res.status(400).json({ message: 'Order cannot be modified' });
+      const order = await OrderService.createOrder(orderData);
+      res.status(201).json(order);
+    } catch (error) {
+      res.status(400).json({ error: error.message });
     }
-    order.items = items || order.items;
-    order.totalAmount = totalAmount || order.totalAmount;
-    order.deliveryAddress = deliveryAddress || order.deliveryAddress;
-    await order.save();
-    res.status(200).json(order);
-  } catch (error) {
-    res.status(500).json({ message: 'Error modifying order', error });
-  }
-};
+  },
 
-// Track order status
-export const trackOrder = async (req, res) => {
-  try {
-    const { orderId } = req.params;
-    const order = await Order.findById(orderId);
-    if (!order) {
-      return res.status(404).json({ message: 'Order not found' });
+  async getOrder(req, res) {
+    try {
+      const order = await OrderService.getOrderById(req.params.id);
+      if (!order) {
+        return res.status(404).json({ error: 'Order not found' });
+      }
+      
+      // Verify user has access to this order
+      if (req.user.role !== 'admin' && 
+          req.user.id !== order.userId.toString() && 
+          req.user.id !== order.deliveryAgentId?.toString()) {
+        return res.status(403).json({ error: 'Unauthorized access' });
+      }
+
+      res.json(order);
+    } catch (error) {
+      res.status(400).json({ error: error.message });
     }
-    res.status(200).json({ status: order.status });
-  } catch (error) {
-    res.status(500).json({ message: 'Error tracking order', error });
-  }
-};
+  },
 
-// Get all orders for a user
-export const getUserOrders = async (req, res) => {
-  try {
-    const { userId } = req.params;
-    const orders = await Order.find({ userId });
-    res.status(200).json(orders);
-  } catch (error) {
-    res.status(500).json({ message: 'Error fetching orders', error });
+  async getUserOrders(req, res) {
+    try {
+      const orders = await OrderService.getOrdersByUser(req.user.id);
+      res.json(orders);
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  },
+
+  async getRestaurantOrders(req, res) {
+    try {
+      // Verify user is restaurant manager/owner
+      if (req.user.role !== 'restaurant') {
+        return res.status(403).json({ error: 'Unauthorized access' });
+      }
+
+      // Assuming restaurantId is stored in the user object
+      const orders = await OrderService.getOrdersByRestaurant(req.user.restaurantId);
+      res.json(orders);
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  },
+
+  async getDeliveryAgentOrders(req, res) {
+    try {
+      if (req.user.role !== 'delivery') {
+        return res.status(403).json({ error: 'Unauthorized access' });
+      }
+
+      const orders = await OrderService.getOrdersByDeliveryAgent(req.user.id);
+      res.json(orders);
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  },
+
+  async updateOrderStatus(req, res) {
+    try {
+      const { status, notes } = req.body;
+      const order = await OrderService.updateOrderStatus(
+        req.params.id, 
+        status, 
+        req.user.id, 
+        req.user.role,
+        notes
+      );
+      
+      res.json(order);
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  },
+
+  async cancelOrder(req, res) {
+    try {
+      const order = await OrderService.cancelOrder(
+        req.params.id, 
+        req.user.id, 
+        req.body.reason
+      );
+      
+      res.json(order);
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
   }
-};
+}
+
+module.exports = OrderController;

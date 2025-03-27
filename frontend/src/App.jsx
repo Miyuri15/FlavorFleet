@@ -8,8 +8,7 @@ import { ThemeProvider } from './ThemeContext';
 import UserDashboard from './components/OrderComponent/UserDashboard';
 import CartPage from './components/OrderComponent/CartPage';
 import OrderPage from './pages/Order/OrderPage';
-import PaymentPage from './components/OrderComponent/PaymentPage';
-import FindDeliveryPerson from './components/OrderComponent/FindDeliveryPerson';
+import PlaceOrderPage from './components/OrderComponent/PlaceOrderPage';
 
 function App() {
   return (
@@ -24,8 +23,7 @@ function App() {
           <Route path="/userdashboard" element={<UserDashboard />} />
           <Route path="/order" element={<OrderPage />} />
           <Route path="/cart" element={<CartPage />} />
-          <Route path="/payment" element={<PaymentPage />} />
-          <Route path="/FindDeliveryPerson" element={<FindDeliveryPerson />} />
+          <Route path="/placeorder" element={<PlaceOrderPage />} />
         </Routes>
       </div>
     </Router>

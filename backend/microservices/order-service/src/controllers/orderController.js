@@ -1,37 +1,69 @@
+const Order = require('../models/orderModel');
 const OrderService = require('../services/orderService');
+const mongoose = require('mongoose');
+const catchAsync = require('../utils/catchAsync');
 
 const OrderController = {
   async createOrder(req, res) {
     try {
-      const orderData = {
-        ...req.body,
-        userId: req.user.id
-      };
-
-      const order = await OrderService.createOrder(orderData);
-      res.status(201).json(order);
+      const { restaurantId, items, totalAmount, deliveryAddress, paymentMethod } = req.body;
+      const userId = req.user.id; // Get from auth token
+  
+      const newOrder = new Order({
+        userId,
+        restaurantId,
+        items,
+        totalAmount,
+        deliveryAddress,
+        paymentMethod,
+        status: "Pending"
+      });
+  
+      await newOrder.save();
+      res.status(201).json(newOrder);
     } catch (error) {
-      res.status(400).json({ error: error.message });
+      console.error('Order creation error:', error); 
+      res.status(500).json({ message: error.message });
     }
   },
 
   async getOrder(req, res) {
     try {
-      const order = await OrderService.getOrderById(req.params.id);
+      // Force JSON response
+      res.setHeader('Content-Type', 'application/json');
+      
+      // Validate order ID
+      if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+        return res.status(400).json({ 
+          error: 'Invalid order ID format',
+          receivedId: req.params.id
+        });
+      }
+  
+      const order = await Order.findById(req.params.id)
+        .populate('userId', 'name email')
+        .populate('restaurantId', 'name address')
+        .lean();
+  
       if (!order) {
         return res.status(404).json({ error: 'Order not found' });
       }
-      
-      // Verify user has access to this order
+  
+      // Authorization check
+      const currentUserId = req.user.id.toString();
       if (req.user.role !== 'admin' && 
-          req.user.id !== order.userId.toString() && 
-          req.user.id !== order.deliveryAgentId?.toString()) {
+          currentUserId !== order.userId._id.toString() && // Correctly access _id of the populated user
+          currentUserId !== order.deliveryAgentId?.toString()) {
         return res.status(403).json({ error: 'Unauthorized access' });
-      }
-
-      res.json(order);
+      }  
+      return res.json(order);
+      
     } catch (error) {
-      res.status(400).json({ error: error.message });
+      console.error('Order fetch error:', error);
+      return res.status(500).json({ 
+        error: 'Server error',
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      });
     }
   },
 
@@ -101,7 +133,50 @@ const OrderController = {
     } catch (error) {
       res.status(400).json({ error: error.message });
     }
-  }
-}
+  },
+  trackOrder: catchAsync(async (req, res, next) => {
+    const order = await OrderService.getOrderForTracking(req.params.id);
+    res.status(200).json({
+      status: 'success',
+      data: { order }
+    });
+  }),
+
+  getOrderUpdates: catchAsync(async (req, res, next) => {
+    res.set({
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      'Connection': 'keep-alive'
+    });
+
+    const sendUpdate = async () => {
+      try {
+        const order = await OrderService.getOrderForTracking(req.params.id);
+        res.write(`data: ${JSON.stringify({
+          status: 'success',
+          data: {
+            currentStatus: order.currentStatus,
+            estimatedDelivery: order.estimatedDelivery
+          }
+        })}\n\n`);
+      } catch (err) {
+        res.write(`event: error\ndata: ${JSON.stringify({
+          status: 'error',
+          message: err.message
+        })}\n\n`);
+        res.end();
+      }
+    };
+
+    await sendUpdate();
+    const interval = setInterval(sendUpdate, 15000);
+    req.on('close', () => {
+      clearInterval(interval);
+      res.end();
+    });
+  })
+};
+
 
 module.exports = OrderController;
+

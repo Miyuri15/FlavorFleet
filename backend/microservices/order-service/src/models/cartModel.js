@@ -6,15 +6,21 @@ const cartItemSchema = new mongoose.Schema({
     ref: 'User',
     required: true
   },
-  foodId: {
+  menuItemId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Food',
+    ref: 'MenuItem',
     required: true
   },
-  foodName: {
+  menuItemName: {
     type: String,
     required: true
   },
+  restaurantId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Restaurant',
+    required: true
+  },
+
   restaurantName: {
     type: String,
     required: true

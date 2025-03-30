@@ -25,7 +25,7 @@ const cartRoutes = require('./routes/cartRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 
 app.use('/api/cart', cartRoutes);
-app.use('/api/order', orderRoutes);
+app.use('/api/orders', orderRoutes);
 
 // Test Route
 app.get('/', (req, res) => {

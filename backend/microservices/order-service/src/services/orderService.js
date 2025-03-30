@@ -1,7 +1,11 @@
 const Order = require('../models/orderModel');
-const User = require('../models/User');
-// const Restaurant = require('../../../restaurant-service/src/models/Restaurant');
 const notificationService = require('../utils/notificationService');
+const mongoose = require('mongoose');
+const Restaurant = require('../models/Restaurant');
+const MenuItem = require('../models/MenuItem');
+const { getOrderStatus } = require('../controllers/orderController');
+const AppError = require('../utils/appError');
+
 
 const OrderService = {
   // Create a new order
@@ -23,6 +27,10 @@ const OrderService = {
   // Get order by ID
   async getOrderById(orderId) {
     try {
+      if (!mongoose.Types.ObjectId.isValid(orderId)) {
+        throw new Error('Invalid order ID format');
+      }
+  
       return await Order.findById(orderId)
         .populate('userId', 'name email phone')
         .populate('restaurantId', 'name address phone')
@@ -262,7 +270,68 @@ const OrderService = {
       console.error('Error cancelling order:', error);
       throw new Error(`Failed to cancel order: ${error.message}`);
     }
+  },
+  //tracking related services
+
+async getOrderForTracking(orderId) {
+    // Validate order ID format
+    if (!orderId || !/^[0-9a-fA-F]{24}$/.test(orderId)) {
+      throw new AppError('Invalid order ID format', 400);
+    }
+
+    const order = await Order.findById(orderId)
+      .populate('restaurantId', 'name address phone')
+      .populate('deliveryAgentId', 'name phone vehicleType')
+      .lean();
+
+    if (!order) {
+      throw new AppError('Order not found', 404);
+    }
+
+    // Calculate estimated delivery if not set
+    if (!order.estimatedDelivery) {
+      order.estimatedDelivery = this.calculateEstimatedDelivery(order.createdAt, order.status);
+    }
+
+    // Format response data
+    return {
+      ...order,
+      currentStatus: order.status,
+      statusHistory: this.generateStatusHistory(order)
+    };
+  },
+
+  calculateEstimatedDelivery(createdAt, status) {
+    const deliveryTime = new Date(createdAt);
+    
+    switch(status) {
+      case 'Confirmed':
+        deliveryTime.setMinutes(deliveryTime.getMinutes() + 60);
+        break;
+      case 'Preparing':
+        deliveryTime.setMinutes(deliveryTime.getMinutes() + 45);
+        break;
+      case 'Out for Delivery':
+        deliveryTime.setMinutes(deliveryTime.getMinutes() + 30);
+        break;
+      default:
+        deliveryTime.setMinutes(deliveryTime.getMinutes() + 60);
+    }
+    return deliveryTime;
+  },
+
+  generateStatusHistory(order) {
+    const statusFlow = ['Pending', 'Confirmed', 'Preparing', 'Out for Delivery', 'Delivered'];
+    const currentIndex = statusFlow.indexOf(order.status);
+    
+    return statusFlow.map((status, index) => ({
+      status,
+      completed: index < currentIndex,
+      current: index === currentIndex,
+      timestamp: index === 0 ? order.createdAt : 
+                index <= currentIndex ? order.updatedAt : null
+    }));
   }
-};
+  };
 
 module.exports = OrderService;

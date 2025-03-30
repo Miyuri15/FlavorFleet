@@ -53,7 +53,7 @@ const MenuBar = () => {
         />
         {!isAdmin && !isDelivery && (
           <MenuItem
-            to="/orders"
+            to="/myorders"
             icon={<FiClipboard />}
             text="My Orders"
             isActive={isActive("/orders")}

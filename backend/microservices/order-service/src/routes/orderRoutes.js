@@ -1,8 +1,10 @@
 const express = require('express');
 const OrderController = require('../controllers/orderController');
 const authMiddleware = require('../middleware/authMiddleware');
+const Order = require('../models/orderModel');
 const router = express.Router();
-
+router.get('/:id/track', OrderController.trackOrder);
+router.get('/:id/updates', OrderController.getOrderUpdates);
 // Apply authMiddleware to all routes
 router.use(authMiddleware);
 
@@ -26,5 +28,6 @@ router.patch('/:id/status', OrderController.updateOrderStatus);
 
 // Cancel order
 router.post('/:id/cancel', OrderController.cancelOrder);
+
 
 module.exports = router;

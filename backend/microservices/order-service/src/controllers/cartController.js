@@ -1,3 +1,4 @@
+
 const CartItem = require("../models/cartModel");
 const cartService = require("../services/cartService");
 
@@ -5,7 +6,7 @@ const cartController = {
   async getCart(req, res) {
     try {
       const userId = req.user.id;
-      const token = req.headers.authorization.split(' ')[1]; // Extract token
+      const token = req.headers.authorization?.split(' ')[1]; // Optional chaining
       const cartItems = await cartService.getCartItems(userId, token);
       res.json(cartItems);
     } catch (error) {
@@ -16,7 +17,7 @@ const cartController = {
   async addToCart(req, res) {
     try {
       const userId = req.user.id;
-      const token = req.headers.authorization.split(' ')[1]; // Extract token
+      const token = req.headers.authorization?.split(' ')[1]; // Optional chaining
       const cartItem = await cartService.addToCart(userId, req.body, token);
       res.status(201).json(cartItem);
     } catch (error) {
@@ -56,19 +57,16 @@ const cartController = {
     }
   },
   
-// Get cart item count for a user
-async getCartItemCount(req, res) {  try {
-    const userId = req.user._id;
-    
-    const cartItems = await CartItem.find({ user: userId });
-    const count = cartItems.reduce((total, item) => total + item.quantity, 0);
-    
-    res.json({ count });
-  } catch (error) {
-    console.error('Error getting cart count:', error);
-    res.status(500).json({ message: 'Server error' });
+  async getCartItemCount(req, res) {
+    try {
+      const userId = req.user.id;
+      const count = await cartService.getCartItemCount(userId);
+      res.json({ count });
+    } catch (error) {
+      console.error('Error getting cart count:', error);
+      res.status(500).json({ message: 'Server error' });
+    }
   }
-}
 };
 
 module.exports = cartController;

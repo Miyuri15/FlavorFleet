@@ -136,10 +136,27 @@ const getAllMenuItems = async (req, res) => {
   }
 };
 
+//fetch a single menuitem by its id
+const getMenuItemById = async (req, res) => {
+  try {
+    const { menuItemId } = req.params;
+    const menuItem = await MenuItem.findById(menuItemId);
+
+    if (!menuItem) {
+      return res.status(404).json({ message: "Menu item not found" });
+    }
+
+    res.status(200).json(menuItem);
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
 module.exports = {
   addMenuItem,
   getMenuItemsByRestaurant,
   updateMenuItem,
   deleteMenuItem,
   getAllMenuItems,
+  getMenuItemById,
 };

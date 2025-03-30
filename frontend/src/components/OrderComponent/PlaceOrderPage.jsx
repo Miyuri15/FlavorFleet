@@ -2,8 +2,9 @@ import Layout from "../Layout";
 import DeliveryDetailsForm from "./DeliveryDetailsForm";
 import OrderSummary from "./OrderSummary";
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import axios from 'axios';
+import { useLocation, useNavigate } from "react-router-dom";
+import axios from "axios";
+import Swal from "sweetalert2";
 
 export default function PlaceOrderPage() {
   const [paymentMethod, setPaymentMethod] = useState(null);
@@ -11,78 +12,116 @@ export default function PlaceOrderPage() {
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const location = useLocation();
 
-  // Configure axios (same as in CartPage)
+  // In your axios instance setup
   const api = axios.create({
-    baseURL: 'http://localhost:5000/api',
-    withCredentials: true,
+    baseURL: "http://localhost:5000",
     headers: {
-      'Authorization': `Bearer ${localStorage.getItem('token')}`
-    }
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
   });
 
   // Fetch actual cart items
   useEffect(() => {
-    const fetchCart = async () => {
-      try {
-        const { data } = await api.get('/cart');
-        const items = Array.isArray(data) ? data : (data.items || []);
-        setCartItems(items);
-      } catch (error) {
-        console.error('Error fetching cart:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchCart();
-  }, []);
+    if (location.state?.checkedItems) {
+      // Use the checked items passed from CartPage
+      setCartItems(location.state.checkedItems);
+      setLoading(false);
+    } else {
+      // Fallback to fetching all cart items (for direct navigation to this page)
+      const fetchCart = async () => {
+        try {
+          const { data } = await api.get("/api/cart");
+          const items = Array.isArray(data) ? data : data.items || [];
+          setCartItems(items);
+        } catch (error) {
+          console.error("Error fetching cart:", error);
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchCart();
+    }
+  }, [location.state]);
 
   const calculateTotals = () => {
-    const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    const shipping = subtotal > 1000 ? 0 : 200; // Example shipping calculation
-    const tax = subtotal * 0.15; // 15% tax
+    const subtotal =
+      cartItems?.reduce((sum, item) => sum + item.price * item.quantity, 0) ||
+      0;
+    const shipping = subtotal > 1000 ? 0 : 200;
+    const tax = subtotal * 0.15;
     const total = subtotal + shipping + tax;
-    
+
     return {
       subtotal: subtotal.toFixed(2),
       shipping: shipping.toFixed(2),
       tax: tax.toFixed(2),
-      total: total.toFixed(2)
+      total: total.toFixed(2),
     };
   };
 
   const handlePlaceOrder = async () => {
     try {
+      if (!cartItems || cartItems.length === 0) {
+        Swal.fire({
+          icon: "warning",
+          title: "Empty Cart",
+          text: "Your cart is empty. Please add items before proceeding.",
+        });
+        return;
+      }
+
       const totals = calculateTotals();
-      
       const orderData = {
-        user: localStorage.getItem('userId'), // Get from your auth system
-        deliveryDetails,
-        paymentMethod,
-        items: cartItems.map(item => ({
-          foodId: item._id,
-          foodName: item.foodName,
+        restaurantId: cartItems[0].restaurantId, // Get from cart items
+        items: cartItems.map((item) => ({
+          itemId: item.menuItemId || item._id,
+          name: item.menuItemName,
           quantity: item.quantity,
           price: item.price,
-          restaurant: item.restaurantId
+          specialInstructions: item.specialInstructions || "",
         })),
-        subtotal: totals.subtotal,
-        shipping: totals.shipping,
-        tax: totals.tax,
-        total: totals.total,
-        status: paymentMethod === 'cash' ? 'pending' : 'processing'
+        totalAmount: parseFloat(totals.total),
+        deliveryAddress: deliveryDetails?.address,
+        paymentMethod:
+          paymentMethod === "cash" ? "Cash on Delivery" : "Online Payment",
       };
 
-      const response = await api.post('/orders', orderData);
+      const response = await api.post("/api/orders", orderData);
+      // Verify the response structure
+      if (!response.data?._id) {
+        throw new Error("Invalid order data received from server");
+      }
 
-      if (paymentMethod === 'card') {
-        navigate('/paymentPortal', { state: { orderId: response.data._id } });
+      // Immediately after order creation
+      localStorage.setItem("currentOrder", response.data._id);
+
+      if (paymentMethod === "card") {
+        navigate("/paymentPortal", { state: { orderId: response.data._id } });
       } else {
-        navigate(`/order-confirmation/${response.data._id}`);
+        // Show success SweetAlert for cash on delivery
+        await Swal.fire({
+          icon: "success",
+          title: "Order Placed Successfully!",
+          text: "Your order has been confirmed and will be delivered soon.",
+          confirmButtonText: "View My Orders",
+          timer: 3000,
+          timerProgressBar: true,
+          willClose: () => {
+            navigate("/myorders");
+          },
+        });
+        // Redirect after alert is closed
+        navigate("/myorders");
       }
     } catch (error) {
-      console.error('Error placing order:', error);
-      alert('Failed to place order. Please try again.');
+      console.error("Error placing order:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Order Failed",
+        text: "Failed to place order. Please try again.",
+      });
     }
   };
 
@@ -99,17 +138,19 @@ export default function PlaceOrderPage() {
   return (
     <Layout>
       <div className="max-w-6xl mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-8">Complete Your Order</h1>
-        
+        <h1 className="text-3xl font-bold text-gray-800 mb-8">
+          Complete Your Order
+        </h1>
+
         <div className="grid md:grid-cols-2 gap-8">
-          <DeliveryDetailsForm 
-            onDetailsSubmit={setDeliveryDetails} 
+          <DeliveryDetailsForm
+            onDetailsSubmit={setDeliveryDetails}
             paymentMethod={paymentMethod}
             onPaymentMethodSelect={setPaymentMethod}
           />
-          
-          <OrderSummary 
-            items={cartItems} 
+
+          <OrderSummary
+            items={cartItems}
             paymentMethod={paymentMethod}
             deliveryDetails={deliveryDetails}
             onPlaceOrder={handlePlaceOrder}

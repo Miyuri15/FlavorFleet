@@ -9,6 +9,10 @@ import UserDashboard from './components/OrderComponent/UserDashboard';
 import CartPage from './components/OrderComponent/CartPage';
 import OrderPage from './pages/Order/OrderPage';
 import PlaceOrderPage from './components/OrderComponent/PlaceOrderPage';
+import OrderConfirmationPage from './components/OrderComponent/OrderConfirmationPage';
+import MyOrders from './components/OrderComponent/MyOrders';
+import OrderDetails from './components/OrderComponent/[id]/OrderDetails';
+import TrackOrder from './components/OrderComponent/[id]/TrackOrder';
 
 function App() {
   return (
@@ -24,6 +28,10 @@ function App() {
           <Route path="/order" element={<OrderPage />} />
           <Route path="/cart" element={<CartPage />} />
           <Route path="/placeorder" element={<PlaceOrderPage />} />
+          <Route path="/order-confirmation/:orderId" element={<OrderConfirmationPage />} />
+          <Route path = "/myorders" element={<MyOrders/>}/>
+          <Route path = "/orders/:id" element ={<OrderDetails/>} />
+          <Route path ="/track-order/:id" element = {<TrackOrder/>}/>
         </Routes>
       </div>
     </Router>

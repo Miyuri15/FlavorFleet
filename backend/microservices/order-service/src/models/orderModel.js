@@ -8,11 +8,11 @@ const orderSchema = new mongoose.Schema({
       itemId: { type: mongoose.Schema.Types.ObjectId, ref: 'MenuItem', required: true },
       name: { type: String, required: true },
       quantity: { type: Number, required: true },
-      price: { type: Number, required: true },
+      price: { type: Number, required: true, min: 0 },
       specialInstructions: { type: String }
     },
   ],
-  totalAmount: { type: Number, required: true },
+  totalAmount: { type: Number, required: true, min: 0 },
   status: { 
     type: String, 
     enum: ['Pending', 'Confirmed', 'Preparing', 'Prepared', 'Out for Delivery', 'Delivered', 'Cancelled'], 

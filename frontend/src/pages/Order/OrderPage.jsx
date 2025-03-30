@@ -174,7 +174,7 @@ const OrderPage = () => {
       });
       return;
     }
-
+  
     const { value: quantity } = await Swal.fire({
       title: "Enter Quantity",
       input: "number",
@@ -191,22 +191,21 @@ const OrderPage = () => {
         if (!value || value < 1) return "Please enter a valid quantity!";
       },
     });
-
+  
     if (!quantity) return;
-
+  
     try {
       await axios.post(
         "http://localhost:5000/api/cart",
         {
-          foodId: item._id,
-          foodName: item.name,
+          menuItemId: item._id,          // Changed from foodId
+          menuItemName: item.name,       // Changed from foodName
+          restaurantId: item.restaurant?._id, // New required field
           restaurantName: item.restaurant?.name,
-          location:
-            item.restaurant?.address?.street || "Location not specified",
+          location: item.restaurant?.address?.street || "Location not specified",
           price: item.price,
           quantity: parseInt(quantity, 10),
           image: item.imageUrl,
-          authToken: token,
         },
         {
           headers: {
@@ -214,14 +213,14 @@ const OrderPage = () => {
           },
         }
       );
-
+  
       await fetchCartItemCount(); // Refresh cart count after adding
-
+  
       Swal.fire({
         title: "Added to Cart!",
         text: `${quantity} ${item.name}(s) added to your cart.`,
         icon: "success",
-        timer: 1500,
+        timer: 3500,
         showConfirmButton: false,
       });
     } catch (error) {
@@ -230,12 +229,12 @@ const OrderPage = () => {
         title: "Error!",
         text: error.response?.data?.message || "Failed to add to cart",
         icon: "error",
-        timer: 1500,
+        timer: 3500,
         showConfirmButton: false,
       });
     }
   };
-
+  
   if (loading) {
     return (
       <Layout>

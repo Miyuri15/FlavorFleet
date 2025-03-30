@@ -38,9 +38,14 @@ export default function DeliveryDetailsForm({ onDetailsSubmit, onPaymentMethodSe
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onDetailsSubmit(formData);
+    if (!formData.address || !formData.city) {
+      alert('Please fill complete address details');
+      return;
+    }
+    const fullAddress = `${formData.address}, ${formData.city}, ${formData.postalCode}`;
+    onDetailsSubmit({ ...formData, address: fullAddress });
   };
-
+  
   return (
     <div className="bg-white p-6 rounded-lg shadow-md">
       <h2 className="text-xl font-semibold mb-4">Delivery Information</h2>

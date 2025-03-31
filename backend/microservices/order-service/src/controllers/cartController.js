@@ -47,6 +47,53 @@ const cartController = {
     }
   },
 
+async clearCart(req, res) {
+  try {
+    if (!req.user || !req.user.id) {
+      return res.status(400).json({ message: 'User not authenticated' });
+    }
+
+    const userId = req.user.id;
+    console.log("Clearing cart for user:", userId); // Debugging log
+
+    const result = await CartItem.deleteMany({ userId });
+    console.log("Deleted items count:", result.deletedCount); // Debugging log
+
+    res.json({ message: 'Cart cleared successfully' });
+  } catch (error) {
+    console.error("Error clearing cart:", error);
+    res.status(500).json({ message: error.message });
+  }
+},
+
+async removeCheckedItems(req, res) {
+  try {
+    const userId = req.user.id;
+    const { itemIds } = req.body;
+
+    console.log("Received User ID:", userId);
+    console.log("Received Item IDs for deletion:", itemIds); // Debugging log
+
+    if (!itemIds || !Array.isArray(itemIds) || itemIds.length === 0) {
+      return res.status(400).json({ message: "No items provided for deletion" });
+    }
+
+    const result = await CartItem.deleteMany({ userId, _id: { $in: itemIds } });
+
+    console.log("Delete result:", result); // Debugging log
+
+    if (result.deletedCount > 0) {
+      res.json({ message: "Checked items cleared from cart" });
+    } else {
+      res.status(404).json({ message: "No matching items found in cart" });
+    }
+  } catch (error) {
+    console.error("Error removing checked items:", error);
+    res.status(500).json({ message: "Failed to remove checked items" });
+  }
+},
+
+
   async placeOrder(req, res) {
     try {
       const userId = req.user.id;

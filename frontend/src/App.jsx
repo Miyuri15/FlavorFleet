@@ -13,6 +13,7 @@ import OrderConfirmationPage from './components/OrderComponent/OrderConfirmation
 import MyOrders from './components/OrderComponent/MyOrders';
 import OrderDetails from './components/OrderComponent/[id]/OrderDetails';
 import TrackOrder from './components/OrderComponent/[id]/TrackOrder';
+import IncomingOrders from './components/OrderComponent/IncomingOrders';
 
 function App() {
   return (
@@ -32,6 +33,8 @@ function App() {
           <Route path = "/myorders" element={<MyOrders/>}/>
           <Route path = "/orders/:id" element ={<OrderDetails/>} />
           <Route path ="/track-order/:id" element = {<TrackOrder/>}/>
+          <Route path ="/incoming-orders" element = {<IncomingOrders/>}/>
+
         </Routes>
       </div>
     </Router>

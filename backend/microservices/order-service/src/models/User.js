@@ -14,7 +14,8 @@ const UserSchema = new mongoose.Schema(
       default: "user",
     },
     username: { type: String, unique: true }, // Automatically generated
-    preferredRoute: { type: String }, // For delivery personnel
+    preferredRoute: { type: String ,set: routes => routes.map(route => route.trim().toLowerCase()) },
+    preferredRoutes: [String],
     isRestricted: { type: Boolean, default: false }, // To restrict users
     restaurants: [
       {
@@ -25,5 +26,9 @@ const UserSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+UserSchema.index({
+  preferredRoutes: 1
+});
 
 module.exports = mongoose.model("User", UserSchema);

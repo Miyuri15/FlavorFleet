@@ -29,5 +29,13 @@ router.patch('/:id/status', OrderController.updateOrderStatus);
 // Cancel order
 router.post('/:id/cancel', OrderController.cancelOrder);
 
+//incoming orders of delivery person
+router.get('/delivery/incoming', authMiddleware, OrderController.getDeliveryIncoming);
+//adding for estimated time
+router.patch('/:id/status', authMiddleware, OrderController.updateOrderStatus);
+
+//count orders
+router.get('/user/orders/count', OrderController.getUserOrdersCount);
+
 
 module.exports = router;

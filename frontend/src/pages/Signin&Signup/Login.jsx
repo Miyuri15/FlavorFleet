@@ -62,7 +62,7 @@ function Login() {
         if (decodedToken.role === "admin") {
           navigate("/admindashboard");
         } else if (decodedToken.role === "delivery") {
-          navigate("/deliverydashboard");
+          navigate("/incoming-orders");
         }else {
           navigate("/userdashboard");
         }

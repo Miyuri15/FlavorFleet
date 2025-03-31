@@ -9,6 +9,7 @@ import { FiCheckCircle } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Layout from "../Layout";
+import Swal from "sweetalert2";
 
 const CartPage = () => {
   const navigate = useNavigate();
@@ -99,15 +100,32 @@ const CartPage = () => {
 
   // Clear entire cart
   const clearCart = async () => {
-    try {
-      await api.delete("/cart/clear");
-      setCart([]);
-      setSelectAll(false);
-    } catch (error) {
-      console.error("Error clearing cart:", error);
+    const result = await Swal.fire({
+      title: 'Clear Cart?',
+      text: 'Are you sure you want to remove all items from your cart?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, clear it!',
+    });
+  
+    if (result.isConfirmed) {
+      try {
+        const response = await api.delete("/cart/clear");
+        console.log("Cart clear response:", response.data); // Debugging log
+  
+        setCart([]); // Ensure state updates after successful delete
+        setSelectAll(false);
+  
+        Swal.fire('Cleared!', 'Your cart has been cleared.', 'success');
+      } catch (error) {
+        console.error("Error clearing cart:", error); // Debugging log
+        Swal.fire('Error!', 'Failed to clear cart.', 'error');
+      }
     }
   };
-
+    
   // Apply coupon
   const applyCoupon = () => {
     if (couponCode === "DISCOUNT10") {

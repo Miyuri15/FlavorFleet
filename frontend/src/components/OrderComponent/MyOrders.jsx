@@ -2,7 +2,17 @@ import Layout from "../Layout";
 import { useEffect, useState } from "react";
 import axios from 'axios';
 import { useNavigate } from "react-router-dom";
-import { FaClock, FaCheckCircle, FaTruck, FaBoxOpen, FaTimesCircle, FaHistory } from 'react-icons/fa';
+import { 
+  FaClock, 
+  FaCheckCircle, 
+  FaTruck, 
+  FaBoxOpen, 
+  FaTimesCircle, 
+  FaHistory, 
+  FaMoneyBillWave, 
+  FaCreditCard,
+  FaReceipt
+} from 'react-icons/fa';
 import { FiExternalLink } from 'react-icons/fi';
 
 export default function MyOrders() {
@@ -68,6 +78,32 @@ export default function MyOrders() {
         return 'bg-green-100 text-green-800';
       case 'Cancelled':
         return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getPaymentMethodIcon = (method) => {
+    switch (method) {
+      case 'Cash on Delivery':
+        return <FaMoneyBillWave className="text-green-600" />;
+      case 'Online Payment':
+        return <FaCreditCard className="text-blue-600" />;
+      default:
+        return <FaReceipt className="text-gray-500" />;
+    }
+  };
+
+  const getPaymentStatusColor = (status) => {
+    switch (status) {
+      case 'Completed':
+        return 'bg-green-100 text-green-800';
+      case 'Pending':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'Failed':
+        return 'bg-red-100 text-red-800';
+      case 'Refunded':
+        return 'bg-purple-100 text-purple-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
@@ -184,6 +220,22 @@ export default function MyOrders() {
                         </button>
                       </div>
                     </div>
+
+                    {/* Payment Information Section */}
+                    <div className="mt-3 flex flex-wrap items-center gap-4">
+                      <div className="flex items-center">
+                        <span className="mr-2">{getPaymentMethodIcon(order.paymentMethod)}</span>
+                        <span className="text-sm font-medium text-gray-700">
+                          {order.paymentMethod}
+                        </span>
+                      </div>
+                      <div className="flex items-center">
+                        <span className={`px-2.5 py-1 text-xs font-medium rounded-full ${getPaymentStatusColor(order.paymentStatus)}`}>
+                          Payment: {order.paymentStatus}
+                        </span>
+                      </div>
+                    </div>
+
                     <div className="mt-4">
                       <div className="flex overflow-x-auto">
                         {order.items.map((item, index) => (

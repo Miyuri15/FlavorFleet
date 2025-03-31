@@ -106,6 +106,10 @@ const cartService = {
   async removeCartItem(userId, itemId) {
     return await CartItem.findOneAndDelete({ _id: itemId, userId });
   },
+  
+  async clearCart(userId) {
+    return await CartItem.deleteMany({ userId });
+  },
 
   async removeCheckedItems(userId) {
     return await CartItem.deleteMany({ userId, checked: true });

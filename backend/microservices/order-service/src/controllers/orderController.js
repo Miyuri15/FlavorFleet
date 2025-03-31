@@ -93,9 +93,9 @@ const OrderController = {
 
   async getDeliveryAgentOrders(req, res) {
     try {
-      if (req.user.role !== 'delivery') {
-        return res.status(403).json({ error: 'Unauthorized access' });
-      }
+      // if (req.user.role !== 'delivery') {
+      //   return res.status(403).json({ error: 'Unauthorized access' });
+      // }
 
       const orders = await OrderService.getOrdersByDeliveryAgent(req.user.id);
       res.json(orders);
@@ -112,7 +112,7 @@ const OrderController = {
         status, 
         req.user.id, 
         req.user.role,
-        notes
+        notes,
       );
       
       res.json(order);
@@ -174,7 +174,56 @@ const OrderController = {
       clearInterval(interval);
       res.end();
     });
-  })
+  }),
+
+  async getDeliveryIncoming(req, res) {
+    try {
+      if (!req.user?.id) {
+        return res.status(401).json({ error: 'Authentication required' });
+      }
+  
+      const orders = await OrderService.getDeliveryIncomingOrders(req.user.id);
+      
+      return res.status(orders.length ? 200 : 204).json(orders);
+  
+    } catch (error) {
+      console.error('Controller error:', error);
+      const statusCode = error.message.includes('not found') ? 404 : 500;
+      return res.status(statusCode).json({ 
+        error: error.message || 'Internal server error' 
+      });
+    }
+  },
+
+    getUserOrdersCount: catchAsync(async (req, res) => {
+      try {
+        if (!req.user?.id) {
+          return res.status(400).json({
+            status: 'error',
+            message: 'User ID is required'
+          });
+        }
+  
+        const counts = await OrderService.getUserOrdersCount(req.user.id);
+        
+        res.status(200).json({
+          status: 'success',
+          data: {
+            total: counts.total,
+            delivered: counts.delivered,
+            canceled: counts.canceled,
+            pending: counts.pending
+          }
+        });
+      } catch (error) {
+        console.error('Error in OrderController.getUserOrdersCount:', error);
+        res.status(500).json({
+          status: 'error',
+          message: error.message || 'Failed to get order counts'
+        });
+      }
+    })
+
 };
 
 

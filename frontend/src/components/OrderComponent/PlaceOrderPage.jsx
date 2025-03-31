@@ -71,10 +71,10 @@ export default function PlaceOrderPage() {
         });
         return;
       }
-
+  
       const totals = calculateTotals();
       const orderData = {
-        restaurantId: cartItems[0].restaurantId, // Get from cart items
+        restaurantId: cartItems[0].restaurantId,
         items: cartItems.map((item) => ({
           itemId: item.menuItemId || item._id,
           name: item.menuItemName,
@@ -87,20 +87,29 @@ export default function PlaceOrderPage() {
         paymentMethod:
           paymentMethod === "cash" ? "Cash on Delivery" : "Online Payment",
       };
-
+  
       const response = await api.post("/api/orders", orderData);
-      // Verify the response structure
       if (!response.data?._id) {
         throw new Error("Invalid order data received from server");
       }
-
-      // Immediately after order creation
+  
+      // **Check what itemIds are being sent**
+      const itemIds = cartItems.map((item) => item._id);
+      console.log("✅ Sending these item IDs to remove:", itemIds);
+  
+      // **Check if API request works**
+      try {
+        const removeResponse = await api.delete("/api/cart/removeChecked", { data: { itemIds } });
+        console.log("🛒 Response from cart removal:", removeResponse.data);
+      } catch (clearError) {
+        console.error("❌ Error clearing checked items from cart:", clearError);
+      }
+  
       localStorage.setItem("currentOrder", response.data._id);
-
+  
       if (paymentMethod === "card") {
         navigate("/paymentPortal", { state: { orderId: response.data._id } });
       } else {
-        // Show success SweetAlert for cash on delivery
         await Swal.fire({
           icon: "success",
           title: "Order Placed Successfully!",
@@ -112,11 +121,10 @@ export default function PlaceOrderPage() {
             navigate("/myorders");
           },
         });
-        // Redirect after alert is closed
         navigate("/myorders");
       }
     } catch (error) {
-      console.error("Error placing order:", error);
+      console.error("❌ Error placing order:", error);
       Swal.fire({
         icon: "error",
         title: "Order Failed",
@@ -124,7 +132,7 @@ export default function PlaceOrderPage() {
       });
     }
   };
-
+  
   if (loading) {
     return (
       <Layout>

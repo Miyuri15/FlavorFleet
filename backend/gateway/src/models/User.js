@@ -10,11 +10,11 @@ const UserSchema = new mongoose.Schema(
     password: { type: String, required: true },
     role: {
       type: String,
-      enum: ["admin", "user", "delivery", "restaurant_owner"], // Added "restaurant_owner"
+      enum: ["admin", "user", "delivery", "restaurant_owner"], 
       default: "user",
     },
     username: { type: String, unique: true }, // Automatically generated
-    preferredRoute: { type: String }, // For delivery personnel
+    preferredRoute: { type: String , default: [], set: routes => routes.map(route => route.trim().toLowerCase()) }, 
     isRestricted: { type: Boolean, default: false }, // To restrict users
     restaurants: [
       {

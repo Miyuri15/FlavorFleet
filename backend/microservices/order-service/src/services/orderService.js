@@ -3,8 +3,8 @@ const notificationService = require('../utils/notificationService');
 const mongoose = require('mongoose');
 const Restaurant = require('../models/Restaurant');
 const MenuItem = require('../models/MenuItem');
-const { getOrderStatus } = require('../controllers/orderController');
 const AppError = require('../utils/appError');
+const User = require('../models/User');
 
 
 const OrderService = {
@@ -90,10 +90,9 @@ const OrderService = {
       order.status = newStatus;
       order.updatedAt = new Date();
 
-      if (userRole === 'admin' && newStatus === 'Confirmed') {
+      if ((userRole === 'admin' || userRole === 'delivery') && newStatus === 'Confirmed') {
         order.deliveryAgentId = userId;
       }
-
       if (notes) {
         if (userRole === 'admin') {
           order.adminNotes = notes;
@@ -125,8 +124,9 @@ const OrderService = {
         'Prepared': ['Cancelled']
       },
       delivery: {
-        'Prepared': ['Out for Delivery'],
-        'Out for Delivery': ['Delivered']
+        'Pending': ['Confirmed', 'Cancelled'],
+        'Confirmed': ['Out for Delivery', 'Cancelled'],
+        'Out for Delivery': ['Delivered', 'Cancelled']
       },
       user: {
         'Pending': ['Cancelled']
@@ -273,7 +273,7 @@ const OrderService = {
   },
   //tracking related services
 
-async getOrderForTracking(orderId) {
+  async getOrderForTracking(orderId) {
     // Validate order ID format
     if (!orderId || !/^[0-9a-fA-F]{24}$/.test(orderId)) {
       throw new AppError('Invalid order ID format', 400);
@@ -289,8 +289,15 @@ async getOrderForTracking(orderId) {
     }
 
     // Calculate estimated delivery if not set
-    if (!order.estimatedDelivery) {
-      order.estimatedDelivery = this.calculateEstimatedDelivery(order.createdAt, order.status);
+    if (!order.estimatedDeliveryTime) {
+      const statusTimestamp = order.status === 'Pending' ? 
+        order.createdAt : 
+        order.updatedAt;
+      
+      order.estimatedDeliveryTime = this.calculateEstimatedDelivery(
+        statusTimestamp,
+        order.status
+      );
     }
 
     // Format response data
@@ -301,27 +308,47 @@ async getOrderForTracking(orderId) {
     };
   },
 
-  calculateEstimatedDelivery(createdAt, status) {
-    const deliveryTime = new Date(createdAt);
+  calculateEstimatedDelivery(timestamp, status) {
+    // Define expected durations for each stage (in minutes)
+    const statusDurations = {
+      'Pending': 15,      // Time until confirmation
+      'Confirmed': 15,    // Restaurant confirmation
+      'Preparing': 30,    // Food preparation
+      'Prepared': 15,     // Driver pickup
+      'Out for Delivery': 30 // Actual delivery
+    };
+
+    // Status progression order
+    const statusFlow = ['Pending', 'Confirmed', 'Preparing', 'Prepared', 'Out for Delivery'];
     
-    switch(status) {
-      case 'Confirmed':
-        deliveryTime.setMinutes(deliveryTime.getMinutes() + 60);
-        break;
-      case 'Preparing':
-        deliveryTime.setMinutes(deliveryTime.getMinutes() + 45);
-        break;
-      case 'Out for Delivery':
-        deliveryTime.setMinutes(deliveryTime.getMinutes() + 30);
-        break;
-      default:
-        deliveryTime.setMinutes(deliveryTime.getMinutes() + 60);
+    // Calculate total remaining time
+    let totalMinutes = 0;
+    const currentIndex = statusFlow.indexOf(status);
+    
+    if (currentIndex !== -1) {
+      for (let i = currentIndex; i < statusFlow.length; i++) {
+        totalMinutes += statusDurations[statusFlow[i]] || 0;
+      }
+    } else {
+      // Default fallback
+      totalMinutes = 60;
     }
+
+    // Calculate delivery time
+    const deliveryTime = new Date(timestamp);
+    deliveryTime.setMinutes(deliveryTime.getMinutes() + totalMinutes);
     return deliveryTime;
   },
 
   generateStatusHistory(order) {
-    const statusFlow = ['Pending', 'Confirmed', 'Preparing', 'Out for Delivery', 'Delivered'];
+    const statusFlow = [
+      'Pending', 
+      'Confirmed', 
+      'Preparing', 
+      'Prepared', 
+      'Out for Delivery', 
+      'Delivered'
+    ];
     const currentIndex = statusFlow.indexOf(order.status);
     
     return statusFlow.map((status, index) => ({
@@ -331,7 +358,104 @@ async getOrderForTracking(orderId) {
       timestamp: index === 0 ? order.createdAt : 
                 index <= currentIndex ? order.updatedAt : null
     }));
+  },
+
+  async getDeliveryIncomingOrders(deliveryAgentId) {
+    try {
+      // Validate ID format
+      if (!mongoose.Types.ObjectId.isValid(deliveryAgentId)) {
+        throw new Error('Invalid delivery agent ID');
+      }
+  
+      // Find delivery agent
+      const agent = await User.findById(deliveryAgentId).lean();
+      if (!agent || agent.role !== 'delivery') {
+        throw new Error('Delivery agent not found');
+      }
+  
+      // Get preferred routes (support both singular and plural field names)
+      const routes = agent.preferredRoutes || 
+                   (agent.preferredRoute ? [agent.preferredRoute] : []);
+  
+      // Create search pattern
+      const searchPattern = routes.length > 0
+        ? new RegExp(routes.join('|'), 'i')
+        : /.*/;
+  
+      // Build query
+      const query = {
+        $or: [
+          {
+            status: 'Pending',
+            deliveryAddress: searchPattern,
+            deliveryAgentId: null
+          },
+          {
+            deliveryAgentId: new mongoose.Types.ObjectId(deliveryAgentId),
+            status: { $in: ['Confirmed', 'Out for Delivery'] }
+          }
+        ]
+      };
+  
+      // Execute query
+      return await Order.find(query)
+        .populate('restaurantId', 'name address')
+        .populate('userId', 'name phone')
+        .populate('deliveryAgentId', 'firstName lastName contactNumber')
+        .sort({ createdAt: -1 });
+  
+    } catch (error) {
+      console.error('Error in getDeliveryIncomingOrders:', error);
+      throw new Error(error.message || 'Failed to fetch orders');
+    }
+  },
+
+  getUserOrdersCount: async (userId) => {
+    try {
+      // Fix: Use new mongoose.Types.ObjectId()
+      const counts = await Order.aggregate([
+        { $match: { userId: new mongoose.Types.ObjectId(userId) } },
+        { 
+          $group: {
+            _id: null,
+            total: { $sum: 1 },
+            delivered: { 
+              $sum: { 
+                $cond: [{ $eq: ["$status", "Delivered"] }, 1, 0] 
+              } 
+            },
+            canceled: { 
+              $sum: { 
+                $cond: [{ $eq: ["$status", "Cancelled"] }, 1, 0] 
+              } 
+            },
+            pending: {
+              $sum: {
+                $cond: [
+                  { $in: ["$status", ["Pending", "Confirmed", "Preparing", "Prepared", "Out for Delivery"]] },
+                  1,
+                  0
+                ]
+              }
+            }
+          }
+        }
+      ]);
+
+      return counts.length > 0 ? counts[0] : {
+        total: 0,
+        delivered: 0,
+        canceled: 0,
+        pending: 0
+      };
+    } catch (error) {
+      console.error('Error in orderService.getUserOrdersCount:', error);
+      throw error;
+    }
   }
-  };
+
+};
+
+  
 
 module.exports = OrderService;

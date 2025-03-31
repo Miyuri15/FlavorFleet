@@ -5,14 +5,14 @@ import Layout from '../../Layout';
 import { 
   FaCheckCircle, 
   FaTruck, 
-  FaBoxOpen, 
-  FaMapMarkerAlt,
+  FaBoxOpen,
   FaClock,
   FaTimesCircle,
   FaArrowLeft,
   FaInfoCircle
 } from 'react-icons/fa';
 import { GiCookingPot } from 'react-icons/gi';
+import { motion } from 'framer-motion';
 
 const TrackOrder = () => {
   const { id } = useParams();
@@ -20,22 +20,31 @@ const TrackOrder = () => {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [estimatedTime, setEstimatedTime] = useState(null);
 
   const statusStages = [
+    { status: 'Pending', icon: <FaClock />, label: 'Order Received' },
     { status: 'Confirmed', icon: <FaCheckCircle />, label: 'Order Confirmed' },
     { status: 'Preparing', icon: <GiCookingPot />, label: 'Preparing Your Order' },
+    { status: 'Prepared', icon: <FaBoxOpen />, label: 'Ready for Pickup' },
     { status: 'Out for Delivery', icon: <FaTruck />, label: 'Out for Delivery' },
-    { status: 'Delivered', icon: <FaBoxOpen />, label: 'Delivered' },
+    { status: 'Delivered', icon: <FaCheckCircle />, label: 'Delivered' },
   ];
 
   const api = axios.create({
     baseURL: 'http://localhost:5000',
-    // headers: {
-    //   Authorization: `Bearer ${localStorage.getItem('token')}`
-    // },
     validateStatus: (status) => status < 500
   });
+
+  api.interceptors.request.use(
+    (config) => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+      return config;
+    },
+    (error) => Promise.reject(error)
+  );
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -54,26 +63,15 @@ const TrackOrder = () => {
           return;
         }
 
-        if (response.status === 403) {
-          throw new Error('You are not authorized to track this order');
-        }
-
         if (response.status === 404) {
           throw new Error('Order not found');
         }
 
-        if (!response.data) {
+        if (!response.data?.data?.order) {
           throw new Error('Invalid order data received');
         }
 
-        setOrder(response.data);
-        
-        // Calculate estimated delivery time if not provided
-        if (!response.data.estimatedDelivery) {
-          const deliveryTime = new Date(response.data.createdAt);
-          deliveryTime.setMinutes(deliveryTime.getMinutes() + 45); // Default 45 min estimate
-          setEstimatedTime(deliveryTime);
-        }
+        setOrder(response.data.data.order);
       } catch (err) {
         setError(err.response?.data?.message || err.message);
       } finally {
@@ -86,11 +84,11 @@ const TrackOrder = () => {
 
   const getCurrentStatusIndex = () => {
     if (!order) return -1;
-    return statusStages.findIndex(stage => stage.status === order.status);
+    return statusStages.findIndex(stage => stage.status === order.currentStatus);
   };
 
   const formatDate = (dateString) => {
-    if (!dateString) return 'Calculating...';
+    if (!dateString || isNaN(new Date(dateString))) return 'Calculating...';
     const date = new Date(dateString);
     return date.toLocaleString('en-US', {
       month: 'short',
@@ -99,23 +97,23 @@ const TrackOrder = () => {
       minute: '2-digit'
     });
   };
-   // Add a safe way to display order ID
-   const displayOrderId = () => {
+
+  const displayOrderId = () => {
     if (!order?._id) return 'Loading...';
-    try {
-      return order._id.substring(18).toUpperCase();
-    } catch (e) {
-      console.error('Error formatting order ID:', e);
-      return order._id || 'N/A';
-    }
+    return order._id.substring(order._id.length - 6).toUpperCase();
   };
 
   if (loading) {
     return (
       <Layout>
         <div className="flex flex-col items-center justify-center min-h-[400px]">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
+          <motion.div 
+            className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"
+            animate={{ rotate: 360 }}
+            transition={{ repeat: Infinity, duration: 1 }}
+          />
           <p className="text-gray-600">Tracking your order...</p>
+          <p className="text-sm text-gray-500 mt-2">Order ID: {id}</p>
         </div>
       </Layout>
     );
@@ -124,7 +122,12 @@ const TrackOrder = () => {
   if (error) {
     return (
       <Layout>
-        <div className="max-w-2xl mx-auto px-4 py-8">
+        <motion.div 
+          className="max-w-2xl mx-auto px-4 py-8"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+        >
           <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg mb-6">
             <div className="flex items-center">
               <FaTimesCircle className="h-5 w-5 text-red-500 mr-3" />
@@ -141,128 +144,85 @@ const TrackOrder = () => {
             <FaArrowLeft className="mr-2" />
             Back to My Orders
           </button>
-        </div>
+        </motion.div>
       </Layout>
     );
   }
 
+  const currentStatusIndex = getCurrentStatusIndex();
+
   return (
     <Layout>
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        {/* Tracking Header */}
-        <div className="mb-8">
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
-           Tracking Order #{displayOrderId()}
-          </h1>
-          <p className="text-gray-600">
-            Last updated: {formatDate(order.updatedAt)}
-          </p>
+      <motion.div 
+        className="max-w-4xl mx-auto px-4 py-8"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+      >
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+          Tracking Order #{displayOrderId()}
+        </h1>
+        <p className="text-gray-600">Last updated: {formatDate(order.updatedAt)}</p>
+
+        {/* Progress Bar */}
+        <motion.div 
+          className="relative mt-6 bg-gray-200 h-2 rounded-full"
+          initial={{ width: "0%" }}
+          animate={{ width: `${(currentStatusIndex / (statusStages.length - 1)) * 100}%` }}
+          transition={{ duration: 1 }}
+          style={{ height: '6px' }}
+        />
+
+        {/* Status Timeline */}
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-2 mt-4">
+          {statusStages.map((stage, index) => (
+            <motion.div 
+              key={stage.status}
+              className={`p-2 rounded-lg text-center ${index <= currentStatusIndex ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-500'}`}
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.4, delay: index * 0.1 }}
+            >
+              <div className="text-2xl">{stage.icon}</div>
+              <h3 className="text-sm">{stage.label}</h3>
+            </motion.div>
+          ))}
         </div>
 
-        {/* Progress Timeline */}
-        <div className="relative mb-8">
-          <div className="hidden md:block absolute top-4 left-1/2 w-full h-1 bg-gray-200 transform -translate-x-1/2"></div>
-          
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {statusStages.map((stage, index) => {
-              const isCompleted = index <= getCurrentStatusIndex();
-              const isCurrent = index === getCurrentStatusIndex();
-
-              return (
-                <div 
-                  key={stage.status}
-                  className={`p-4 rounded-lg ${isCompleted ? 'bg-blue-50' : 'bg-gray-50'} 
-                    ${isCurrent ? 'border-2 border-blue-500' : ''}`}
-                >
-                  <div className="flex flex-col items-center text-center">
-                    <span className={`text-2xl mb-2 ${isCompleted ? 'text-blue-500' : 'text-gray-400'}`}>
-                      {stage.icon}
-                    </span>
-                    <h3 className={`font-medium ${isCompleted ? 'text-blue-800' : 'text-gray-500'}`}>
-                      {stage.label}
-                    </h3>
-                    {isCurrent && (
-                      <p className="text-sm text-blue-600 mt-1">
-                        Current Status
-                      </p>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Delivery Map & Details */}
-        <div className="grid md:grid-cols-2 gap-8 mb-8">
-          <div className="bg-gray-50 rounded-lg p-4 h-64">
-            {/* Map Integration Placeholder */}
-            <div className="flex items-center justify-center h-full text-gray-400">
-              <FaMapMarkerAlt className="text-4xl mr-2" />
-              <span>Delivery Map</span>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <div className="bg-white p-4 rounded-lg shadow-sm">
-              <h3 className="font-medium text-gray-900 mb-2 flex items-center">
-                <FaInfoCircle className="text-blue-500 mr-2" />
-                Delivery Details
-              </h3>
-              <p className="text-sm text-gray-600">
-                {order.deliveryAddress?.street || 'Address not specified'}, {order.deliveryAddress?.city || ''}
-              </p>
-              <p className="text-sm text-gray-600">
-                Estimated delivery: {formatDate(order.estimatedDelivery || estimatedTime)}
-              </p>
-            </div>
-
-            <div className="bg-white p-4 rounded-lg shadow-sm">
-              <h3 className="font-medium text-gray-900 mb-2 flex items-center">
-                <GiCookingPot className="text-orange-500 mr-2" />
-                Restaurant Info
-              </h3>
-              <p className="text-sm text-gray-600">
-                {order.restaurantId?.name || 'Restaurant information not available'}
-              </p>
-              <p className="text-sm text-gray-600">
-                {order.restaurantId?.address || ''}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Order Summary */}
-        <div className="bg-white rounded-lg shadow-sm p-6">
-          <h2 className="text-lg font-medium text-gray-900 mb-4">Order Summary</h2>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-sm text-gray-600">Order Total</p>
-              <p className="font-medium">LKR {order.totalAmount?.toFixed(2) || '0.00'}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">Payment Method</p>
-              <p className="font-medium">{order.paymentMethod || 'Not specified'}</p>
-            </div>
-          </div>
-        </div>
+        {/* Estimated time */}
+        <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+  <div className="flex items-center gap-3">
+    <FaClock className="text-blue-500 text-xl" />
+    <div>
+      <h3 className="font-medium text-gray-900">Estimated Delivery Time</h3>
+      <p className="text-gray-600">
+        {order.status === 'Delivered' 
+          ? `Delivered at ${formatDate(order.updatedAt)}`
+          : formatDate(order.estimatedDeliveryTime)
+        }
+      </p>
+    </div>
+  </div>
+</div>
 
         {/* Action Buttons */}
         <div className="mt-8 flex flex-col sm:flex-row gap-4">
-          <button
+          <motion.button
             onClick={() => navigate(`/orders/${order._id}`)}
-            className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+            className="px-6 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-md hover:scale-105 transition"
+            whileHover={{ scale: 1.05 }}
           >
             View Full Order Details
-          </button>
-          <button
+          </motion.button>
+          <motion.button
             onClick={() => navigate('/myorders')}
-            className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+            className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition"
+            whileHover={{ scale: 1.05 }}
           >
             Back to My Orders
-          </button>
+          </motion.button>
         </div>
-      </div>
+      </motion.div>
     </Layout>
   );
 };

@@ -12,14 +12,32 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-const sendEmail = async (to, subject, text, html) => {
+const sendEmail = async (to, subject, text, html, orderDetails) => {
   try {
+    const emailContent = html || `
+      <div style="font-family: Arial, sans-serif; padding: 20px;">
+        <h2 style="color: #1a365d;">FlavorFleet Order Update</h2>
+        <p>${text}</p>
+        ${orderDetails ? `
+        <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+          <h3 style="margin-bottom: 10px;">Order Details:</h3>
+          <p><strong>Order ID:</strong> ${orderDetails._id}</p>
+          <p><strong>Total Amount:</strong> $${orderDetails.totalAmount}</p>
+          <p><strong>Status:</strong> ${orderDetails.status}</p>
+        </div>
+        ` : ''}
+        <p style="margin-top: 30px; color: #666;">
+          Thank you for choosing FlavorFleet!
+        </p>
+      </div>
+    `;
+
     await transporter.sendMail({
       from: process.env.EMAIL_FROM,
       to,
       subject,
       text,
-      html: html || `<p>${text}</p>`,
+      html: emailContent,
     });
     console.log(`Email sent to ${to}`);
     return true;
@@ -32,8 +50,7 @@ const sendEmail = async (to, subject, text, html) => {
 const NotificationService = {
   async sendNotification(userId, message, type = 'order_update', options = {}) {
     try {
-      // 1. Store in-app notification
-      await Notification.create({
+      const notification = await Notification.create({
         userId,
         message,
         type,
@@ -41,26 +58,32 @@ const NotificationService = {
         isRead: false,
       });
 
-      // 2. Send email if requested
       if (options.sendEmail) {
         const user = await User.findById(userId).select('email');
-        if (user && user.email) {
+        if (user?.email) {
+          const orderDetails = options.relatedEntity?.id ? 
+            await Order.findById(options.relatedEntity.id).select('totalAmount status') : null;
+          
           await sendEmail(
             user.email,
             options.emailSubject || 'FlavorFleet Order Update',
             message,
-            options.emailHtml
+            null,
+            orderDetails
           );
         }
       }
 
       return true;
     } catch (error) {
-      console.error('Notification failed:', error);
+      console.error('Notification failed:', error.message);
+      if (error.name === 'ValidationError') {
+        console.error('Validation errors:', error.errors);
+      }
       return false;
     }
   },
-
+  
   async notifyAdmin(message, options = {}) {
     try {
       const admins = await User.find({ role: 'admin' }).select('_id email');

@@ -20,6 +20,7 @@
     "concurrently": "^8.2.2"
   },
   "dependencies": {
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "jwt-token": "^1.0.9",
     "nodemailer": "^6.10.0"

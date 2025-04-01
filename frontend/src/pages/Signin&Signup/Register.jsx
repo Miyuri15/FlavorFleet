@@ -62,6 +62,7 @@ function Register() {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(dataToSend),
+            credentials: 'include'
           }
         );
 
@@ -239,6 +240,7 @@ function Register() {
                   <option value="">Select Preferred Route</option>
                   {[
                     "Colombo",
+                    "Kelaniya",
                     "Gampaha",
                     "Kalutara",
                     "Kandy",

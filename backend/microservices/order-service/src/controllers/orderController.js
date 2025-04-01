@@ -27,6 +27,7 @@ const OrderController = {
     }
   },
 
+
   async getOrder(req, res) {
     try {
       // Force JSON response

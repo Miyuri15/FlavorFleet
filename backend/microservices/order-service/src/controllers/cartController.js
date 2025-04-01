@@ -24,7 +24,6 @@ const cartController = {
       res.status(400).json({ message: error.message });
     }
   },
-
   async updateCartItem(req, res) {
     try {
       const userId = req.user.id;

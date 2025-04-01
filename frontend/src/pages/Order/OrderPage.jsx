@@ -1,3 +1,4 @@
+//OrderPage.jsx
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
@@ -11,10 +12,8 @@ const OrderPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedCategories, setSelectedCategories] = useState([]);
-  const [selectedRestaurants, setSelectedRestaurants] = useState([]);
   const [cartItemCount, setCartItemCount] = useState(0);
   const [categories, setCategories] = useState([]);
-  const [restaurants, setRestaurants] = useState([]);
   const [showFilters, setShowFilters] = useState(false);
   const [selectedRestaurantId, setSelectedRestaurantId] = useState(null);
   const [restaurantsData, setRestaurantsData] = useState([]);
@@ -40,17 +39,12 @@ const OrderPage = () => {
     }
   };
 
-  // Extract unique categories and restaurants from food items
+  // Extract unique categories from food items
   const extractFilterData = (foodItems) => {
     const uniqueCategories = [
       ...new Set(foodItems.map((item) => item.category)),
     ].filter(Boolean);
-    const uniqueRestaurants = [
-      ...new Set(foodItems.map((item) => item.restaurant?.name)),
-    ].filter(Boolean);
-
     setCategories(uniqueCategories);
-    setRestaurants(uniqueRestaurants);
   };
 
   // Fetch food items and cart count on component mount
@@ -117,24 +111,21 @@ const OrderPage = () => {
     fetchData();
   }, []);
 
-  //  function to handle restaurant selection
+  // Handle restaurant selection
   const handleSelectRestaurant = (restaurantId) => {
     setSelectedRestaurantId(
       restaurantId === selectedRestaurantId ? null : restaurantId
     );
   };
 
-  // Filter food items based on selected categories and restaurants
+  // Filter food items based on selected categories and restaurant
   const filteredFoodItems = foodItems.filter((item) => {
     const categoryMatch =
       selectedCategories.length === 0 ||
       selectedCategories.includes(item.category);
     const restaurantMatch =
-      selectedRestaurants.length === 0 ||
-      selectedRestaurants.includes(item.restaurant?.name);
-    const selectedRestaurantMatch =
       !selectedRestaurantId || item.restaurant?._id === selectedRestaurantId;
-    return categoryMatch && restaurantMatch && selectedRestaurantMatch;
+    return categoryMatch && restaurantMatch;
   });
 
   // Toggle category selection
@@ -146,19 +137,9 @@ const OrderPage = () => {
     );
   };
 
-  // Toggle restaurant selection
-  const toggleRestaurant = (restaurant) => {
-    setSelectedRestaurants((prev) =>
-      prev.includes(restaurant)
-        ? prev.filter((r) => r !== restaurant)
-        : [...prev, restaurant]
-    );
-  };
-
   // Clear all filters
   const clearFilters = () => {
     setSelectedCategories([]);
-    setSelectedRestaurants([]);
   };
 
   // Add item to cart
@@ -175,32 +156,62 @@ const OrderPage = () => {
       return;
     }
   
-    const { value: quantity } = await Swal.fire({
-      title: "Enter Quantity",
-      input: "number",
-      inputLabel: `How many ${item.name}(s) would you like to add?`,
-      inputPlaceholder: "Enter quantity...",
-      inputAttributes: {
-        min: 1,
-        step: 1,
-      },
-      showCancelButton: true,
-      confirmButtonText: "Add to Cart",
-      cancelButtonText: "Cancel",
-      inputValidator: (value) => {
-        if (!value || value < 1) return "Please enter a valid quantity!";
-      },
-    });
-  
-    if (!quantity) return;
-  
     try {
+      // Fetch current cart items
+      const cartResponse = await axios.get("http://localhost:5000/api/cart", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+  
+      const cartItems = cartResponse.data;
+  
+      if (cartItems.length > 0) {
+        const currentRestaurantId = cartItems[0].restaurantId; // Assuming all items are from the same restaurant
+  
+        if (currentRestaurantId !== item.restaurant?._id) {
+          // Clear cart if the restaurant is different
+          await axios.delete("http://localhost:5000/api/cart/clear", {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+  
+          Swal.fire({
+            title: "Cart Cleared",
+            text: "Your cart has been cleared because you selected a new restaurant.",
+            icon: "warning",
+            confirmButtonText: "OK",
+          });
+        }
+      }
+  
+      const { value: quantity } = await Swal.fire({
+        title: "Enter Quantity",
+        input: "number",
+        inputLabel: `How many ${item.name}(s) would you like to add?`,
+        inputPlaceholder: "Enter quantity...",
+        inputAttributes: {
+          min: 1,
+          step: 1,
+        },
+        showCancelButton: true,
+        confirmButtonText: "Add to Cart",
+        cancelButtonText: "Cancel",
+        inputValidator: (value) => {
+          if (!value || value < 1) return "Please enter a valid quantity!";
+        },
+      });
+  
+      if (!quantity) return;
+  
+      // Add the new item to the cart
       await axios.post(
         "http://localhost:5000/api/cart",
         {
-          menuItemId: item._id,          // Changed from foodId
-          menuItemName: item.name,       // Changed from foodName
-          restaurantId: item.restaurant?._id, // New required field
+          menuItemId: item._id,
+          menuItemName: item.name,
+          restaurantId: item.restaurant?._id,
           restaurantName: item.restaurant?.name,
           location: item.restaurant?.address?.street || "Location not specified",
           price: item.price,
@@ -295,8 +306,8 @@ const OrderPage = () => {
               </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Categories Filter */}
+            <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
+              {/* Categories Filter Only */}
               <div>
                 <h3 className="font-medium mb-2">Categories</h3>
                 <div className="flex flex-wrap gap-2">
@@ -315,32 +326,12 @@ const OrderPage = () => {
                   ))}
                 </div>
               </div>
-
-              {/* Restaurants Filter */}
-              <div>
-                <h3 className="font-medium mb-2">Restaurants</h3>
-                <div className="flex flex-wrap gap-2">
-                  {restaurants.map((restaurant) => (
-                    <button
-                      key={restaurant}
-                      onClick={() => toggleRestaurant(restaurant)}
-                      className={`px-3 py-1 rounded-full text-sm ${
-                        selectedRestaurants.includes(restaurant)
-                          ? "bg-blue-600 text-white"
-                          : "bg-gray-200 text-gray-800 hover:bg-gray-300"
-                      }`}
-                    >
-                      {restaurant}
-                    </button>
-                  ))}
-                </div>
-              </div>
             </div>
           </div>
         )}
 
-        {/* Active Filters Indicator */}
-        {(selectedCategories.length > 0 || selectedRestaurants.length > 0) && (
+        {/* Active Filters Indicator (updated) */}
+        {selectedCategories.length > 0 && (
           <div className="mb-4 flex items-center gap-2">
             <span className="text-sm text-gray-600">Active filters:</span>
             {selectedCategories.map((category) => (
@@ -357,24 +348,10 @@ const OrderPage = () => {
                 </button>
               </span>
             ))}
-            {selectedRestaurants.map((restaurant) => (
-              <span
-                key={`res-${restaurant}`}
-                className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full flex items-center"
-              >
-                {restaurant}
-                <button
-                  onClick={() => toggleRestaurant(restaurant)}
-                  className="ml-1 text-blue-600 hover:text-blue-800"
-                >
-                  <FaTimes size={10} />
-                </button>
-              </span>
-            ))}
           </div>
         )}
 
-        {/* Order by Restaurant selecting */}
+        {/* Order by Restaurant Section */}
         <RestaurantList
           restaurants={restaurantsData}
           onSelectRestaurant={handleSelectRestaurant}
@@ -428,17 +405,19 @@ const OrderPage = () => {
                 >
                   {item.isAvailable ? "In Stock" : "Out of Stock"}
                 </p>
-                <button
-                  onClick={() => addToCart(item)}
-                  disabled={!item.isAvailable}
-                  className={`w-full mt-4 px-4 py-2 rounded-lg ${
-                    item.isAvailable
-                      ? "bg-blue-600 text-white hover:bg-blue-700"
-                      : "bg-gray-300 text-gray-700 cursor-not-allowed"
-                  }`}
-                >
-                  {item.isAvailable ? "Add to Cart" : "Out of Stock"}
-                </button>
+                {selectedRestaurantId && (
+                  <button
+                    onClick={() => addToCart(item)}
+                    disabled={!item.isAvailable}
+                    className={`w-full mt-4 px-4 py-2 rounded-lg ${
+                      item.isAvailable
+                        ? "bg-blue-600 text-white hover:bg-blue-700"
+                        : "bg-gray-300 text-gray-700 cursor-not-allowed"
+                    }`}
+                  >
+                    {item.isAvailable ? "Add to Cart" : "Out of Stock"}
+                  </button>
+                )}
               </div>
             ))}
           </div>

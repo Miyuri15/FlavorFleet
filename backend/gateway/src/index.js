@@ -3,6 +3,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 require('dotenv').config();
+const cookieParser = require('cookie-parser');
 const gatewayMiddleware = require('./middleware/gatewayMiddleware');
 
 
@@ -12,15 +13,15 @@ const app = express();
 const PORT = process.env.PORT || 5004;
 
 // Middleware
-app.use(cors());
+app.use(cookieParser());
 
 app.use(cors({
   origin: ['http://localhost:3000','http://localhost:5004','http://localhost:5000'], // Your frontend URL
   credentials: true,
   allowedHeaders: ['Content-Type', 'Authorization'],
-  methods: ['GET', 'POST', 'PUT', 'DELETE']
+  methods: ['GET', 'POST', 'PUT', 'DELETE','OPTIONS']
 }));
-
+app.options('*', cors());
 app.use(express.json());
 
 // MongoDB Connection

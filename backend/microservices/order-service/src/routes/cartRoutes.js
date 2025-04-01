@@ -16,5 +16,4 @@ router.delete("/removeChecked", cartController.removeCheckedItems);
 router.delete("/:id", cartController.removeCartItem);
 
 
-
 module.exports = router;

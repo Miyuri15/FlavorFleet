@@ -14,7 +14,7 @@ const UserSchema = new mongoose.Schema(
       default: "user",
     },
     username: { type: String, unique: true }, // Automatically generated
-    preferredRoute: { type: String , default: [], set: routes => routes.map(route => route.trim().toLowerCase()) }, 
+    preferredRoute: { type: [String], default: [] },
     isRestricted: { type: Boolean, default: false }, // To restrict users
     restaurants: [
       {

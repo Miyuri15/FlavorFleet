@@ -10,6 +10,7 @@ import {
   FiLogOut,
   FiSettings,
   FiShoppingCart,
+  FiTruck,
 } from "react-icons/fi";
 import { useAuth } from "../context/AuthContext";
 

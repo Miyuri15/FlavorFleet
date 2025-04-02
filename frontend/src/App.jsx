@@ -25,6 +25,7 @@ import DeliveryDetailsPage from "./pages/Delivery/DeliveryDetailsPage";
 import DeliveryDashboard from "./components/Delivery/DeliveryDashboard";
 import ProfilePage from "./pages/Profile/ProfilePage";
 import FavoritesPage from "./components/OrderComponent/FavoritesPage";
+import RestaurantDashboard from "./pages/RestaurantDashboard/RestaurantDashboard";
 
 function App() {
   return (
@@ -81,6 +82,15 @@ function App() {
                 }
               />
 
+              <Route
+                path={ROUTES.RESTAURANT_DASHBOARD}
+                element={
+                  <ProtectedRoute requiredRole="restaurant_owner">
+                    <RestaurantDashboard />
+                  </ProtectedRoute>
+                }
+              />
+
               {/* Dynamic Error Pages (401, 403, 500, etc.) */}
               <Route path={ROUTES.ERROR_PAGE()} element={<Error />} />
 
@@ -89,13 +99,11 @@ function App() {
                 path={ROUTES.NOT_FOUND}
                 element={<Error errorType="404" />}
               />
-                          <Route
-              path={ROUTES.FAVOURITE_MENUITEMS}
-              element={<FavoritesPage/>}
-            />
-
+              <Route
+                path={ROUTES.FAVOURITE_MENUITEMS}
+                element={<FavoritesPage />}
+              />
             </Routes>
-
           </div>
         </Router>
       </ThemeProvider>

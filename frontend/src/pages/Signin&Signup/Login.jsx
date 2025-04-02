@@ -66,6 +66,8 @@ function Login() {
           navigate(ROUTES.ADMIN_DASHBOARD);
         } else if (decodedToken.role === "delivery") {
           navigate(ROUTES.DELIVERY_DASHBOARD);
+        } else if (decodedToken.role === "restaurant_owner") {
+          navigate(ROUTES.RESTAURANT_DASHBOARD);
         } else {
           navigate(ROUTES.USER_DASHBOARD);
         }

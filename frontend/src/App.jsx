@@ -14,6 +14,11 @@ import MyOrders from "./components/OrderComponent/MyOrders";
 import OrderDetails from "./components/OrderComponent/[id]/OrderDetails";
 import TrackOrder from "./components/OrderComponent/[id]/TrackOrder";
 import IncomingOrders from "./components/OrderComponent/IncomingOrders";
+import PaymentPage from "./components/OrderComponent/PaymentPage";
+// import FindDeliveryPerson from "./components/OrderComponent/FindDeliveryPerson";
+import Error from "./pages/Error/Error";
+import ProtectedRoute from "./components/ProtectedRoute";
+import AdminDashboard from "./components/AdminDashboard";
 
 function App() {
   return (
@@ -37,6 +42,27 @@ function App() {
               <Route path="/orders/:id" element={<OrderDetails />} />
               <Route path="/track-order/:id" element={<TrackOrder />} />
               <Route path="/incoming-orders" element={<IncomingOrders />} />
+              <Route path="/payment" element={<PaymentPage />} />
+              {/* <Route
+                path="/FindDeliveryPerson"
+                element={<FindDeliveryPerson />}
+              /> */}
+
+              {/* Protected route with role-based access */}
+              <Route
+                path="/admin/dashboard"
+                element={
+                  <ProtectedRoute requiredRole="admin">
+                    <AdminDashboard />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Dynamic Error Pages (401, 403, 500, etc.) */}
+              <Route path="/error/:errorType" element={<Error />} />
+
+              {/* Catch-all route for 404 */}
+              <Route path="*" element={<Error errorType="404" />} />
             </Routes>
           </div>
         </Router>

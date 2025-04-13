@@ -1,18 +1,41 @@
-import express from 'express';
-import { verifyToken } from '../utils/auth.js';
-import {
-  createOrder,
-  modifyOrder,
-  trackOrder,
-  getUserOrders,
-} from '../controllers/orderController.js';
-
+const express = require('express');
+const OrderController = require('../controllers/orderController');
+const authMiddleware = require('../middleware/authMiddleware');
+const Order = require('../models/orderModel');
 const router = express.Router();
+router.get('/:id/track', OrderController.trackOrder);
+router.get('/:id/updates', OrderController.getOrderUpdates);
+// Apply authMiddleware to all routes
+router.use(authMiddleware);
 
-// Protected routes
-router.post('/orders', verifyToken, createOrder);
-router.put('/orders/:orderId', verifyToken, modifyOrder);
-router.get('/orders/:orderId/track', verifyToken, trackOrder);
-router.get('/users/:userId/orders', verifyToken, getUserOrders);
+// Create a new order
+router.post('/', OrderController.createOrder);
 
-export default router;
+// Get order by ID
+router.get('/:id', OrderController.getOrder);
+
+// Get user's orders
+router.get('/user/orders', OrderController.getUserOrders);
+
+// Get restaurant's orders (for restaurant owners/managers)
+router.get('/restaurant/orders', OrderController.getRestaurantOrders);
+
+// Get delivery agent's orders
+router.get('/delivery/orders', OrderController.getDeliveryAgentOrders);
+
+// Update order status
+router.patch('/:id/status', OrderController.updateOrderStatus);
+
+// Cancel order
+router.post('/:id/cancel', OrderController.cancelOrder);
+
+//incoming orders of delivery person
+router.get('/delivery/incoming', authMiddleware, OrderController.getDeliveryIncoming);
+//adding for estimated time
+router.patch('/:id/status', authMiddleware, OrderController.updateOrderStatus);
+
+//count orders
+router.get('/user/orders/count', OrderController.getUserOrdersCount);
+
+
+module.exports = router;

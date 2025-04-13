@@ -15,6 +15,8 @@ const {
   getMenuItemsByRestaurant,
   updateMenuItem,
   deleteMenuItem,
+  getAllMenuItems,
+  getMenuItemById,
 } = require("../controllers/menuItemController");
 const authMiddleware = require("../middleware/authMiddleware");
 const roleMiddleware = require("../middleware/roleMiddleware");
@@ -37,6 +39,9 @@ router.post("/:restaurantId/menu", authMiddleware, addMenuItem);
 router.get("/:restaurantId/menu", getMenuItemsByRestaurant);
 router.put("/menu/:menuItemId", authMiddleware, updateMenuItem);
 router.delete("/menu/:menuItemId", authMiddleware, deleteMenuItem);
+router.get('/menu/all', getAllMenuItems); // Public route to get all menu items
+router.get("/menu/:menuItemId", getMenuItemById);
+
 
 // Admin-only routes
 router.patch(

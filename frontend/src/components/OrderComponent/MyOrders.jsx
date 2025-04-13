@@ -1,0 +1,272 @@
+import Layout from "../Layout";
+import { useEffect, useState } from "react";
+import axios from 'axios';
+import { useNavigate } from "react-router-dom";
+import { 
+  FaClock, 
+  FaCheckCircle, 
+  FaTruck, 
+  FaBoxOpen, 
+  FaTimesCircle, 
+  FaHistory, 
+  FaMoneyBillWave, 
+  FaCreditCard,
+  FaReceipt
+} from 'react-icons/fa';
+import { FiExternalLink } from 'react-icons/fi';
+
+export default function MyOrders() {
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
+
+  const api = axios.create({
+    baseURL: 'http://localhost:5000',
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem('token')}`
+    }
+  });
+
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const { data } = await api.get('/api/orders/user/orders');
+        // Sort orders by createdAt in descending order (newest first)
+        const sortedOrders = data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        setOrders(sortedOrders);
+      } catch (err) {
+        setError(err.response?.data?.error || 'Failed to fetch orders');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOrders();
+  }, []);
+
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case 'Pending':
+        return <FaClock className="text-yellow-500" />;
+      case 'Confirmed':
+        return <FaCheckCircle className="text-blue-500" />;
+      case 'Preparing':
+        return <FaBoxOpen className="text-orange-500" />;
+      case 'Out for Delivery':
+        return <FaTruck className="text-purple-500" />;
+      case 'Delivered':
+        return <FaCheckCircle className="text-green-500" />;
+      case 'Cancelled':
+        return <FaTimesCircle className="text-red-500" />;
+      default:
+        return <FaHistory className="text-gray-500" />;
+    }
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'Pending':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'Confirmed':
+        return 'bg-blue-100 text-blue-800';
+      case 'Preparing':
+        return 'bg-orange-100 text-orange-800';
+      case 'Out for Delivery':
+        return 'bg-purple-100 text-purple-800';
+      case 'Delivered':
+        return 'bg-green-100 text-green-800';
+      case 'Cancelled':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getPaymentMethodIcon = (method) => {
+    switch (method) {
+      case 'Cash on Delivery':
+        return <FaMoneyBillWave className="text-green-600" />;
+      case 'Online Payment':
+        return <FaCreditCard className="text-blue-600" />;
+      default:
+        return <FaReceipt className="text-gray-500" />;
+    }
+  };
+
+  const getPaymentStatusColor = (status) => {
+    switch (status) {
+      case 'Completed':
+        return 'bg-green-100 text-green-800';
+      case 'Pending':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'Failed':
+        return 'bg-red-100 text-red-800';
+      case 'Refunded':
+        return 'bg-purple-100 text-purple-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const formatDate = (dateString) => {
+    const options = { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    };
+    return new Date(dateString).toLocaleDateString(undefined, options);
+  };
+
+  if (loading) {
+    return (
+      <Layout>
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (error) {
+    return (
+      <Layout>
+        <div className="max-w-6xl mx-auto px-4 py-8">
+          <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-8">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <FaTimesCircle className="h-5 w-5 text-red-500" />
+              </div>
+              <div className="ml-3">
+                <p className="text-sm text-red-700">{error}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  return (
+    <Layout>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">My Orders</h1>
+          <p className="mt-2 text-sm text-gray-600">
+            View and track all your recent orders
+          </p>
+        </div>
+
+        {orders.length === 0 ? (
+          <div className="bg-white rounded-lg shadow-sm p-8 text-center">
+            <div className="mx-auto h-24 w-24 text-gray-400">
+              <FaBoxOpen className="w-full h-full" />
+            </div>
+            <h3 className="mt-4 text-lg font-medium text-gray-900">No orders yet</h3>
+            <p className="mt-1 text-sm text-gray-500">
+              You haven't placed any orders yet. Start by browsing our menu.
+            </p>
+            <div className="mt-6">
+              <button
+                onClick={() => navigate('/order')}
+                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                Browse Menu
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+            <ul className="divide-y divide-gray-200">
+              {orders.map((order) => (
+                <li key={order._id}>
+                  <div className="px-4 py-5 sm:px-6">
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start">
+                      <div className="mb-4 sm:mb-0">
+                        <div className="flex items-center">
+                          <span className="mr-3">{getStatusIcon(order.status)}</span>
+                          <h3 className="text-lg leading-6 font-medium text-gray-900">
+                            Order #{order._id.substring(order._id.length - 6).toUpperCase()}
+                          </h3>
+                          <span className={`ml-3 px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(order.status)}`}>
+                            {order.status}
+                          </span>
+                        </div>
+                        <p className="mt-1 text-sm text-gray-500">
+                          Placed on {formatDate(order.createdAt)}
+                        </p>
+                        {order.restaurantId?.name && (
+                          <p className="mt-1 text-sm text-gray-500">
+                            From {order.restaurantId.name}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex flex-col sm:flex-row sm:space-x-3 space-y-2 sm:space-y-0">
+                        <button
+                          onClick={() => navigate(`/track-order/${order._id}`)}
+                          className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                        >
+                          <FaTruck className="mr-2" />
+                          Track Order
+                        </button>
+                        <button
+                          onClick={() => navigate(`/orders/${order._id}`)}
+                          className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                        >
+                          <FiExternalLink className="mr-2" />
+                          View Details
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Payment Information Section */}
+                    <div className="mt-3 flex flex-wrap items-center gap-4">
+                      <div className="flex items-center">
+                        <span className="mr-2">{getPaymentMethodIcon(order.paymentMethod)}</span>
+                        <span className="text-sm font-medium text-gray-700">
+                          {order.paymentMethod}
+                        </span>
+                      </div>
+                      <div className="flex items-center">
+                        <span className={`px-2.5 py-1 text-xs font-medium rounded-full ${getPaymentStatusColor(order.paymentStatus)}`}>
+                          Payment: {order.paymentStatus}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="mt-4">
+                      <div className="flex overflow-x-auto">
+                        {order.items.map((item, index) => (
+                          <div key={index} className="flex-shrink-0 mr-4">
+                            <div className="flex items-center space-x-2">
+                              <span className="text-sm font-medium text-gray-900">
+                                {item.quantity}x
+                              </span>
+                              <span className="text-sm text-gray-500">
+                                {item.name}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="mt-4 flex justify-between items-center">
+                      <p className="text-sm text-gray-500">
+                        {order.items.reduce((sum, item) => sum + item.quantity, 0)} items
+                      </p>
+                      <p className="text-lg font-semibold text-gray-900">
+                        LKR {order.totalAmount.toFixed(2)}
+                      </p>
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+    </Layout>
+  );
+}

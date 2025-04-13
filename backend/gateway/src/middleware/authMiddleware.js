@@ -4,7 +4,7 @@ require("dotenv").config();
 const authMiddleware = (req, res, next) => {
   console.log("Headers received:", req.headers);
 
-  const token = req.headers.authorization?.split(" ")[1]; // This is correct
+  const token = req.cookies.access_token || req.headers.authorization?.split(" ")[1]; // This is correct
   console.log("Extracted token:", token);
   
   if (!token) {

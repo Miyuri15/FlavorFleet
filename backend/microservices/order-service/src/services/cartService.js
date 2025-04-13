@@ -3,10 +3,7 @@ const axios = require('axios');
 
 // More reliable Docker environment detection
 const isDockerEnvironment = () => {
-  // Explicit Docker environment variable (set in docker-compose)
   if (process.env.DOCKERIZED === 'true') return true;
-  
-  // Filesystem check (Docker containers often have this file)
   try {
     require('fs').accessSync('/.dockerenv');
     return true;
@@ -18,10 +15,10 @@ const isDockerEnvironment = () => {
 // Get service URL with better debugging
 const getRestaurantServiceUrl = () => {
   const isDocker = isDockerEnvironment();
-  const url = isDocker 
-    ? 'http://restaurant-service:5003' 
+  const url = isDocker
+    ? 'http://restaurant-service:5003'
     : 'http://localhost:5003';
-  
+
   console.log(`Using restaurant service URL: ${url} (Docker: ${isDocker})`);
   return url;
 };
@@ -30,19 +27,19 @@ const cartService = {
   async getCartItems(userId, authToken) {
     const cartItems = await CartItem.find({ userId });
     console.log(`Fetching cart items for user ${userId}`);
-    
+
     try {
       const enrichedItems = await Promise.all(
         cartItems.map(async item => {
           try {
-            const foodData = await this.getFoodItem(item.foodId.toString(), authToken);
+            const menuItemData = await this.getMenuItem(item.menuItemId.toString(), authToken);
             return {
               ...item.toObject(),
-              currentPrice: foodData?.price || item.price,
-              currentStock: foodData?.stockAvailability || false
+              currentPrice: menuItemData?.price || item.price,
+              currentStock: menuItemData?.stockAvailability || false
             };
           } catch (error) {
-            console.error(`Error fetching food item ${item.foodId}:`, error);
+            console.error(`Error fetching menu item ${item.menuItemId}:`, error);
             return item.toObject();
           }
         })
@@ -54,71 +51,44 @@ const cartService = {
     }
   },
 
-  async getFoodItem(foodId, authToken) {
+  async getMenuItem(menuItemId, authToken) {
     try {
-      const restaurantServiceUrl = getRestaurantServiceUrl();
-      console.log(`Attempting to fetch food ${foodId} from ${restaurantServiceUrl}`);
-      
-      const response = await axios.get(`${restaurantServiceUrl}/api/foods/${foodId}`, {
-        headers: {
-          Authorization: `Bearer ${authToken}`
-        },
-        timeout: 5000 // Add timeout to prevent hanging
-      });
+      const response = await axios.get(
+        `${getRestaurantServiceUrl()}/api/restaurant/menu/${menuItemId}`,
+        { headers: { Authorization: `Bearer ${authToken}` } }
+      );
       return response.data;
     } catch (error) {
-      console.error('Error fetching food item:', {
-        message: error.message,
-        code: error.code,
-        config: {
-          url: error.config?.url,
-          method: error.config?.method
-        },
-        response: error.response?.data
-      });
-      throw new Error('Failed to fetch food item details');
+      console.error('Error fetching menu item:', error.message);
+      throw new Error('Failed to fetch menu item details');
     }
   },
 
   async addToCart(userId, item, authToken) {
-    if (!authToken) {
-      throw new Error('Authentication token is required');
-    }
-
     try {
-      const foodData = await this.getFoodItem(item.foodId, authToken);
-      
-      if (!foodData) {
-        throw new Error('Food item not found');
-      }
-
-      if (!foodData.stockAvailability) {
-        throw new Error('This item is out of stock');
-      }
-
-      const existingItem = await CartItem.findOne({ 
-        userId, 
-        foodId: item.foodId 
-      });
-
-      if (existingItem) {
-        existingItem.quantity += item.quantity;
-        return await existingItem.save();
-      }
-
-      const newCartItem = new CartItem({
+      const existingCartItem = await CartItem.findOne({
         userId,
-        foodId: item.foodId,
-        foodName: foodData.foodName,
-        restaurantName: foodData.restaurantName,
-        location: foodData.location,
-        price: foodData.price,
-        quantity: item.quantity,
-        image: foodData.foodImage,
-        checked: true
+        menuItemId: item.menuItemId
       });
 
-      return await newCartItem.save();
+      if (existingCartItem) {
+        existingCartItem.quantity += item.quantity;
+        return await existingCartItem.save();
+      } else {
+        const newCartItem = new CartItem({
+          userId,
+          menuItemId: item.menuItemId,
+          menuItemName: item.menuItemName,
+          restaurantId: item.restaurantId,
+          restaurantName: item.restaurantName,
+          location: item.location,
+          price: item.price,
+          quantity: item.quantity,
+          image: item.image,
+          checked: true
+        });
+        return await newCartItem.save();
+      }
     } catch (error) {
       console.error('Error in addToCart:', error);
       throw error;
@@ -135,6 +105,10 @@ const cartService = {
 
   async removeCartItem(userId, itemId) {
     return await CartItem.findOneAndDelete({ _id: itemId, userId });
+  },
+  
+  async clearCart(userId) {
+    return await CartItem.deleteMany({ userId });
   },
 
   async removeCheckedItems(userId) {

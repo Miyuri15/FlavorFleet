@@ -18,6 +18,7 @@ function Register() {
       firstName: "",
       lastName: "",
       email: "",
+      address:"",
       contactNumber: "",
       password: "",
       confirmPassword: "",
@@ -32,6 +33,7 @@ function Register() {
         email: Yup.string()
           .email("Invalid email")
           .required("Email is required"),
+        address:Yup.string().required("address is required"),
         contactNumber: Yup.string()
           .matches(/^\d{10}$/, "Must be 10 digits")
           .required("Contact Number is required"),
@@ -60,6 +62,7 @@ function Register() {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(dataToSend),
+            credentials: 'include'
           }
         );
 
@@ -205,6 +208,18 @@ function Register() {
               <p className="text-red-500">{formik.errors.email}</p>
             )}
 
+<input
+              name="address"
+              type="text"
+              placeholder="Address"
+              className="input"
+              {...formik.getFieldProps("address")}
+            />
+            {formik.touched.address && formik.errors.address && (
+              <p className="text-red-500">{formik.errors.address}</p>
+            )}
+
+
             <input
               name="contactNumber"
               placeholder="Contact Number"
@@ -225,6 +240,7 @@ function Register() {
                   <option value="">Select Preferred Route</option>
                   {[
                     "Colombo",
+                    "Kelaniya",
                     "Gampaha",
                     "Kalutara",
                     "Kandy",

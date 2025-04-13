@@ -13,18 +13,13 @@ import {
   FiTruck,
 } from "react-icons/fi";
 import { useAuth } from "../context/AuthContext";
+import LogoutDialog from "./LogoutDialog";
 
 const MenuBar = () => {
   const location = useLocation();
   const { user, logout } = useAuth();
   const isAdmin = user?.role === "admin";
   const isDelivery = user?.role === "delivery";
-  const navigate = useNavigate();
-
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
-  };
 
   // Function to check if a route is active
   const isActive = (path) => {
@@ -95,16 +90,7 @@ const MenuBar = () => {
         )}
 
         {/* Logout Button */}
-        <li>
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-3 p-3 rounded-lg text-lg font-medium transition-all duration-300
-                      hover:bg-blue-800 hover:text-white dark:hover:bg-blue-400 w-full text-left"
-          >
-            <FiLogOut />
-            <span>LogOut</span>
-          </button>
-        </li>
+        <LogoutDialog logout={logout} />
       </ul>
     </aside>
   );

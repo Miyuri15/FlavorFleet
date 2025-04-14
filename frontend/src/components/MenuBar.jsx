@@ -1,17 +1,6 @@
 import React from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import {
-  FiHome,
-  FiClipboard,
-  FiCreditCard,
-  FiBarChart,
-  FiUsers,
-  FiFileText,
-  FiLogOut,
-  FiSettings,
-  FiShoppingCart,
-  FiTruck,
-} from "react-icons/fi";
+import { Link, useLocation } from "react-router-dom";
+import { FiHome, FiClipboard, FiShoppingCart, FiTruck } from "react-icons/fi";
 import { useAuth } from "../context/AuthContext";
 import LogoutDialog from "./LogoutDialog";
 
@@ -22,97 +11,97 @@ const MenuBar = () => {
   const isDelivery = user?.role === "delivery";
 
   // Function to check if a route is active
-  const isActive = (path) => {
-    return location.pathname.startsWith(path);
+  const isActive = (path) => location.pathname.startsWith(path);
+
+  // Get dashboard path based on user role
+  const getDashboardPath = () => {
+    if (isAdmin) return "/admindashboard";
+    if (isDelivery) return "/deliverydashboard";
+    return "/userdashboard";
   };
+
+  // Common menu items for all users
+  const commonMenuItems = [
+    {
+      to: getDashboardPath(),
+      icon: <FiHome />,
+      text: "Dashboard",
+      active: isActive(getDashboardPath()),
+    },
+  ];
+
+  // Regular user menu items
+  const userMenuItems = [
+    {
+      to: "/myorders",
+      icon: <FiClipboard />,
+      text: "My Orders",
+      active: isActive("/orders"),
+    },
+    {
+      to: "/order",
+      icon: <FiClipboard />,
+      text: "Order Food",
+      active: isActive("/order"),
+    },
+    {
+      to: "/cart",
+      icon: <FiShoppingCart />,
+      text: "Cart",
+      active: isActive("/cart"),
+    },
+  ];
+
+  // Delivery user menu items
+  const deliveryMenuItems = [
+    {
+      to: "/delivery/orders",
+      icon: <FiTruck />,
+      text: "Delivery Orders",
+      active: isActive("/delivery/orders"),
+    },
+  ];
+
+  // Combine menu items based on user role
+  const menuItems = [
+    ...commonMenuItems,
+    ...(!isAdmin && !isDelivery ? userMenuItems : []),
+    ...(isDelivery ? deliveryMenuItems : []),
+  ];
 
   return (
     <aside className="w-64 bg-gray-100 dark:bg-gray-900 text-text-light dark:text-white h-screen p-4 shadow-md">
       <ul className="space-y-4">
-        <MenuItem
-          to={
-            isAdmin
-              ? "/admindashboard"
-              : isDelivery
-              ? "/deliverydashboard"
-              : "/userdashboard"
-          }
-          icon={<FiHome />}
-          text="Dashboard"
-          isActive={isActive(
-            isAdmin
-              ? "/admindashboard"
-              : isDelivery
-              ? "/deliverydashboard"
-              : "/userdashboard"
-          )}
-        />
-        {!isAdmin && !isDelivery && (
+        {menuItems.map((item, index) => (
           <MenuItem
-            to="/myorders"
-            icon={<FiClipboard />}
-            text="My Orders"
-            isActive={isActive("/orders")}
+            key={index}
+            to={item.to}
+            icon={item.icon}
+            text={item.text}
+            isActive={item.active}
           />
-        )}
-        {!isAdmin && !isDelivery && (
-          <>
-            <MenuItem
-              to="/order"
-              icon={<FiClipboard />}
-              text="Order Food"
-              isActive={isActive("/order")}
-            />
-            <MenuItem
-              to="/cart"
-              icon={<FiShoppingCart />}
-              text="Cart"
-              isActive={isActive("/cart")}
-            />
-          </>
-        )}
-        {isDelivery && (
-          <MenuItem
-            to="/delivery/orders"
-            icon={<FiClipboard />}
-            text="Delivery Orders"
-            isActive={isActive("/delivery/orders")}
-          />
-        )}
-
-        {isDelivery && (
-          <MenuItem
-            to="/delivery/orders"
-            icon={<FiTruck />}
-            text="Delivery Orders"
-            isActive={isActive("/delivery/orders")}
-          />
-        )}
-
-        {/* Logout Button */}
+        ))}
         <LogoutDialog logout={logout} />
       </ul>
     </aside>
   );
 };
 
-const MenuItem = ({ to, icon, text, isActive }) => {
-  return (
-    <li>
-      <Link
-        to={to}
-        className={`flex items-center gap-3 p-3 rounded-lg text-lg font-medium transition-all duration-300
-                  hover:bg-blue-800 hover:text-white dark:hover:bg-blue-400 ${
-                    isActive
-                      ? "bg-blue-800 text-white dark:bg-blue-400"
-                      : "bg-transparent"
-                  }`}
-      >
-        {icon}
-        <span>{text}</span>
-      </Link>
-    </li>
-  );
-};
+const MenuItem = ({ to, icon, text, isActive }) => (
+  <li>
+    <Link
+      to={to}
+      className={`flex items-center gap-3 p-3 rounded-lg text-lg font-medium transition-all duration-300
+                hover:bg-blue-800 hover:text-white dark:hover:bg-blue-400 ${
+                  isActive
+                    ? "bg-blue-800 text-white dark:bg-blue-400"
+                    : "bg-transparent"
+                }`}
+    >
+      {icon}
+      <span>{text}</span>
+    </Link>
+  </li>
+);
 
 export default MenuBar;

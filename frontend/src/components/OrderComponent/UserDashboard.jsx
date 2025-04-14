@@ -725,73 +725,15 @@ const UserDashboard = () => {
         {/* Promotions Section */}
         <div className="mb-8">
           <h2 className="text-2xl font-bold mb-4 text-gray-800">Promotions</h2>
-          {loading ? (
-            <p className="text-gray-600">Loading promotions...</p>
-          ) : error ? (
-            <p className="text-red-500">Error loading promotions: {error}</p>
-          ) : (
-            <Slider {...carouselSettings}>
-              {promotions.length > 0 ? (
-                promotions.map((promotion) => (
-                  <div key={promotion.id} className="p-2">
-                    <div className="bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow text-center h-full">
-                      <img
-                        src={promotion.foodImage}
-                        alt={promotion.title}
-                        className="w-full h-40 object-cover mb-2 rounded-lg"
-                      />
-                      <p className="font-bold text-gray-800">
-                        {promotion.title}
-                      </p>
-                      <p className="text-gray-600">{promotion.description}</p>
-                      <button className="mt-2 bg-orange-500 text-white px-4 py-1 rounded hover:bg-orange-600 transition-all text-sm">
-                        View Details
-                      </button>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className="text-gray-600">No promotions found.</p>
-              )}
-            </Slider>
-          )}
+          {promotionContent}
         </div>
 
-        {/* Explore Restuarants Section */}
+        {/* Explore Restaurants Section */}
         <div className="mb-8">
           <h2 className="text-2xl font-bold mb-4 text-gray-800">
-            Explore Restuarants
+            Explore Restaurants
           </h2>
-          {loading ? (
-            <p className="text-gray-600">Loading restuarants...</p>
-          ) : error ? (
-            <p className="text-red-500">Error loading restuarants: {error}</p>
-          ) : (
-            <Slider {...carouselSettings}>
-              {restuarants.map((restuarant) => (
-                <div key={restuarant.id} className="p-2">
-                  <div className="bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow text-center h-full">
-                    <img
-                      src={
-                        restuarant.banner ||
-                        "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60"
-                      }
-                      alt={restuarant.name}
-                      className="w-full h-40 object-cover mb-2 rounded-lg"
-                    />
-                    <p className="font-bold text-gray-800">{restuarant.name}</p>
-                    <p className="text-gray-600 text-sm">{restuarant.email}</p>
-                    {/* <Link 
-                        to={`/restaurant/${restuarant._id}`}
-                        className="mt-2 inline-block bg-orange-500 text-white px-4 py-1 rounded hover:bg-orange-600 transition-all text-sm"
-                      >
-                        View Menu
-                      </Link> */}
-                  </div>
-                </div>
-              ))}
-            </Slider>
-          )}
+          {restaurantContent}
         </div>
 
         {/* Featured Foods Section */}
@@ -799,37 +741,7 @@ const UserDashboard = () => {
           <h2 className="text-2xl font-bold mb-4 text-gray-800">
             All Menu Items
           </h2>
-          {loading ? (
-            <p className="text-gray-600">Loading foods...</p>
-          ) : error ? (
-            <p className="text-red-500">Error loading foods: {error}</p>
-          ) : (
-            <Slider {...carouselSettings}>
-              {featuredFoods.map((food) => (
-                <div key={food.id} className="p-2">
-                  <div className="bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow text-center h-full">
-                    <img
-                      src={
-                        food.image ||
-                        "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60"
-                      }
-                      alt={food.name}
-                      className="w-full h-40 object-cover mb-2 rounded-lg"
-                    />
-                    <p className="font-bold text-gray-800">{food.name}</p>
-                    {food.restaurant && (
-                      <p className="text-gray-600 text-sm">
-                        {food.restaurant.name}
-                      </p>
-                    )}
-                    <p className="font-bold text-orange-500 mt-1">
-                      ${food.price}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </Slider>
-          )}
+          {foodContent}
         </div>
       </div>
     </Layout>

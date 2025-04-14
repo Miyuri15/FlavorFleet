@@ -6,6 +6,7 @@ import {
   FiShoppingCart,
   FiTruck,
   FiMap,
+  FiUser,
 } from "react-icons/fi";
 import { useAuth } from "../context/AuthContext";
 import LogoutDialog from "./LogoutDialog";
@@ -17,7 +18,8 @@ const MenuBar = () => {
   const isDelivery = user?.role === "delivery";
 
   // Function to check if a route is active
-  const isActive = (path) => location.pathname.startsWith(path);
+  const isActive = (...paths) =>
+    paths.some((path) => location.pathname.startsWith(path));
 
   // Get dashboard path based on user role
   const getDashboardPath = () => {
@@ -40,6 +42,12 @@ const MenuBar = () => {
       text: "Delivery Map",
       active: isActive("/deliveryMap"),
     },
+    {
+      to: "/profile",
+      icon: <FiUser />,
+      text: "Profile",
+      active: isActive("/profile"),
+    },
   ];
 
   // Regular user menu items
@@ -48,7 +56,7 @@ const MenuBar = () => {
       to: "/myorders",
       icon: <FiClipboard />,
       text: "My Orders",
-      active: isActive("/orders"),
+      active: isActive("/myorders"),
     },
     {
       to: "/order",

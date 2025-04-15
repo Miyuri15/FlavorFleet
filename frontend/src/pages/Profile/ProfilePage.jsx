@@ -7,6 +7,7 @@ import ResidenceForm from "../../components/Profile/ResidenceForm";
 import ChangePasswordForm from "../../components/Profile/ChangePasswordForm";
 import Swal from "sweetalert2";
 import Loading from "../../components/Loading/Loading";
+import { LoadScript } from "@react-google-maps/api";
 
 const ProfilePage = () => {
   const { user } = useAuth();
@@ -14,6 +15,7 @@ const ProfilePage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isEditingResidence, setIsEditingResidence] = useState(false);
+  const [apiKey] = useState(import.meta.env.VITE_GOOGLE_MAPS_API_KEY);
   const [formData, setFormData] = useState({
     currentPassword: "",
     newPassword: "",
@@ -129,23 +131,25 @@ const ProfilePage = () => {
         </h1>
 
         {profileData && (
-          <div className="space-y-6">
-            <ProfileInfo
-              profileData={profileData}
-              onEditResidence={() => setIsEditingResidence(true)}
-            />
-
-            {isEditingResidence && (
-              <ResidenceForm
-                residence={formData.residence}
-                onInputChange={handleInputChange}
-                onSubmit={handleResidenceUpdate}
-                onCancel={() => setIsEditingResidence(false)}
+          <LoadScript googleMapsApiKey={apiKey}>
+            <div className="space-y-6">
+              <ProfileInfo
+                profileData={profileData}
+                onEditResidence={() => setIsEditingResidence(true)}
               />
-            )}
 
-            <ChangePasswordForm onSubmit={handlePasswordChange} />
-          </div>
+              {isEditingResidence && (
+                <ResidenceForm
+                  residence={formData.residence}
+                  onInputChange={handleInputChange}
+                  onSubmit={handleResidenceUpdate}
+                  onCancel={() => setIsEditingResidence(false)}
+                />
+              )}
+
+              <ChangePasswordForm onSubmit={handlePasswordChange} />
+            </div>
+          </LoadScript>
         )}
       </div>
     </Layout>

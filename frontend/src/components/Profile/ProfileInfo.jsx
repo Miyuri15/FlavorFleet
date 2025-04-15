@@ -17,10 +17,12 @@ const ProfileInfo = ({ profileData, onEditResidence }) => {
           <span className="font-medium">Email:</span> {profileData.email}
         </p>
         <div className="flex items-center">
-          <p>
-            <span className="font-medium">Residence:</span>{" "}
-            {profileData.residence || "Not specified"}
-          </p>
+          {profileData.residence && (
+            <>
+              <p>Type: {profileData.residence.type}</p>
+              <p>Coordinates: {profileData.residence.coordinates.join(", ")}</p>
+            </>
+          )}
           <button
             onClick={onEditResidence}
             className="ml-2 text-button-light dark:text-accent-dark hover:text-blue-800 dark:hover:text-accent-light text-sm"

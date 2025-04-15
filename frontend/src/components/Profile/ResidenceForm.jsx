@@ -1,5 +1,4 @@
 import React, { useState, useCallback } from "react";
-import { LoadScript } from "@react-google-maps/api";
 import MapDisplay from "../Maps/MapDisplay";
 import MapMarker from "../Maps/MapMarker";
 
@@ -7,7 +6,6 @@ const ResidenceForm = ({ onSubmit, onCancel }) => {
   const [place, setPlace] = useState("");
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [map, setMap] = useState(null);
-  const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
   const containerStyle = {
     width: "100%",
@@ -114,17 +112,16 @@ const ResidenceForm = ({ onSubmit, onCancel }) => {
           <h3 className="text-lg font-medium text-text-light dark:text-text-dark mb-2">
             Location Selection
           </h3>
-          <LoadScript googleMapsApiKey={apiKey}>
-            <MapDisplay
-              mapContainerStyle={containerStyle}
-              center={selectedLocation || defaultCenter}
-              zoom={selectedLocation ? 15 : 10}
-              onLoad={(map) => setMap(map)}
-              onClick={handleMapClick}
-            >
-              {selectedLocation && <MapMarker position={selectedLocation} />}
-            </MapDisplay>
-          </LoadScript>
+
+          <MapDisplay
+            mapContainerStyle={containerStyle}
+            center={selectedLocation || defaultCenter}
+            zoom={selectedLocation ? 15 : 10}
+            onLoad={(map) => setMap(map)}
+            onClick={handleMapClick}
+          >
+            {selectedLocation && <MapMarker position={selectedLocation} />}
+          </MapDisplay>
         </div>
 
         {selectedLocation && (

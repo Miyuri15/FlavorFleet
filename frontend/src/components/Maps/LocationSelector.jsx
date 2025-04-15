@@ -20,12 +20,7 @@ const LocationSelector = ({ apiKey, onLocationSelect }) => {
       lng: event.latLng.lng(),
     };
     setSelectedLocation(location);
-  };
-
-  const handleSaveLocation = () => {
-    if (selectedLocation) {
-      onLocationSelect(selectedLocation);
-    }
+    onLocationSelect(location);
   };
 
   return (
@@ -34,7 +29,7 @@ const LocationSelector = ({ apiKey, onLocationSelect }) => {
         <LoadScript googleMapsApiKey={apiKey}>
           <GoogleMap
             mapContainerStyle={containerStyle}
-            center={defaultCenter}
+            center={selectedLocation || defaultCenter}
             zoom={10}
             onClick={handleMapClick}
           >
@@ -45,13 +40,10 @@ const LocationSelector = ({ apiKey, onLocationSelect }) => {
 
       <div className="location-controls">
         {selectedLocation ? (
-          <>
-            <div className="location-info">
-              <p>Latitude: {selectedLocation.lat.toFixed(6)}</p>
-              <p>Longitude: {selectedLocation.lng.toFixed(6)}</p>
-            </div>
-            <button onClick={handleSaveLocation}>Save Location</button>
-          </>
+          <div className="location-info">
+            <p>Latitude: {selectedLocation.lat.toFixed(6)}</p>
+            <p>Longitude: {selectedLocation.lng.toFixed(6)}</p>
+          </div>
         ) : (
           <p>Click on the map to select a location</p>
         )}

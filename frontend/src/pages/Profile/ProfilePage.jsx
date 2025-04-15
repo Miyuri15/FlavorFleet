@@ -82,15 +82,13 @@ const ProfilePage = () => {
     }
   };
 
-  const handleResidenceUpdate = async (e) => {
-    e.preventDefault();
-
+  const handleResidenceUpdate = async (residenceData) => {
     try {
       await api.put("/auth/update-residence", {
-        residence: formData.residence,
+        residence: residenceData.place,
       });
 
-      setProfileData((prev) => ({ ...prev, residence: formData.residence }));
+      setProfileData((prev) => ({ ...prev, residence: residenceData.place }));
       setIsEditingResidence(false);
       Swal.fire({
         icon: "success",

@@ -6,7 +6,7 @@ const ResidenceForm = ({ residence, onInputChange, onSubmit, onCancel }) => {
   const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
   const handleLocationSelect = (location) => {
-    setSavedLocations([...savedLocations, location]);
+    setSavedLocations((prevLocations) => [...prevLocations, location]);
   };
 
   return (
@@ -32,6 +32,33 @@ const ResidenceForm = ({ residence, onInputChange, onSubmit, onCancel }) => {
             required
           />
         </div>
+
+        <div className="mb-4">
+          <h3 className="text-lg font-medium text-text-light dark:text-text-dark mb-2">
+            Location Selection
+          </h3>
+          <LocationSelector
+            apiKey={apiKey}
+            onLocationSelect={handleLocationSelect}
+          />
+        </div>
+
+        {savedLocations.length > 0 && (
+          <div className="mb-4">
+            <h3 className="text-lg font-medium text-text-light dark:text-text-dark mb-2">
+              Saved Locations
+            </h3>
+            <ul className="space-y-2">
+              {savedLocations.map((loc, index) => (
+                <li key={index} className="text-text-light dark:text-text-dark">
+                  Location {index + 1}: {loc.lat.toFixed(6)},{" "}
+                  {loc.lng.toFixed(6)}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
         <div className="flex space-x-2">
           <button
             type="submit"
@@ -48,30 +75,6 @@ const ResidenceForm = ({ residence, onInputChange, onSubmit, onCancel }) => {
           </button>
         </div>
       </form>
-
-      <div className="location-manager">
-        <h2>Select and Save Locations</h2>
-        <LocationSelector
-          apiKey={apiKey}
-          onLocationSelect={handleLocationSelect}
-        />
-
-        <div className="saved-locations">
-          <h3>Saved Locations</h3>
-          {savedLocations.length > 0 ? (
-            <ul>
-              {savedLocations.map((loc, index) => (
-                <li key={index}>
-                  Location {index + 1}: {loc.lat.toFixed(6)},{" "}
-                  {loc.lng.toFixed(6)}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p>No locations saved yet</p>
-          )}
-        </div>
-      </div>
     </div>
   );
 };

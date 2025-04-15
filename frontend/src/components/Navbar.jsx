@@ -4,14 +4,17 @@ import { FaUser, FaBell, FaCheck, FaRegBell } from "react-icons/fa";
 import { useTheme } from "../ThemeContext";
 import { useAuth } from "../context/AuthContext";
 
+const ORDER_SERVICE_URL =
+  import.meta.env.VITE_ORDER_BACKEND_URL || "http://localhost:5000";
+
 // Add JWT decoding function
 const decodeJWT = (token) => {
   try {
-    const payload = token.split('.')[1];
-    const decoded = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
+    const payload = token.split(".")[1];
+    const decoded = atob(payload.replace(/-/g, "+").replace(/_/g, "/"));
     return JSON.parse(decoded);
   } catch (error) {
-    console.error('Error decoding token:', error);
+    console.error("Error decoding token:", error);
     return null;
   }
 };
@@ -20,7 +23,7 @@ const NotificationItem = ({ notification, onMarkAsRead }) => {
   const [isHovered, setIsHovered] = useState(false);
 
   return (
-    <div 
+    <div
       className={`p-3 rounded-lg transition-all duration-200 ${
         isHovered ? "bg-gray-100 dark:bg-gray-700" : "bg-white dark:bg-gray-800"
       }`}
@@ -37,7 +40,12 @@ const NotificationItem = ({ notification, onMarkAsRead }) => {
           </p>
           <div className="flex items-center mt-1 text-xs text-gray-500 dark:text-gray-400">
             <FiClock className="mr-1" />
-            <span>{new Date(notification.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+            <span>
+              {new Date(notification.createdAt).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </span>
             <span className="mx-1">•</span>
             <span>{new Date(notification.createdAt).toLocaleDateString()}</span>
           </div>
@@ -50,7 +58,9 @@ const NotificationItem = ({ notification, onMarkAsRead }) => {
         <button
           onClick={() => onMarkAsRead(notification._id)}
           className={`p-1 rounded-full transition-colors ${
-            isHovered ? "text-blue-500 hover:bg-blue-100 dark:hover:bg-blue-900" : "text-transparent"
+            isHovered
+              ? "text-blue-500 hover:bg-blue-100 dark:hover:bg-blue-900"
+              : "text-transparent"
           }`}
           aria-label="Mark as read"
         >
@@ -72,7 +82,7 @@ const Navbar = () => {
   useEffect(() => {
     const fetchNotifications = async () => {
       const token = localStorage.getItem("token") || user?.token;
-      
+
       if (!token) {
         console.error("No token found");
         setError("Please login to view notifications");
@@ -81,7 +91,7 @@ const Navbar = () => {
 
       const decoded = decodeJWT(token);
       const userId = decoded?.id;
-      
+
       if (!userId) {
         console.log("No user ID available in token");
         return;
@@ -92,20 +102,23 @@ const Navbar = () => {
 
       try {
         const res = await fetch(
-          `http://localhost:5000/api/notifications/users/${userId}/notifications`,
+          `${ORDER_SERVICE_URL}/api/notifications/users/${userId}/notifications`,
           {
-            headers: { 
+            headers: {
               Authorization: `Bearer ${token}`,
-              'Content-Type': 'application/json'
+              "Content-Type": "application/json",
             },
           }
         );
-        
+
         if (!res.ok) {
           const errorData = await res.json().catch(() => ({}));
-          throw new Error(errorData.message || `Failed to fetch notifications (Status: ${res.status})`);
+          throw new Error(
+            errorData.message ||
+              `Failed to fetch notifications (Status: ${res.status})`
+          );
         }
-        
+
         const data = await res.json();
         setNotifications(data);
       } catch (error) {
@@ -124,21 +137,21 @@ const Navbar = () => {
   const markAsRead = async (notificationId) => {
     try {
       const res = await fetch(
-        `http://localhost:5000/api/notifications/${notificationId}/read`,
+        `${ORDER_SERVICE_URL}/api/notifications/${notificationId}/read`,
         {
-          method: 'PUT',
-          headers: { 
+          method: "PUT",
+          headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
-            'Content-Type': 'application/json'
+            "Content-Type": "application/json",
           },
         }
       );
-      
+
       if (!res.ok) {
         throw new Error(`Failed to mark as read (Status: ${res.status})`);
       }
-      
-      setNotifications(prev => prev.filter(n => n._id !== notificationId));
+
+      setNotifications((prev) => prev.filter((n) => n._id !== notificationId));
     } catch (error) {
       console.error("Error marking notification as read:", error);
     }
@@ -153,19 +166,19 @@ const Navbar = () => {
 
     try {
       const res = await fetch(
-        `http://localhost:5000/api/notifications/users/${userId}/read-all`,
+        `${ORDER_SERVICE_URL}/api/notifications/users/${userId}/read-all`,
         {
-          method: 'PUT',
-          headers: { 
+          method: "PUT",
+          headers: {
             Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
+            "Content-Type": "application/json",
           },
         }
-      );      
+      );
       if (!res.ok) {
         throw new Error(`Failed to mark all as read (Status: ${res.status})`);
       }
-      
+
       setNotifications([]);
     } catch (error) {
       console.error("Error marking all notifications as read:", error);
@@ -175,9 +188,9 @@ const Navbar = () => {
   return (
     <nav className="dark:bg-background-dark shadow-sm p-4 m-3 flex items-center justify-between mb-4 relative sticky top-0 z-50">
       {/* Background Image with Opacity */}
-      <div 
+      <div
         className="absolute inset-0 -z-10 opacity-20 bg-cover bg-center"
-        style={{ 
+        style={{
           backgroundImage: "url('https://i.ibb.co/BKQtYkPr/navbarbanner.jpg')",
           backgroundRepeat: "no-repeat",
         }}
@@ -219,7 +232,7 @@ const Navbar = () => {
 
         {/* Notifications */}
         <div className="relative">
-          <div 
+          <div
             className="cursor-pointer relative p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
             onClick={() => setShowNotifications(!showNotifications)}
           >
@@ -235,7 +248,9 @@ const Navbar = () => {
             <div className="absolute right-0 mt-2 w-96 bg-white dark:bg-gray-800 rounded-xl shadow-xl overflow-hidden border border-gray-200 dark:border-gray-700">
               <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
                 <div className="flex justify-between items-center">
-                  <h3 className="text-lg font-bold text-gray-800 dark:text-white">Notifications</h3>
+                  <h3 className="text-lg font-bold text-gray-800 dark:text-white">
+                    Notifications
+                  </h3>
                   <div className="flex items-center space-x-3">
                     {notifications.length > 0 && (
                       <button
@@ -245,7 +260,7 @@ const Navbar = () => {
                         <FaCheck className="mr-1" size={12} /> Mark all
                       </button>
                     )}
-                    <button 
+                    <button
                       onClick={() => setShowNotifications(false)}
                       className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
                     >
@@ -254,16 +269,20 @@ const Navbar = () => {
                   </div>
                 </div>
               </div>
-              
-              <div className="max-h-96 overflow-y-auto scrollbar-hide">                {loading ? (
+
+              <div className="max-h-96 overflow-y-auto scrollbar-hide">
+                {" "}
+                {loading ? (
                   <div className="flex flex-col items-center justify-center py-8">
                     <div className="animate-spin rounded-full h-10 w-10 border-2 border-blue-500 border-t-transparent mb-3"></div>
-                    <p className="text-gray-500 dark:text-gray-400">Loading notifications...</p>
+                    <p className="text-gray-500 dark:text-gray-400">
+                      Loading notifications...
+                    </p>
                   </div>
                 ) : error ? (
                   <div className="text-center p-6">
                     <div className="text-red-500 mb-3">{error}</div>
-                    <button 
+                    <button
                       onClick={() => window.location.reload()}
                       className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm"
                     >
@@ -273,13 +292,17 @@ const Navbar = () => {
                 ) : notifications.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-8">
                     <FaBell className="text-gray-400 mb-3" size={24} />
-                    <p className="text-gray-500 dark:text-gray-400">No new notifications</p>
-                    <p className="text-xs text-gray-400 mt-1">We'll notify you when something arrives</p>
+                    <p className="text-gray-500 dark:text-gray-400">
+                      No new notifications
+                    </p>
+                    <p className="text-xs text-gray-400 mt-1">
+                      We'll notify you when something arrives
+                    </p>
                   </div>
                 ) : (
                   <div className="space-y-1 p-2">
-                    {notifications.map(notification => (
-                      <NotificationItem 
+                    {notifications.map((notification) => (
+                      <NotificationItem
                         key={notification._id}
                         notification={notification}
                         onMarkAsRead={markAsRead}
@@ -291,7 +314,7 @@ const Navbar = () => {
             </div>
           )}
         </div>
-        
+
         {/* User Profile */}
         <div className="flex items-center space-x-2">
           <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white">

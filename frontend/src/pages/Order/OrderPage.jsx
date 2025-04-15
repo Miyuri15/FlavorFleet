@@ -7,6 +7,9 @@ import Swal from "sweetalert2";
 import { FaShoppingCart, FaFilter, FaTimes } from "react-icons/fa";
 import RestaurantList from "../../components/OrderComponent/RestaurantList";
 
+const ORDER_BACKEND_URL = import.meta.env.VITE_ORDER_BACKEND_URL;
+const RESTAURANT_BACKEND_URL = import.meta.env.VITE_RESTAURANT_BACKEND_URL;
+
 const OrderPage = () => {
   const [foodItems, setFoodItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -27,7 +30,7 @@ const OrderPage = () => {
       const token = localStorage.getItem("token");
       if (!token) return;
 
-      const { data } = await axios.get("http://localhost:5000/api/cart/count", {
+      const { data } = await axios.get(`${ORDER_BACKEND_URL}/api/cart/count`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -53,7 +56,7 @@ const OrderPage = () => {
       try {
         // Fetch restaurants
         const restaurantsResponse = await axios.get(
-          "http://localhost:5003/api/restaurant/",
+          `${RESTAURANT_BACKEND_URL}/api/restaurant/`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -62,7 +65,7 @@ const OrderPage = () => {
         );
 
         const foodResponse = await axios.get(
-          "http://localhost:5003/api/restaurant/menu/all",
+          `${RESTAURANT_BACKEND_URL}/api/restaurant/menu/all`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -155,28 +158,28 @@ const OrderPage = () => {
       });
       return;
     }
-  
+
     try {
       // Fetch current cart items
-      const cartResponse = await axios.get("http://localhost:5000/api/cart", {
+      const cartResponse = await axios.get(`${ORDER_BACKEND_URL}/api/cart`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-  
+
       const cartItems = cartResponse.data;
-  
+
       if (cartItems.length > 0) {
         const currentRestaurantId = cartItems[0].restaurantId; // Assuming all items are from the same restaurant
-  
+
         if (currentRestaurantId !== item.restaurant?._id) {
           // Clear cart if the restaurant is different
-          await axios.delete("http://localhost:5000/api/cart/clear", {
+          await axios.delete(`${ORDER_BACKEND_URL}/api/cart/clear`, {
             headers: {
               Authorization: `Bearer ${token}`,
             },
           });
-  
+
           Swal.fire({
             title: "Cart Cleared",
             text: "Your cart has been cleared because you selected a new restaurant.",
@@ -185,7 +188,7 @@ const OrderPage = () => {
           });
         }
       }
-  
+
       const { value: quantity } = await Swal.fire({
         title: "Enter Quantity",
         input: "number",
@@ -202,18 +205,19 @@ const OrderPage = () => {
           if (!value || value < 1) return "Please enter a valid quantity!";
         },
       });
-  
+
       if (!quantity) return;
-  
+
       // Add the new item to the cart
       await axios.post(
-        "http://localhost:5000/api/cart",
+        `${ORDER_BACKEND_URL}/api/cart`,
         {
           menuItemId: item._id,
           menuItemName: item.name,
           restaurantId: item.restaurant?._id,
           restaurantName: item.restaurant?.name,
-          location: item.restaurant?.address?.street || "Location not specified",
+          location:
+            item.restaurant?.address?.street || "Location not specified",
           price: item.price,
           quantity: parseInt(quantity, 10),
           image: item.imageUrl,
@@ -224,9 +228,9 @@ const OrderPage = () => {
           },
         }
       );
-  
+
       await fetchCartItemCount(); // Refresh cart count after adding
-  
+
       Swal.fire({
         title: "Added to Cart!",
         text: `${quantity} ${item.name}(s) added to your cart.`,
@@ -245,7 +249,7 @@ const OrderPage = () => {
       });
     }
   };
-  
+
   if (loading) {
     return (
       <Layout>

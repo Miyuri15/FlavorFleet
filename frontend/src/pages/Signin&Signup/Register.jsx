@@ -6,6 +6,8 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
+const GATEWAY_BACKEND_URL = import.meta.env.VITE_GATEWAY_BACKEND_URL;
+
 function Register() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
@@ -18,7 +20,7 @@ function Register() {
       firstName: "",
       lastName: "",
       email: "",
-      address:"",
+      address: "",
       contactNumber: "",
       password: "",
       confirmPassword: "",
@@ -33,7 +35,7 @@ function Register() {
         email: Yup.string()
           .email("Invalid email")
           .required("Email is required"),
-        address:Yup.string().required("address is required"),
+        address: Yup.string().required("address is required"),
         contactNumber: Yup.string()
           .matches(/^\d{10}$/, "Must be 10 digits")
           .required("Contact Number is required"),
@@ -57,12 +59,12 @@ function Register() {
       try {
         const dataToSend = { ...values, role };
         const response = await fetch(
-          "http://localhost:5004/api/auth/register",
+          `${GATEWAY_BACKEND_URL}/api/auth/register`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(dataToSend),
-            credentials: 'include'
+            credentials: "include",
           }
         );
 
@@ -208,7 +210,7 @@ function Register() {
               <p className="text-red-500">{formik.errors.email}</p>
             )}
 
-<input
+            <input
               name="address"
               type="text"
               placeholder="Address"
@@ -218,7 +220,6 @@ function Register() {
             {formik.touched.address && formik.errors.address && (
               <p className="text-red-500">{formik.errors.address}</p>
             )}
-
 
             <input
               name="contactNumber"

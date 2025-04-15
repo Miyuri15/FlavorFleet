@@ -6,6 +6,9 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import axios from "axios";
 
+const ORDER_BACKEND_URL = import.meta.env.VITE_ORDER_BACKEND_URL;
+const RESTAURANT_BACKEND_URL = import.meta.env.VITE_RESTAURANT_BACKEND_URL;
+
 const UserDashboard = () => {
   const [showOngoingOrders, setShowOngoingOrders] = useState(false);
   const [featuredFoods, setFeaturedFoods] = useState([]);
@@ -29,7 +32,7 @@ const UserDashboard = () => {
     const fetchOngoingOrders = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:5000/api/orders/user/orders",
+          `${ORDER_BACKEND_URL}/api/orders/user/orders`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -59,7 +62,7 @@ const UserDashboard = () => {
     const fetchOrdersCount = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:5000/api/orders/user/orders/count",
+          `${ORDER_BACKEND_URL}/api/orders/user/orders/count`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -110,7 +113,7 @@ const UserDashboard = () => {
     const fetchFoods = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:5003/api/restaurant/menu/all",
+          `${RESTAURANT_BACKEND_URL}/api/restaurant/menu/all`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -133,7 +136,7 @@ const UserDashboard = () => {
     const fetchRestuarants = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:5003/api/restaurant/",
+          `${RESTAURANT_BACKEND_URL}/api/restaurant/`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

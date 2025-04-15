@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "http://localhost:5004/api", // Gateway URL
+  baseURL: `${import.meta.env.VITE_GATEWAY_BACKEND_URL}/api`, // Gateway URL
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",

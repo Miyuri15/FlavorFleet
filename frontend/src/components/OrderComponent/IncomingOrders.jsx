@@ -20,7 +20,7 @@ export default function IncomingOrders() {
   const [loading, setLoading] = useState(true);
 
   const api = axios.create({
-    baseURL: "http://localhost:5000",
+    baseURL: import.meta.env.VITE_ORDER_BACKEND_URL,
     headers: {
       Authorization: `Bearer ${localStorage.getItem("token")}`,
     },
@@ -32,11 +32,11 @@ export default function IncomingOrders() {
 
   const fetchOrders = async () => {
     try {
-        setLoading(true);
+      setLoading(true);
       const { data } = await api.get("/api/orders/delivery/incoming");
       setOrders(Array.isArray(data) ? data : []);
     } catch (err) {
-        console.error("Fetch error:", err);
+      console.error("Fetch error:", err);
       toast.error(err.response?.data?.error || "Failed to fetch orders");
     } finally {
       setLoading(false);
@@ -106,7 +106,7 @@ export default function IncomingOrders() {
             Refresh
           </button>
         </div>
-  
+
         {loading ? (
           <div>
             <Loading />
@@ -136,18 +136,18 @@ export default function IncomingOrders() {
                         {order.paymentMethod}
                       </span>
                     </div>
-  
+
                     <div className="space-y-3">
                       <div className="flex items-center text-sm text-gray-600">
                         <FaMapMarkerAlt className="w-4 h-4 mr-2 text-red-500" />
                         <span>{order.deliveryAddress}</span>
                       </div>
-  
+
                       <div className="flex items-center text-sm text-gray-600">
                         <FaMoneyBillWave className="w-4 h-4 mr-2 text-green-500" />
                         <span>LKR {order.totalAmount.toFixed(2)}</span>
                       </div>
-  
+
                       {order.restaurantId?.name && (
                         <div className="text-sm text-gray-600">
                           <span className="font-medium">Restaurant:</span>{" "}
@@ -155,7 +155,7 @@ export default function IncomingOrders() {
                         </div>
                       )}
                     </div>
-  
+
                     <div className="mt-6 flex flex-wrap gap-2">
                       {order.status === "Pending" && (
                         <button
@@ -167,7 +167,7 @@ export default function IncomingOrders() {
                           Accept Order
                         </button>
                       )}
-  
+
                       {(order.status === "Confirmed" ||
                         order.status === "Out for Delivery") && (
                         <>

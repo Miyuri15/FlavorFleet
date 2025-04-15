@@ -1,7 +1,7 @@
-import { useParams, useNavigate } from 'react-router-dom';
-import { useEffect, useState } from 'react';
-import axios from 'axios';
-import Layout from '../Layout';
+import { useParams, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import Layout from "../Layout";
 
 export default function OrderConfirmationPage() {
   const { orderId } = useParams();
@@ -13,55 +13,59 @@ export default function OrderConfirmationPage() {
   useEffect(() => {
     const fetchOrder = async () => {
       try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem("token");
         if (!token) {
-          navigate('/login');
+          navigate("/login");
           return;
         }
-  
+
         const response = await axios.get(
-          `http://localhost:5000/api/orders/${orderId}`,
+          `${import.meta.env.VITE_ORDER_BACKEND_URL}/api/orders/${orderId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
-              Accept: 'application/json'
-            }
+              Accept: "application/json",
+            },
           }
         );
-  
+
         if (!response.data?._id) {
-          throw new Error('Invalid order data structure');
+          throw new Error("Invalid order data structure");
         }
-  
+
         setOrder(response.data);
       } catch (error) {
-        console.error('Order fetch failed:', error);
-        
+        console.error("Order fetch failed:", error);
+
         if (error.response) {
           if (error.response.status === 401) {
-            navigate('/login');
+            navigate("/login");
             return;
           }
           if (error.response.status === 403) {
-            setError('You are not authorized to view this order');
+            setError("You are not authorized to view this order");
             return;
           }
           if (error.response.status === 404) {
-            setError('Order not found');
+            setError("Order not found");
             return;
           }
-          setError(`Error: ${error.response.data?.error || 'An unexpected error occurred'}`);
+          setError(
+            `Error: ${
+              error.response.data?.error || "An unexpected error occurred"
+            }`
+          );
         } else {
-          setError(error.message || 'Failed to load order details');
+          setError(error.message || "Failed to load order details");
         }
       } finally {
         setLoading(false);
       }
     };
-  
+
     fetchOrder();
   }, [orderId, navigate]);
-  
+
   if (loading) {
     return (
       <Layout>
@@ -79,7 +83,7 @@ export default function OrderConfirmationPage() {
           <h2 className="text-xl font-semibold text-red-600">Error</h2>
           <p className="mt-2 text-red-800">{error}</p>
           <button
-            onClick={() => navigate('/')}
+            onClick={() => navigate("/")}
             className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
           >
             Return to Home
@@ -89,7 +93,6 @@ export default function OrderConfirmationPage() {
     );
   }
 
-
   return (
     <Layout>
       <div className="max-w-4xl mx-auto px-4 py-8">
@@ -97,16 +100,15 @@ export default function OrderConfirmationPage() {
           Order Confirmed!
         </h1>
         <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-semibold mb-4">
-            Order ID: {order._id}
-          </h2>
+          <h2 className="text-xl font-semibold mb-4">Order ID: {order._id}</h2>
           <p className="text-lg mb-2">
             Status: <span className="font-medium">{order.status}</span>
           </p>
           <p className="mb-4">
-            Estimated Delivery Time: {new Date(order.estimatedDeliveryTime).toLocaleString()}
+            Estimated Delivery Time:{" "}
+            {new Date(order.estimatedDeliveryTime).toLocaleString()}
           </p>
-          
+
           <div className="mt-6">
             <h3 className="text-lg font-medium mb-2">Delivery Details:</h3>
             <p className="text-gray-700">{order.deliveryAddress}</p>

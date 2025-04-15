@@ -21,7 +21,7 @@ const CartPage = () => {
 
   // Configure axios
   const api = axios.create({
-    baseURL: "http://localhost:5000/api",
+    baseURL: `${import.meta.env.VITE_ORDER_BACKEND_URL}/api`,
     withCredentials: true,
     headers: {
       Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -101,31 +101,31 @@ const CartPage = () => {
   // Clear entire cart
   const clearCart = async () => {
     const result = await Swal.fire({
-      title: 'Clear Cart?',
-      text: 'Are you sure you want to remove all items from your cart?',
-      icon: 'warning',
+      title: "Clear Cart?",
+      text: "Are you sure you want to remove all items from your cart?",
+      icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'Yes, clear it!',
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, clear it!",
     });
-  
+
     if (result.isConfirmed) {
       try {
         const response = await api.delete("/cart/clear");
         console.log("Cart clear response:", response.data); // Debugging log
-  
+
         setCart([]); // Ensure state updates after successful delete
         setSelectAll(false);
-  
-        Swal.fire('Cleared!', 'Your cart has been cleared.', 'success');
+
+        Swal.fire("Cleared!", "Your cart has been cleared.", "success");
       } catch (error) {
         console.error("Error clearing cart:", error); // Debugging log
-        Swal.fire('Error!', 'Failed to clear cart.', 'error');
+        Swal.fire("Error!", "Failed to clear cart.", "error");
       }
     }
   };
-    
+
   // Apply coupon
   const applyCoupon = () => {
     if (couponCode === "DISCOUNT10") {

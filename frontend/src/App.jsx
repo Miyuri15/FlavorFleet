@@ -21,6 +21,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import AdminDashboard from "./components/AdminDashboard";
 import DeliveryDetailsPage from "./pages/Delivery/DeliveryDetailsPage";
 import DeliveryDashboard from "./components/Delivery/DeliveryDashboard";
+import ProfilePage from "./pages/Profile/ProfilePage";
 
 function App() {
   return (
@@ -35,6 +36,7 @@ function App() {
               <Route path="/userdashboard" element={<UserDashboard />} />
               <Route path="/order" element={<OrderPage />} />
               <Route path="/cart" element={<CartPage />} />
+              <Route path="/profile" element={<ProfilePage />} />
               <Route path="/placeorder" element={<PlaceOrderPage />} />
               <Route
                 path="/order-confirmation/:orderId"

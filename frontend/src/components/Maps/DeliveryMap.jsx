@@ -107,3 +107,102 @@ const DeliveryMap = () => {
 };
 
 export default DeliveryMap;
+
+// import React, { useState, useCallback, useEffect } from "react";
+// import { LoadScript } from "@react-google-maps/api";
+// import MapControls from "./MapControls";
+// import MapDisplay from "./MapDisplay";
+// import MapMarker from "./MapMarker";
+// import Directions from "./Directions";
+
+// const containerStyle = {
+//   width: "100%",
+//   height: "500px",
+//   borderRadius: "8px",
+// };
+
+// const DeliveryMap = ({ driverLocation, deliveryLocation }) => {
+//   const [map, setMap] = useState(null);
+//   const [response, setResponse] = useState(null);
+//   const [distance, setDistance] = useState("");
+//   const [duration, setDuration] = useState("");
+//   const [apiKey] = useState(import.meta.env.VITE_GOOGLE_MAPS_API_KEY);
+
+//   // Set default center between driver and delivery locations
+//   const defaultCenter = driverLocation || {
+//     lat: 6.054,
+//     lng: 80.221,
+//   };
+
+//   const directionsCallback = useCallback((response) => {
+//     if (response !== null) {
+//       if (response.status === "OK") {
+//         setResponse(response);
+//         setDistance(response.routes[0].legs[0].distance.text);
+//         setDuration(response.routes[0].legs[0].duration.text);
+//       } else {
+//         console.error("Error:", response);
+//       }
+//     }
+//   }, []);
+
+//   // Auto-calculate directions when locations are provided
+//   useEffect(() => {
+//     if (driverLocation && deliveryLocation && map) {
+//       setResponse(null); // Reset previous directions
+//     }
+//   }, [driverLocation, deliveryLocation, map]);
+
+//   return (
+//     <div className="map-container">
+//       <LoadScript googleMapsApiKey={apiKey}>
+//         <MapDisplay
+//           mapContainerStyle={containerStyle}
+//           center={defaultCenter}
+//           zoom={14}
+//           onLoad={(map) => setMap(map)}
+//         >
+//           {/* Driver Marker */}
+//           {driverLocation && (
+//             <MapMarker
+//               position={driverLocation}
+//               icon={{
+//                 url: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png",
+//               }}
+//             />
+//           )}
+
+//           {/* Delivery Location Marker */}
+//           {deliveryLocation && (
+//             <MapMarker
+//               position={deliveryLocation}
+//               icon={{
+//                 url: "https://maps.google.com/mapfiles/ms/icons/red-dot.png",
+//               }}
+//             />
+//           )}
+
+//           {/* Directions between points */}
+//           {driverLocation && deliveryLocation && (
+//             <Directions
+//               origin={driverLocation}
+//               destination={deliveryLocation}
+//               response={response}
+//               onDirectionsCallback={directionsCallback}
+//             />
+//           )}
+//         </MapDisplay>
+//       </LoadScript>
+
+//       {/* Display distance and duration */}
+//       {distance && duration && (
+//         <div className="map-info">
+//           <p>Distance: {distance}</p>
+//           <p>Duration: {duration}</p>
+//         </div>
+//       )}
+//     </div>
+//   );
+// };
+
+// export default DeliveryMap;

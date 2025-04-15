@@ -1,7 +1,7 @@
 import React from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import PasswordInputField from "../PasswordInputField";
+import PasswordInputField from "../InputFields/PasswordInputField";
 import SubmitButton from "../SubmitButton";
 
 const ChangePasswordForm = ({ onSubmit }) => {

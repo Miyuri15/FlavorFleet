@@ -1,6 +1,7 @@
 import React from "react";
 
 const ProfileInfo = ({ profileData, onEditResidence }) => {
+  console.log("ProfileInfo component rendered with data:", profileData);
   return (
     <div className="bg-background-light dark:bg-background-dark p-6 rounded-lg shadow dark:shadow-gray-800">
       <h2 className="text-xl font-semibold text-text-light dark:text-text-dark mb-4">
@@ -19,8 +20,11 @@ const ProfileInfo = ({ profileData, onEditResidence }) => {
         <div className="flex items-center">
           {profileData.residence && (
             <>
-              <p>Type: {profileData.residence.type}</p>
-              <p>Coordinates: {profileData.residence.coordinates.join(", ")}</p>
+              {/* <p>Type: {profileData.residence.type}</p>
+              <p>Coordinates: {profileData.residence.coordinates.join(", ")}</p> */}
+              <p className="text-text-light dark:text-text-dark">
+                Address: {profileData.residence.address || "Not specified"}
+              </p>
             </>
           )}
           <button

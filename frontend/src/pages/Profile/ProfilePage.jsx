@@ -87,10 +87,22 @@ const ProfilePage = () => {
   const handleResidenceUpdate = async (residenceData) => {
     try {
       await api.put("/auth/update-residence", {
-        residence: residenceData.place,
+        residence: {
+          type: "Point",
+          coordinates: [residenceData.location.lng, residenceData.location.lat],
+          address: residenceData.place,
+        },
       });
 
-      setProfileData((prev) => ({ ...prev, residence: residenceData.place }));
+      setProfileData((prev) => ({
+        ...prev,
+        residence: {
+          ...prev.residence,
+          coordinates: [residenceData.location.lng, residenceData.location.lat],
+          address: residenceData.place,
+        },
+      }));
+
       setIsEditingResidence(false);
       Swal.fire({
         icon: "success",

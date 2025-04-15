@@ -2,9 +2,13 @@ import React, { useState, useCallback } from "react";
 import MapDisplay from "../Maps/MapDisplay";
 import MapMarker from "../Maps/MapMarker";
 
-const ResidenceForm = ({ onSubmit, onCancel }) => {
+const ResidenceForm = ({ onSubmit, onCancel, residence }) => {
   const [place, setPlace] = useState("");
-  const [selectedLocation, setSelectedLocation] = useState(null);
+  const [selectedLocation, setSelectedLocation] = useState(
+    residence?.coordinates
+      ? { lat: residence.coordinates[1], lng: residence.coordinates[0] }
+      : null
+  );
   const [map, setMap] = useState(null);
 
   const containerStyle = {
@@ -131,10 +135,6 @@ const ResidenceForm = ({ onSubmit, onCancel }) => {
             </h3>
             <p className="text-text-light dark:text-text-dark">
               Address: {place || "Not specified"}
-            </p>
-            <p className="text-text-light dark:text-text-dark">
-              Coordinates: {selectedLocation.lat.toFixed(6)},{" "}
-              {selectedLocation.lng.toFixed(6)}
             </p>
           </div>
         )}

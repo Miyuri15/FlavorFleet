@@ -1,6 +1,8 @@
 import React from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
+import PasswordInputField from "../PasswordInputField";
+import SubmitButton from "../SubmitButton";
 
 const ChangePasswordForm = ({ onSubmit }) => {
   const validationSchema = Yup.object().shape({
@@ -36,98 +38,37 @@ const ChangePasswordForm = ({ onSubmit }) => {
         Change Password
       </h2>
       <form onSubmit={formik.handleSubmit}>
-        <div className="mb-4">
-          <label
-            htmlFor="currentPassword"
-            className="block text-sm font-medium text-text-light dark:text-text-dark mb-1"
-          >
-            Current Password
-          </label>
-          <input
-            type="password"
-            id="currentPassword"
-            name="currentPassword"
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            value={formik.values.currentPassword}
-            className={`w-full p-2 border rounded bg-white dark:bg-primary-dark text-text-light dark:text-text-dark border-secondary-light dark:border-accent-dark focus:ring-2 focus:ring-button-light dark:focus:ring-accent-dark focus:border-transparent ${
-              formik.touched.currentPassword && formik.errors.currentPassword
-                ? "border-red-500 dark:border-red-400"
-                : ""
-            }`}
-          />
-          {formik.touched.currentPassword && formik.errors.currentPassword && (
-            <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-              {formik.errors.currentPassword}
-            </p>
-          )}
-        </div>
+        <PasswordInputField
+          label="Current Password"
+          id="currentPassword"
+          name="currentPassword"
+          type="password"
+          formik={formik}
+        />
 
-        <div className="mb-4">
-          <label
-            htmlFor="newPassword"
-            className="block text-sm font-medium text-text-light dark:text-text-dark mb-1"
-          >
-            New Password
-          </label>
-          <input
-            type="password"
-            id="newPassword"
-            name="newPassword"
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            value={formik.values.newPassword}
-            className={`w-full p-2 border rounded bg-white dark:bg-primary-dark text-text-light dark:text-text-dark border-secondary-light dark:border-accent-dark focus:ring-2 focus:ring-button-light dark:focus:ring-accent-dark focus:border-transparent ${
-              formik.touched.newPassword && formik.errors.newPassword
-                ? "border-red-500 dark:border-red-400"
-                : ""
-            }`}
-          />
-          {formik.touched.newPassword && formik.errors.newPassword && (
-            <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-              {formik.errors.newPassword}
-            </p>
-          )}
-        </div>
+        <PasswordInputField
+          label="New Password"
+          id="newPassword"
+          name="newPassword"
+          type="password"
+          formik={formik}
+        />
 
-        <div className="mb-6">
-          <label
-            htmlFor="confirmPassword"
-            className="block text-sm font-medium text-text-light dark:text-text-dark mb-1"
-          >
-            Confirm New Password
-          </label>
-          <input
-            type="password"
-            id="confirmPassword"
-            name="confirmPassword"
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            value={formik.values.confirmPassword}
-            className={`w-full p-2 border rounded bg-white dark:bg-primary-dark text-text-light dark:text-text-dark border-secondary-light dark:border-accent-dark focus:ring-2 focus:ring-button-light dark:focus:ring-accent-dark focus:border-transparent ${
-              formik.touched.confirmPassword && formik.errors.confirmPassword
-                ? "border-red-500 dark:border-red-400"
-                : ""
-            }`}
-          />
-          {formik.touched.confirmPassword && formik.errors.confirmPassword && (
-            <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-              {formik.errors.confirmPassword}
-            </p>
-          )}
-        </div>
+        <PasswordInputField
+          label="Confirm New Password"
+          id="confirmPassword"
+          name="confirmPassword"
+          type="password"
+          formik={formik}
+          className="mb-6"
+        />
 
-        <button
-          type="submit"
-          disabled={formik.isSubmitting || !formik.isValid}
-          className={`w-full px-4 py-2 bg-button-light text-white rounded hover:bg-blue-700 dark:bg-accent-dark dark:hover:bg-accent-light transition-colors ${
-            formik.isSubmitting || !formik.isValid
-              ? "opacity-50 cursor-not-allowed"
-              : ""
-          }`}
-        >
-          {formik.isSubmitting ? "Changing..." : "Change Password"}
-        </button>
+        <SubmitButton
+          isSubmitting={formik.isSubmitting}
+          isValid={formik.isValid}
+          submittingText="Changing..."
+          defaultText="Change Password"
+        />
       </form>
     </div>
   );

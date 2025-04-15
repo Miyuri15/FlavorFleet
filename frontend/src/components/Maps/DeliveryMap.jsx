@@ -1,66 +1,117 @@
-import React, { useEffect, useState } from "react";
-import {
-  GoogleMap,
-  LoadScript,
-  DirectionsRenderer,
-} from "@react-google-maps/api";
+import React, { useState, useCallback } from "react";
+import { LoadScript } from "@react-google-maps/api";
+import axios from "axios";
+import MapControls from "./MapControls";
+import MapDisplay from "./MapDisplay";
+import MapMarker from "./MapMarker";
+import Directions from "./Directions";
+import { useNavigate } from "react-router-dom";
 
 const containerStyle = {
   width: "100%",
   height: "500px",
+  borderRadius: "8px",
 };
 
-const center = {
-  lat: 6.053, // default center if driver location is not available
-  lng: 80.221,
+const defaultCenter = {
+  lat: 40.7128,
+  lng: -74.006,
 };
 
-const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-
-const DeliveryMap = ({ driverLocation, deliveryLocation }) => {
-  const [directions, setDirections] = useState(null);
-  const [eta, setEta] = useState("");
+const DeliveryMap = () => {
+  const [map, setMap] = useState(null);
+  const [response, setResponse] = useState(null);
+  const [origin, setOrigin] = useState("");
+  const [destination, setDestination] = useState("");
   const [distance, setDistance] = useState("");
+  const [duration, setDuration] = useState("");
+  const [markerPosition, setMarkerPosition] = useState(null);
+  const [apiKey] = useState(import.meta.env.VITE_GOOGLE_MAPS_API_KEY);
 
-  useEffect(() => {
-    if (!driverLocation || !deliveryLocation) return;
+  const navigate = useNavigate();
 
-    const directionsService = new window.google.maps.DirectionsService();
-
-    directionsService.route(
-      {
-        origin: driverLocation,
-        destination: deliveryLocation,
-        travelMode: window.google.maps.TravelMode.DRIVING,
-      },
-      (result, status) => {
-        if (status === "OK") {
-          setDirections(result);
-          const leg = result.routes[0].legs[0];
-          setEta(leg.duration.text);
-          setDistance(leg.distance.text);
-        } else {
-          console.error("Directions request failed due to " + status);
-        }
+  const directionsCallback = useCallback((response) => {
+    if (response !== null) {
+      if (response.status === "OK") {
+        setResponse(response);
+        setDistance(response.routes[0].legs[0].distance.text);
+        setDuration(response.routes[0].legs[0].duration.text);
+      } else {
+        console.error("Error:", response);
       }
-    );
-  }, [driverLocation, deliveryLocation]);
+    }
+  }, []);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (origin && destination) {
+      setResponse(null);
+    }
+  };
+
+  const handlePlaceMarker = async (address) => {
+    try {
+      const response = await axios.get(
+        `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
+          address
+        )}&key=${apiKey}`
+      );
+      if (response.data.results.length > 0) {
+        const location = response.data.results[0].geometry.location;
+        setMarkerPosition(location);
+        map.panTo(location);
+        map.setZoom(15);
+      }
+    } catch (error) {
+      console.error("Geocoding error:", error);
+    }
+  };
 
   return (
-    <LoadScript googleMapsApiKey={GOOGLE_MAPS_API_KEY}>
-      <GoogleMap
-        mapContainerStyle={containerStyle}
-        center={driverLocation || center}
-        zoom={14}
-      >
-        {directions && <DirectionsRenderer directions={directions} />}
-      </GoogleMap>
-      {eta && distance && (
-        <div style={{ marginTop: "10px", fontSize: "16px" }}>
-          <strong>ETA:</strong> {eta} | <strong>Distance:</strong> {distance}
-        </div>
-      )}
-    </LoadScript>
+    <>
+      <div className="map-container">
+        <MapControls
+          origin={origin}
+          destination={destination}
+          distance={distance}
+          duration={duration}
+          onOriginChange={(e) => setOrigin(e.target.value)}
+          onDestinationChange={(e) => setDestination(e.target.value)}
+          onPlaceMarker={handlePlaceMarker}
+          onSubmit={handleSubmit}
+        />
+
+        <LoadScript googleMapsApiKey={apiKey}>
+          <MapDisplay
+            mapContainerStyle={containerStyle}
+            center={defaultCenter}
+            zoom={10}
+            onLoad={(map) => setMap(map)}
+            onClick={(e) => {
+              setMarkerPosition({
+                lat: e.latLng.lat(),
+                lng: e.latLng.lng(),
+              });
+            }}
+          >
+            <MapMarker position={markerPosition} />
+            <Directions
+              origin={origin}
+              destination={destination}
+              response={response}
+              onDirectionsCallback={directionsCallback}
+            />
+          </MapDisplay>
+        </LoadScript>
+      </div>
+
+      <div className="navigation-buttons" style={{ textAlign: "center" }}>
+        <button onClick={() => navigate("/")}>Go to Home</button>
+        <button onClick={() => navigate("/location-manager")}>
+          Go to Location Manager
+        </button>
+      </div>
+    </>
   );
 };
 

@@ -10,15 +10,17 @@ const MapDisplay = ({
   children,
 }) => {
   return (
-    <GoogleMap
-      mapContainerStyle={mapContainerStyle}
-      center={center}
-      zoom={zoom}
-      onLoad={onLoad}
-      onClick={onClick}
-    >
-      {children}
-    </GoogleMap>
+    <div className="map-display rounded-md overflow-hidden shadow-md">
+      <GoogleMap
+        mapContainerStyle={mapContainerStyle}
+        center={center}
+        zoom={zoom}
+        onLoad={onLoad}
+        onClick={onClick}
+      >
+        {children}
+      </GoogleMap>
+    </div>
   );
 };
 

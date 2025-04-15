@@ -68,50 +68,41 @@ const DeliveryMap = () => {
   };
 
   return (
-    <>
-      <div className="map-container">
-        <MapControls
-          origin={origin}
-          destination={destination}
-          distance={distance}
-          duration={duration}
-          onOriginChange={(e) => setOrigin(e.target.value)}
-          onDestinationChange={(e) => setDestination(e.target.value)}
-          onPlaceMarker={handlePlaceMarker}
-          onSubmit={handleSubmit}
-        />
+    <div className="map-container">
+      <MapControls
+        origin={origin}
+        destination={destination}
+        distance={distance}
+        duration={duration}
+        onOriginChange={(e) => setOrigin(e.target.value)}
+        onDestinationChange={(e) => setDestination(e.target.value)}
+        onPlaceMarker={handlePlaceMarker}
+        onSubmit={handleSubmit}
+      />
 
-        <LoadScript googleMapsApiKey={apiKey}>
-          <MapDisplay
-            mapContainerStyle={containerStyle}
-            center={defaultCenter}
-            zoom={10}
-            onLoad={(map) => setMap(map)}
-            onClick={(e) => {
-              setMarkerPosition({
-                lat: e.latLng.lat(),
-                lng: e.latLng.lng(),
-              });
-            }}
-          >
-            <MapMarker position={markerPosition} />
-            <Directions
-              origin={origin}
-              destination={destination}
-              response={response}
-              onDirectionsCallback={directionsCallback}
-            />
-          </MapDisplay>
-        </LoadScript>
-      </div>
-
-      <div className="navigation-buttons" style={{ textAlign: "center" }}>
-        <button onClick={() => navigate("/")}>Go to Home</button>
-        <button onClick={() => navigate("/location-manager")}>
-          Go to Location Manager
-        </button>
-      </div>
-    </>
+      <LoadScript googleMapsApiKey={apiKey}>
+        <MapDisplay
+          mapContainerStyle={containerStyle}
+          center={defaultCenter}
+          zoom={10}
+          onLoad={(map) => setMap(map)}
+          onClick={(e) => {
+            setMarkerPosition({
+              lat: e.latLng.lat(),
+              lng: e.latLng.lng(),
+            });
+          }}
+        >
+          <MapMarker position={markerPosition} />
+          <Directions
+            origin={origin}
+            destination={destination}
+            response={response}
+            onDirectionsCallback={directionsCallback}
+          />
+        </MapDisplay>
+      </LoadScript>
+    </div>
   );
 };
 

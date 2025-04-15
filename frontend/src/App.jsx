@@ -19,6 +19,7 @@ import PaymentPage from "./components/OrderComponent/PaymentPage";
 import Error from "./pages/Error/Error";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminDashboard from "./components/AdminDashboard";
+import DeliveryDetailsPage from "./pages/Delivery/DeliveryDetailsPage";
 
 function App() {
   return (
@@ -47,6 +48,7 @@ function App() {
                 path="/FindDeliveryPerson"
                 element={<FindDeliveryPerson />}
               /> */}
+              <Route path="/deliveryMap" element={<DeliveryDetailsPage />} />
 
               {/* Protected route with role-based access */}
               <Route

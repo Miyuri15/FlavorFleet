@@ -1,6 +1,12 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { FiHome, FiClipboard, FiShoppingCart, FiTruck } from "react-icons/fi";
+import {
+  FiHome,
+  FiClipboard,
+  FiShoppingCart,
+  FiTruck,
+  FiMap,
+} from "react-icons/fi";
 import { useAuth } from "../context/AuthContext";
 import LogoutDialog from "./LogoutDialog";
 
@@ -27,6 +33,12 @@ const MenuBar = () => {
       icon: <FiHome />,
       text: "Dashboard",
       active: isActive(getDashboardPath()),
+    },
+    {
+      to: "/deliveryMap",
+      icon: <FiMap />,
+      text: "Delivery Map",
+      active: isActive("/deliveryMap"),
     },
   ];
 

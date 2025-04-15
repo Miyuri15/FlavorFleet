@@ -90,8 +90,8 @@ const ProfilePage = () => {
         residence: {
           type: "Point",
           coordinates: [residenceData.location.lng, residenceData.location.lat],
-          address: residenceData.place,
         },
+        address: residenceData.place,
       });
 
       setProfileData((prev) => ({
@@ -99,8 +99,8 @@ const ProfilePage = () => {
         residence: {
           ...prev.residence,
           coordinates: [residenceData.location.lng, residenceData.location.lat],
-          address: residenceData.place,
         },
+        address: residenceData.place,
       }));
 
       setIsEditingResidence(false);
@@ -153,6 +153,7 @@ const ProfilePage = () => {
               {isEditingResidence && (
                 <ResidenceForm
                   residence={formData.residence}
+                  address={profileData.address}
                   onInputChange={handleInputChange}
                   onSubmit={handleResidenceUpdate}
                   onCancel={() => setIsEditingResidence(false)}

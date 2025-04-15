@@ -234,7 +234,7 @@ const changePassword = async (req, res) => {
 // Update residence
 const updateResidence = async (req, res) => {
   try {
-    const { residence } = req.body;
+    const { residence, address } = req.body;
 
     // Validate the residence object
     if (!residence || !residence.type || !residence.coordinates) {
@@ -243,7 +243,7 @@ const updateResidence = async (req, res) => {
 
     const user = await User.findByIdAndUpdate(
       req.user.id,
-      { residence },
+      { residence, address },
       { new: true }
     );
 

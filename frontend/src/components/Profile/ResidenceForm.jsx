@@ -2,7 +2,7 @@ import React, { useState, useCallback } from "react";
 import MapDisplay from "../Maps/MapDisplay";
 import MapMarker from "../Maps/MapMarker";
 
-const ResidenceForm = ({ onSubmit, onCancel, residence }) => {
+const ResidenceForm = ({ onSubmit, onCancel, residence, address }) => {
   const [place, setPlace] = useState("");
   const [selectedLocation, setSelectedLocation] = useState(
     residence?.coordinates
@@ -134,7 +134,7 @@ const ResidenceForm = ({ onSubmit, onCancel, residence }) => {
               Selected Location
             </h3>
             <p className="text-text-light dark:text-text-dark">
-              Address: {place || "Not specified"}
+              Address: {place || address || "Not specified"}
             </p>
           </div>
         )}

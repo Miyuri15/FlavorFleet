@@ -48,27 +48,14 @@ const ProfilePage = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handlePasswordChange = async (e) => {
-    e.preventDefault();
-
-    if (formData.newPassword !== formData.confirmPassword) {
-      setMessage({ text: "New passwords do not match", type: "error" });
-      return;
-    }
-
+  const handlePasswordChange = async (values) => {
     try {
       await api.post("/auth/change-password", {
-        currentPassword: formData.currentPassword,
-        newPassword: formData.newPassword,
+        currentPassword: values.currentPassword,
+        newPassword: values.newPassword,
       });
 
       setMessage({ text: "Password changed successfully", type: "success" });
-      setFormData((prev) => ({
-        ...prev,
-        currentPassword: "",
-        newPassword: "",
-        confirmPassword: "",
-      }));
     } catch (err) {
       setMessage({
         text: err.response?.data?.message || "Failed to change password",
@@ -146,11 +133,7 @@ const ProfilePage = () => {
               />
             )}
 
-            <ChangePasswordForm
-              formData={formData}
-              onInputChange={handleInputChange}
-              onSubmit={handlePasswordChange}
-            />
+            <ChangePasswordForm onSubmit={handlePasswordChange} />
           </div>
         )}
       </div>

@@ -15,7 +15,7 @@ const center = {
   lng: 80.221,
 };
 
-const GOOGLE_MAPS_API_KEY = "AIzaSyCU5D--1P_O28suxXMI6auENL1AONQNF2s";
+const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
 const DeliveryMap = ({ driverLocation, deliveryLocation }) => {
   const [directions, setDirections] = useState(null);

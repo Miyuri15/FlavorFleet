@@ -59,8 +59,12 @@ const DeliveryMap = () => {
       if (response.data.results.length > 0) {
         const location = response.data.results[0].geometry.location;
         setMarkerPosition(location);
-        map.panTo(location);
-        map.setZoom(15);
+        if (map) {
+          map.panTo(location);
+          map.setZoom(15);
+        } else {
+          console.warn("Map is not loaded yet. Cannot pan or set zoom.");
+        }
       }
     } catch (error) {
       console.error("Geocoding error:", error);

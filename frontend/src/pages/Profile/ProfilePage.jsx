@@ -53,6 +53,7 @@ const ProfilePage = () => {
       await api.post("/auth/change-password", {
         currentPassword: values.currentPassword,
         newPassword: values.newPassword,
+        confirmNewPassword: values.confirmPassword,
       });
 
       setMessage({ text: "Password changed successfully", type: "success" });

@@ -99,27 +99,31 @@ const ProfilePage = () => {
   if (loading)
     return (
       <Layout>
-        <div className="px-5">Loading...</div>
+        <div className="px-5 text-text-light dark:text-text-dark">
+          Loading...
+        </div>
       </Layout>
     );
   if (error)
     return (
       <Layout>
-        <div className="px-5">{error}</div>
+        <div className="px-5 text-text-light dark:text-text-dark">{error}</div>
       </Layout>
     );
 
   return (
     <Layout>
       <div className="px-5 py-8 max-w-3xl mx-auto">
-        <h1 className="text-2xl font-bold mb-6">Profile</h1>
+        <h1 className="text-2xl font-bold mb-6 text-text-light dark:text-primary-dark">
+          Profile
+        </h1>
 
         {message && (
           <div
             className={`mb-4 p-3 rounded ${
               message.type === "success"
-                ? "bg-green-100 text-green-700"
-                : "bg-red-100 text-red-700"
+                ? "bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-100"
+                : "bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-100"
             }`}
           >
             {message.text}

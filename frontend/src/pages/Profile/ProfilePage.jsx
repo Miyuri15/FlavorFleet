@@ -5,13 +5,14 @@ import api from "../../../api";
 import ProfileInfo from "../../components/Profile/ProfileInfo";
 import ResidenceForm from "../../components/Profile/ResidenceForm";
 import ChangePasswordForm from "../../components/Profile/ChangePasswordForm";
+import Swal from "sweetalert2";
+import Loading from "../../components/Loading/Loading";
 
 const ProfilePage = () => {
   const { user } = useAuth();
   const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [message, setMessage] = useState(null);
   const [isEditingResidence, setIsEditingResidence] = useState(false);
   const [formData, setFormData] = useState({
     currentPassword: "",
@@ -40,6 +41,13 @@ const ProfilePage = () => {
     } catch (err) {
       setError("Failed to fetch profile data.");
       setLoading(false);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Failed to fetch profile data.",
+        timer: 3000,
+        showConfirmButton: false,
+      });
     }
   };
 
@@ -56,11 +64,20 @@ const ProfilePage = () => {
         confirmNewPassword: values.confirmPassword,
       });
 
-      setMessage({ text: "Password changed successfully", type: "success" });
+      Swal.fire({
+        icon: "success",
+        title: "Success",
+        text: "Password changed successfully",
+        timer: 3000,
+        showConfirmButton: false,
+      });
     } catch (err) {
-      setMessage({
+      Swal.fire({
+        icon: "error",
+        title: "Error",
         text: err.response?.data?.message || "Failed to change password",
-        type: "error",
+        timer: 3000,
+        showConfirmButton: false,
       });
     }
   };
@@ -75,11 +92,20 @@ const ProfilePage = () => {
 
       setProfileData((prev) => ({ ...prev, residence: formData.residence }));
       setIsEditingResidence(false);
-      setMessage({ text: "Residence updated successfully", type: "success" });
+      Swal.fire({
+        icon: "success",
+        title: "Success",
+        text: "Residence updated successfully",
+        timer: 3000,
+        showConfirmButton: false,
+      });
     } catch (err) {
-      setMessage({
+      Swal.fire({
+        icon: "error",
+        title: "Error",
         text: err.response?.data?.message || "Failed to update residence",
-        type: "error",
+        timer: 3000,
+        showConfirmButton: false,
       });
     }
   };
@@ -87,9 +113,7 @@ const ProfilePage = () => {
   if (loading)
     return (
       <Layout>
-        <div className="px-5 text-text-light dark:text-text-dark">
-          Loading...
-        </div>
+        <Loading />
       </Layout>
     );
   if (error)
@@ -105,18 +129,6 @@ const ProfilePage = () => {
         <h1 className="text-2xl font-bold mb-6 text-text-light dark:text-primary-dark">
           Profile
         </h1>
-
-        {message && (
-          <div
-            className={`mb-4 p-3 rounded ${
-              message.type === "success"
-                ? "bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-100"
-                : "bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-100"
-            }`}
-          >
-            {message.text}
-          </div>
-        )}
 
         {profileData && (
           <div className="space-y-6">

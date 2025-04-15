@@ -20,6 +20,7 @@ import Error from "./pages/Error/Error";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminDashboard from "./components/AdminDashboard";
 import DeliveryDetailsPage from "./pages/Delivery/DeliveryDetailsPage";
+import DeliveryDashboard from "./components/Delivery/DeliveryDashboard";
 
 function App() {
   return (
@@ -56,6 +57,15 @@ function App() {
                 element={
                   <ProtectedRoute requiredRole="admin">
                     <AdminDashboard />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/deliverydashboard"
+                element={
+                  <ProtectedRoute requiredRole="delivery">
+                    <DeliveryDashboard />
                   </ProtectedRoute>
                 }
               />

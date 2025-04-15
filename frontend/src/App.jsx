@@ -25,7 +25,12 @@ import DeliveryDetailsPage from "./pages/Delivery/DeliveryDetailsPage";
 import DeliveryDashboard from "./components/Delivery/DeliveryDashboard";
 import ProfilePage from "./pages/Profile/ProfilePage";
 import FavoritesPage from "./components/OrderComponent/FavoritesPage";
-import RestaurantDashboard from "./pages/RestaurantDashboard/RestaurantDashboard";
+import RestaurantDashboard from "./pages/Restaurant/RestaurantDashboard";
+import MenuManagement from "./pages/Restaurant/MenuManagement";
+import Orders from "./pages/Restaurant/Orders";
+import RestaurantListPage from "./pages/Restaurant/RestaurantListPage";
+import RestaurantDetailPage from "./pages/Restaurant/RestaurantDetailPage";
+import EditRestaurant from "./pages/Restaurant/EditRestaurant";
 
 function App() {
   return (
@@ -62,7 +67,11 @@ function App() {
                 path={ROUTES.DELIVERY_MAP}
                 element={<DeliveryDetailsPage />}
               />
-
+              <Route path="/restaurants" element={<RestaurantListPage />} />
+              <Route
+                path="/restaurants/:id"
+                element={<RestaurantDetailPage />}
+              />
               {/* Protected route with role-based access */}
               <Route
                 path={ROUTES.ADMIN_DASHBOARD}
@@ -82,11 +91,60 @@ function App() {
                 }
               />
 
-              <Route
+              {/* <Route
                 path={ROUTES.RESTAURANT_DASHBOARD}
                 element={
                   <ProtectedRoute requiredRole="restaurant_owner">
                     <RestaurantDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path={ROUTES.RESTAURANT_MENU}
+                element={
+                  <ProtectedRoute requiredRole="restaurant_owner">
+                    <MenuManagement />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path={ROUTES.RESTAURANT_ORDERS}
+                element={
+                  <ProtectedRoute requiredRole="restaurant_owner">
+                    <Orders />
+                  </ProtectedRoute>
+                }
+              /> */}
+
+              <Route
+                path="restaurant-dashboard"
+                element={
+                  <ProtectedRoute requiredRole="restaurant_owner">
+                    <RestaurantDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/restaurants/:id/edit"
+                element={
+                  <ProtectedRoute requiredRole="restaurant_owner">
+                    <EditRestaurant />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/restaurants/:id/menu"
+                element={
+                  <ProtectedRoute requiredRole="restaurant_owner">
+                    <MenuManagement />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/restaurants/:id/orders"
+                element={
+                  <ProtectedRoute requiredRole="restaurant_owner">
+                    <Orders />
                   </ProtectedRoute>
                 }
               />

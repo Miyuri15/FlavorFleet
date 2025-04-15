@@ -21,6 +21,10 @@ const ROUTES = {
   DELIVERY_DASHBOARD: "/deliverydashboard",
   RESTAURANT_DASHBOARD: "/restaurant-dashboard",
 
+  //Restaurant routes
+  RESTAURANT_MENU: "/restaurant/menu",
+  RESTAURANT_ORDERS: "/restaurant/orders",
+
   // Errors
   ERROR_PAGE: (errorType = ":errorType") => `/error/${errorType}`,
   NOT_FOUND: "*",

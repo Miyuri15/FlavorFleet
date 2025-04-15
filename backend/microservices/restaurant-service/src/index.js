@@ -2,8 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 require("dotenv").config();
-const foodRoutes = require('./routes/foodRoutes');
-
+const foodRoutes = require("./routes/foodRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 5003;
@@ -11,7 +10,7 @@ const PORT = process.env.PORT || 5003;
 // Middleware
 app.use(
   cors({
-    origin: "*", // Allow requests from the frontend service
+    origin: "http://localhost:3000", // Allow requests from the frontend service
     credentials: true,
   })
 );
@@ -37,8 +36,7 @@ const addRestuarant = require("./routes/restaurantRoutes");
 app.use("/api/restaurant", addRestuarant);
 
 // Use food routes
-app.use('/api', foodRoutes);
-
+app.use("/api", foodRoutes);
 
 // Start Server
 app.listen(PORT, () => {

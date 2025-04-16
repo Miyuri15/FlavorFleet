@@ -24,6 +24,9 @@ const ROUTES = {
   // Errors
   ERROR_PAGE: (errorType = ":errorType") => `/error/${errorType}`,
   NOT_FOUND: "*",
+
+  //favourite menu items 
+  FAVOURITE_MENUITEMS:"/favourite-menuitems",
 };
 
 export default ROUTES;

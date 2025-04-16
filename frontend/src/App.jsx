@@ -24,6 +24,7 @@ import AdminDashboard from "./components/AdminDashboard";
 import DeliveryDetailsPage from "./pages/Delivery/DeliveryDetailsPage";
 import DeliveryDashboard from "./components/Delivery/DeliveryDashboard";
 import ProfilePage from "./pages/Profile/ProfilePage";
+import FavoritesPage from "./components/OrderComponent/FavoritesPage";
 
 function App() {
   return (
@@ -88,7 +89,13 @@ function App() {
                 path={ROUTES.NOT_FOUND}
                 element={<Error errorType="404" />}
               />
+                          <Route
+              path={ROUTES.FAVOURITE_MENUITEMS}
+              element={<FavoritesPage/>}
+            />
+
             </Routes>
+
           </div>
         </Router>
       </ThemeProvider>

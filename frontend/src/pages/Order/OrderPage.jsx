@@ -4,8 +4,16 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 import Layout from "../../components/Layout";
 import Swal from "sweetalert2";
-import { FaShoppingCart, FaFilter, FaTimes } from "react-icons/fa";
+import {
+  FaShoppingCart,
+  FaFilter,
+  FaTimes,
+  FaHeart,
+  FaRegHeart,
+} from "react-icons/fa";
 import RestaurantList from "../../components/OrderComponent/RestaurantList";
+import MenuItemDetails from "../../components/OrderComponent/MenuItemDetails";
+import { useNavigate } from "react-router-dom";
 
 const ORDER_BACKEND_URL = import.meta.env.VITE_ORDER_BACKEND_URL;
 const RESTAURANT_BACKEND_URL = import.meta.env.VITE_RESTAURANT_BACKEND_URL;
@@ -20,7 +28,8 @@ const OrderPage = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [selectedRestaurantId, setSelectedRestaurantId] = useState(null);
   const [restaurantsData, setRestaurantsData] = useState([]);
-
+  const [selectedMenuItem, setSelectedMenuItem] = useState(null);
+  const navigate = useNavigate();
   const token = localStorage.getItem("token");
   if (!token) return;
 
@@ -143,6 +152,29 @@ const OrderPage = () => {
   // Clear all filters
   const clearFilters = () => {
     setSelectedCategories([]);
+  };
+  const handleMenuItemClick = async (itemId) => {
+    try {
+      setLoading(true);
+      const response = await axios.get(
+        `${RESTAURANT_BACKEND_URL}/api/restaurant/menu/${itemId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setSelectedMenuItem(response.data);
+    } catch (error) {
+      console.error("Error fetching menu item details:", error);
+      Swal.fire({
+        title: "Error!",
+        text: "Failed to load menu item details",
+        icon: "error",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Add item to cart
@@ -294,6 +326,14 @@ const OrderPage = () => {
                 </span>
               )}
             </Link>
+
+            <button
+              onClick={() => navigate("/favourite-menuitems")}
+              className="p-2 text-gray-700 hover:text-red-500 transition-colors"
+              title="View Favorites"
+            >
+              <FaHeart className="w-6 h-6" />
+            </button>
           </div>
         </div>
 
@@ -380,7 +420,8 @@ const OrderPage = () => {
             {filteredFoodItems.map((item) => (
               <div
                 key={item._id}
-                className="bg-white p-4 rounded-lg shadow hover:shadow-lg transition"
+                className="bg-white p-4 rounded-lg shadow hover:shadow-lg transition cursor-pointer"
+                onClick={() => handleMenuItemClick(item._id)}
               >
                 <div className="w-full h-40 rounded-lg mb-4 overflow-hidden bg-gray-100">
                   <img
@@ -437,6 +478,13 @@ const OrderPage = () => {
               Clear Filters
             </button>
           </div>
+        )}
+
+        {selectedMenuItem && (
+          <MenuItemDetails
+            item={selectedMenuItem}
+            onClose={() => setSelectedMenuItem(null)}
+          />
         )}
       </div>
     </Layout>

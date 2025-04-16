@@ -10,6 +10,7 @@ import {
 } from "react-icons/fi";
 import { useAuth } from "../context/AuthContext";
 import LogoutDialog from "./LogoutDialog";
+import ROUTES from "../routes";
 
 const MenuBar = () => {
   const location = useLocation();
@@ -23,9 +24,9 @@ const MenuBar = () => {
 
   // Get dashboard path based on user role
   const getDashboardPath = () => {
-    if (isAdmin) return "/admindashboard";
-    if (isDelivery) return "/deliverydashboard";
-    return "/userdashboard";
+    if (isAdmin) return ROUTES.ADMIN_DASHBOARD;
+    if (isDelivery) return ROUTES.DELIVERY_DASHBOARD;
+    return ROUTES.USER_DASHBOARD;
   };
 
   // Common menu items for all users
@@ -37,38 +38,38 @@ const MenuBar = () => {
       active: isActive(getDashboardPath()),
     },
     {
-      to: "/deliveryMap",
+      to: ROUTES.DELIVERY_MAP,
       icon: <FiMap />,
       text: "Delivery Map",
-      active: isActive("/deliveryMap"),
+      active: isActive(ROUTES.DELIVERY_MAP),
     },
     {
-      to: "/profile",
+      to: ROUTES.PROFILE,
       icon: <FiUser />,
       text: "Profile",
-      active: isActive("/profile"),
+      active: isActive(ROUTES.PROFILE),
     },
   ];
 
   // Regular user menu items
   const userMenuItems = [
     {
-      to: "/myorders",
+      to: ROUTES.MY_ORDERS,
       icon: <FiClipboard />,
       text: "My Orders",
-      active: isActive("/myorders"),
+      active: isActive(ROUTES.MY_ORDERS),
     },
     {
-      to: "/order",
+      to: ROUTES.ORDER,
       icon: <FiClipboard />,
       text: "Order Food",
-      active: isActive("/order"),
+      active: isActive(ROUTES.ORDER),
     },
     {
-      to: "/cart",
+      to: ROUTES.CART,
       icon: <FiShoppingCart />,
       text: "Cart",
-      active: isActive("/cart"),
+      active: isActive(ROUTES.CART),
     },
   ];
 

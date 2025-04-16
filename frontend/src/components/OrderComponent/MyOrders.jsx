@@ -1,19 +1,19 @@
 import Layout from "../Layout";
 import { useEffect, useState } from "react";
-import axios from 'axios';
+import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { 
-  FaClock, 
-  FaCheckCircle, 
-  FaTruck, 
-  FaBoxOpen, 
-  FaTimesCircle, 
-  FaHistory, 
-  FaMoneyBillWave, 
+import {
+  FaClock,
+  FaCheckCircle,
+  FaTruck,
+  FaBoxOpen,
+  FaTimesCircle,
+  FaHistory,
+  FaMoneyBillWave,
   FaCreditCard,
-  FaReceipt
-} from 'react-icons/fa';
-import { FiExternalLink } from 'react-icons/fi';
+  FaReceipt,
+} from "react-icons/fa";
+import { FiExternalLink } from "react-icons/fi";
 
 export default function MyOrders() {
   const [orders, setOrders] = useState([]);
@@ -22,21 +22,23 @@ export default function MyOrders() {
   const navigate = useNavigate();
 
   const api = axios.create({
-    baseURL: 'http://localhost:5000',
+    baseURL: import.meta.env.VITE_ORDER_BACKEND_URL,
     headers: {
-      Authorization: `Bearer ${localStorage.getItem('token')}`
-    }
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
   });
 
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const { data } = await api.get('/api/orders/user/orders');
+        const { data } = await api.get("/api/orders/user/orders");
         // Sort orders by createdAt in descending order (newest first)
-        const sortedOrders = data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        const sortedOrders = data.sort(
+          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+        );
         setOrders(sortedOrders);
       } catch (err) {
-        setError(err.response?.data?.error || 'Failed to fetch orders');
+        setError(err.response?.data?.error || "Failed to fetch orders");
       } finally {
         setLoading(false);
       }
@@ -47,17 +49,17 @@ export default function MyOrders() {
 
   const getStatusIcon = (status) => {
     switch (status) {
-      case 'Pending':
+      case "Pending":
         return <FaClock className="text-yellow-500" />;
-      case 'Confirmed':
+      case "Confirmed":
         return <FaCheckCircle className="text-blue-500" />;
-      case 'Preparing':
+      case "Preparing":
         return <FaBoxOpen className="text-orange-500" />;
-      case 'Out for Delivery':
+      case "Out for Delivery":
         return <FaTruck className="text-purple-500" />;
-      case 'Delivered':
+      case "Delivered":
         return <FaCheckCircle className="text-green-500" />;
-      case 'Cancelled':
+      case "Cancelled":
         return <FaTimesCircle className="text-red-500" />;
       default:
         return <FaHistory className="text-gray-500" />;
@@ -66,28 +68,28 @@ export default function MyOrders() {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'Pending':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'Confirmed':
-        return 'bg-blue-100 text-blue-800';
-      case 'Preparing':
-        return 'bg-orange-100 text-orange-800';
-      case 'Out for Delivery':
-        return 'bg-purple-100 text-purple-800';
-      case 'Delivered':
-        return 'bg-green-100 text-green-800';
-      case 'Cancelled':
-        return 'bg-red-100 text-red-800';
+      case "Pending":
+        return "bg-yellow-100 text-yellow-800";
+      case "Confirmed":
+        return "bg-blue-100 text-blue-800";
+      case "Preparing":
+        return "bg-orange-100 text-orange-800";
+      case "Out for Delivery":
+        return "bg-purple-100 text-purple-800";
+      case "Delivered":
+        return "bg-green-100 text-green-800";
+      case "Cancelled":
+        return "bg-red-100 text-red-800";
       default:
-        return 'bg-gray-100 text-gray-800';
+        return "bg-gray-100 text-gray-800";
     }
   };
 
   const getPaymentMethodIcon = (method) => {
     switch (method) {
-      case 'Cash on Delivery':
+      case "Cash on Delivery":
         return <FaMoneyBillWave className="text-green-600" />;
-      case 'Online Payment':
+      case "Online Payment":
         return <FaCreditCard className="text-blue-600" />;
       default:
         return <FaReceipt className="text-gray-500" />;
@@ -96,26 +98,26 @@ export default function MyOrders() {
 
   const getPaymentStatusColor = (status) => {
     switch (status) {
-      case 'Completed':
-        return 'bg-green-100 text-green-800';
-      case 'Pending':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'Failed':
-        return 'bg-red-100 text-red-800';
-      case 'Refunded':
-        return 'bg-purple-100 text-purple-800';
+      case "Completed":
+        return "bg-green-100 text-green-800";
+      case "Pending":
+        return "bg-yellow-100 text-yellow-800";
+      case "Failed":
+        return "bg-red-100 text-red-800";
+      case "Refunded":
+        return "bg-purple-100 text-purple-800";
       default:
-        return 'bg-gray-100 text-gray-800';
+        return "bg-gray-100 text-gray-800";
     }
   };
 
   const formatDate = (dateString) => {
-    const options = { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    const options = {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     };
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
@@ -164,13 +166,15 @@ export default function MyOrders() {
             <div className="mx-auto h-24 w-24 text-gray-400">
               <FaBoxOpen className="w-full h-full" />
             </div>
-            <h3 className="mt-4 text-lg font-medium text-gray-900">No orders yet</h3>
+            <h3 className="mt-4 text-lg font-medium text-gray-900">
+              No orders yet
+            </h3>
             <p className="mt-1 text-sm text-gray-500">
               You haven't placed any orders yet. Start by browsing our menu.
             </p>
             <div className="mt-6">
               <button
-                onClick={() => navigate('/order')}
+                onClick={() => navigate("/order")}
                 className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
                 Browse Menu
@@ -186,11 +190,20 @@ export default function MyOrders() {
                     <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start">
                       <div className="mb-4 sm:mb-0">
                         <div className="flex items-center">
-                          <span className="mr-3">{getStatusIcon(order.status)}</span>
+                          <span className="mr-3">
+                            {getStatusIcon(order.status)}
+                          </span>
                           <h3 className="text-lg leading-6 font-medium text-gray-900">
-                            Order #{order._id.substring(order._id.length - 6).toUpperCase()}
+                            Order #
+                            {order._id
+                              .substring(order._id.length - 6)
+                              .toUpperCase()}
                           </h3>
-                          <span className={`ml-3 px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(order.status)}`}>
+                          <span
+                            className={`ml-3 px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(
+                              order.status
+                            )}`}
+                          >
                             {order.status}
                           </span>
                         </div>
@@ -224,13 +237,19 @@ export default function MyOrders() {
                     {/* Payment Information Section */}
                     <div className="mt-3 flex flex-wrap items-center gap-4">
                       <div className="flex items-center">
-                        <span className="mr-2">{getPaymentMethodIcon(order.paymentMethod)}</span>
+                        <span className="mr-2">
+                          {getPaymentMethodIcon(order.paymentMethod)}
+                        </span>
                         <span className="text-sm font-medium text-gray-700">
                           {order.paymentMethod}
                         </span>
                       </div>
                       <div className="flex items-center">
-                        <span className={`px-2.5 py-1 text-xs font-medium rounded-full ${getPaymentStatusColor(order.paymentStatus)}`}>
+                        <span
+                          className={`px-2.5 py-1 text-xs font-medium rounded-full ${getPaymentStatusColor(
+                            order.paymentStatus
+                          )}`}
+                        >
                           Payment: {order.paymentStatus}
                         </span>
                       </div>
@@ -254,7 +273,11 @@ export default function MyOrders() {
                     </div>
                     <div className="mt-4 flex justify-between items-center">
                       <p className="text-sm text-gray-500">
-                        {order.items.reduce((sum, item) => sum + item.quantity, 0)} items
+                        {order.items.reduce(
+                          (sum, item) => sum + item.quantity,
+                          0
+                        )}{" "}
+                        items
                       </p>
                       <p className="text-lg font-semibold text-gray-900">
                         LKR {order.totalAmount.toFixed(2)}

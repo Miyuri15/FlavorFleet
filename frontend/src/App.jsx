@@ -1,6 +1,8 @@
 // src/App.jsx
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import ROUTES from "./routes";
+
 import Login from "./pages/Signin&Signup/Login";
 import Register from "./pages/Signin&Signup/Register";
 import { AuthProvider } from "./context/AuthContext";
@@ -30,32 +32,38 @@ function App() {
         <Router>
           <div className="min-h-screen bg-gray-100">
             <Routes>
-              <Route path="/" element={<Login />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/userdashboard" element={<UserDashboard />} />
-              <Route path="/order" element={<OrderPage />} />
-              <Route path="/cart" element={<CartPage />} />
-              <Route path="/profile" element={<ProfilePage />} />
-              <Route path="/placeorder" element={<PlaceOrderPage />} />
+              <Route path={ROUTES.HOME} element={<Login />} />
+              <Route path={ROUTES.LOGIN} element={<Login />} />
+              <Route path={ROUTES.REGISTER} element={<Register />} />
+              <Route path={ROUTES.USER_DASHBOARD} element={<UserDashboard />} />
+              <Route path={ROUTES.ORDER} element={<OrderPage />} />
+              <Route path={ROUTES.CART} element={<CartPage />} />
+              <Route path={ROUTES.PROFILE} element={<ProfilePage />} />
+              <Route path={ROUTES.PLACE_ORDER} element={<PlaceOrderPage />} />
               <Route
-                path="/order-confirmation/:orderId"
+                path={ROUTES.ORDER_CONFIRMATION()}
                 element={<OrderConfirmationPage />}
               />
-              <Route path="/myorders" element={<MyOrders />} />
-              <Route path="/orders/:id" element={<OrderDetails />} />
-              <Route path="/track-order/:id" element={<TrackOrder />} />
-              <Route path="/incoming-orders" element={<IncomingOrders />} />
-              <Route path="/payment" element={<PaymentPage />} />
+              <Route path={ROUTES.MY_ORDERS} element={<MyOrders />} />
+              <Route path={ROUTES.ORDER_DETAILS()} element={<OrderDetails />} />
+              <Route path={ROUTES.TRACK_ORDER()} element={<TrackOrder />} />
+              <Route
+                path={ROUTES.INCOMING_ORDERS}
+                element={<IncomingOrders />}
+              />
+              <Route path={ROUTES.PAYMENT} element={<PaymentPage />} />
               {/* <Route
                 path="/FindDeliveryPerson"
                 element={<FindDeliveryPerson />}
               /> */}
-              <Route path="/deliveryMap" element={<DeliveryDetailsPage />} />
+              <Route
+                path={ROUTES.DELIVERY_MAP}
+                element={<DeliveryDetailsPage />}
+              />
 
               {/* Protected route with role-based access */}
               <Route
-                path="/admin/dashboard"
+                path={ROUTES.ADMIN_DASHBOARD}
                 element={
                   <ProtectedRoute requiredRole="admin">
                     <AdminDashboard />
@@ -64,7 +72,7 @@ function App() {
               />
 
               <Route
-                path="/deliverydashboard"
+                path={ROUTES.DELIVERY_DASHBOARD}
                 element={
                   <ProtectedRoute requiredRole="delivery">
                     <DeliveryDashboard />
@@ -73,10 +81,13 @@ function App() {
               />
 
               {/* Dynamic Error Pages (401, 403, 500, etc.) */}
-              <Route path="/error/:errorType" element={<Error />} />
+              <Route path={ROUTES.ERROR_PAGE()} element={<Error />} />
 
               {/* Catch-all route for 404 */}
-              <Route path="*" element={<Error errorType="404" />} />
+              <Route
+                path={ROUTES.NOT_FOUND}
+                element={<Error errorType="404" />}
+              />
             </Routes>
           </div>
         </Router>

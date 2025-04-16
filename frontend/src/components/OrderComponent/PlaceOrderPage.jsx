@@ -16,7 +16,7 @@ export default function PlaceOrderPage() {
 
   // In your axios instance setup
   const api = axios.create({
-    baseURL: "http://localhost:5000",
+    baseURL: import.meta.env.VITE_ORDER_BACKEND_URL,
     headers: {
       Authorization: `Bearer ${localStorage.getItem("token")}`,
     },
@@ -71,7 +71,7 @@ export default function PlaceOrderPage() {
         });
         return;
       }
-  
+
       const totals = calculateTotals();
       const orderData = {
         restaurantId: cartItems[0].restaurantId,
@@ -87,26 +87,28 @@ export default function PlaceOrderPage() {
         paymentMethod:
           paymentMethod === "cash" ? "Cash on Delivery" : "Online Payment",
       };
-  
+
       const response = await api.post("/api/orders", orderData);
       if (!response.data?._id) {
         throw new Error("Invalid order data received from server");
       }
-  
+
       // **Check what itemIds are being sent**
       const itemIds = cartItems.map((item) => item._id);
       console.log("✅ Sending these item IDs to remove:", itemIds);
-  
+
       // **Check if API request works**
       try {
-        const removeResponse = await api.delete("/api/cart/removeChecked", { data: { itemIds } });
+        const removeResponse = await api.delete("/api/cart/removeChecked", {
+          data: { itemIds },
+        });
         console.log("🛒 Response from cart removal:", removeResponse.data);
       } catch (clearError) {
         console.error("❌ Error clearing checked items from cart:", clearError);
       }
-  
+
       localStorage.setItem("currentOrder", response.data._id);
-  
+
       if (paymentMethod === "card") {
         navigate("/paymentPortal", { state: { orderId: response.data._id } });
       } else {
@@ -132,7 +134,7 @@ export default function PlaceOrderPage() {
       });
     }
   };
-  
+
   if (loading) {
     return (
       <Layout>

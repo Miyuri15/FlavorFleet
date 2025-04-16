@@ -39,6 +39,8 @@ const RestaurantSchema = new mongoose.Schema(
     deliveryRadius: { type: Number, default: 5 },
     logo: { type: String },
     banner: { type: String },
+    averageRating: { type: Number, default: 0 },
+    ratingCount: { type: Number, default: 0 },
     menuItems: [{ type: mongoose.Schema.Types.ObjectId, ref: "MenuItem" }],
   },
 

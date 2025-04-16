@@ -8,7 +8,10 @@ const MenuItemSchema = new mongoose.Schema(
     category: { type: String, required: true },
     isAvailable: { type: Boolean, default: true },
     preparationTime: { type: Number },
-    restaurant: {
+    averageRating: { type: Number, default: 0 },
+    ratingCount: { type: Number, default: 0 },
+    ratingSum: { type: Number, default: 0 }, 
+        restaurant: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Restaurant",
       required: true,

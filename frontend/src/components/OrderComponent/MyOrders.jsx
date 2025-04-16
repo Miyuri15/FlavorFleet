@@ -12,13 +12,29 @@ import {
   FaMoneyBillWave,
   FaCreditCard,
   FaReceipt,
+  FaStar,
 } from "react-icons/fa";
 import { FiExternalLink } from "react-icons/fi";
+import RatingModal from "./RatingModal";
+
+const statusTabs = [
+  { id: "all", label: "All Orders" },
+  { id: "Pending", label: "Pending" },
+  { id: "Confirmed", label: "Confirmed" },
+  { id: "Preparing", label: "Preparing" },
+  { id: "Out for Delivery", label: "Out for Delivery" },
+  { id: "Delivered", label: "Delivered" },
+  { id: "Cancelled", label: "Cancelled" },
+];
 
 export default function MyOrders() {
   const [orders, setOrders] = useState([]);
+  const [filteredOrders, setFilteredOrders] = useState([]);
+  const [activeTab, setActiveTab] = useState("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showRatingModal, setShowRatingModal] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState(null);
   const navigate = useNavigate();
 
   const api = axios.create({
@@ -32,11 +48,11 @@ export default function MyOrders() {
     const fetchOrders = async () => {
       try {
         const { data } = await api.get("/api/orders/user/orders");
-        // Sort orders by createdAt in descending order (newest first)
         const sortedOrders = data.sort(
           (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
         );
         setOrders(sortedOrders);
+        setFilteredOrders(sortedOrders);
       } catch (err) {
         setError(err.response?.data?.error || "Failed to fetch orders");
       } finally {
@@ -47,79 +63,79 @@ export default function MyOrders() {
     fetchOrders();
   }, []);
 
+  useEffect(() => {
+    if (activeTab === "all") {
+      setFilteredOrders(orders);
+    } else {
+      const filtered = orders.filter((order) => order.status === activeTab);
+      setFilteredOrders(filtered);
+    }
+  }, [activeTab, orders]);
+
+  const handleRateOrder = (order) => {
+    setSelectedOrder(order);
+    setShowRatingModal(true);
+  };
+
+  const handleSubmitRating = async (ratings) => {
+    try {
+      // Corrected endpoint - added the order ID and fixed the typo
+      await api.post(`/api/orders/${selectedOrder._id}/ratings`, {
+        ...ratings,
+        orderId: selectedOrder._id
+      });
+      
+      // Update the order to show it's been rated
+      setOrders(orders.map(order => 
+        order._id === selectedOrder._id ? { ...order, hasRated: true } : order
+      ));
+      setShowRatingModal(false);
+    } catch (err) {
+      setError(err.response?.data?.error || "Failed to submit rating");
+    }
+  };
+
+  
   const getStatusIcon = (status) => {
     switch (status) {
-      case "Pending":
-        return <FaClock className="text-yellow-500" />;
-      case "Confirmed":
-        return <FaCheckCircle className="text-blue-500" />;
-      case "Preparing":
-        return <FaBoxOpen className="text-orange-500" />;
-      case "Out for Delivery":
-        return <FaTruck className="text-purple-500" />;
-      case "Delivered":
-        return <FaCheckCircle className="text-green-500" />;
-      case "Cancelled":
-        return <FaTimesCircle className="text-red-500" />;
-      default:
-        return <FaHistory className="text-gray-500" />;
+      case "Pending": return <FaClock className="text-yellow-500" />;
+      case "Confirmed": return <FaCheckCircle className="text-blue-500" />;
+      case "Preparing": return <FaBoxOpen className="text-orange-500" />;
+      case "Out for Delivery": return <FaTruck className="text-purple-500" />;
+      case "Delivered": return <FaCheckCircle className="text-green-500" />;
+      case "Cancelled": return <FaTimesCircle className="text-red-500" />;
+      default: return <FaHistory className="text-gray-500" />;
     }
   };
 
   const getStatusColor = (status) => {
     switch (status) {
-      case "Pending":
-        return "bg-yellow-100 text-yellow-800";
-      case "Confirmed":
-        return "bg-blue-100 text-blue-800";
-      case "Preparing":
-        return "bg-orange-100 text-orange-800";
-      case "Out for Delivery":
-        return "bg-purple-100 text-purple-800";
-      case "Delivered":
-        return "bg-green-100 text-green-800";
-      case "Cancelled":
-        return "bg-red-100 text-red-800";
-      default:
-        return "bg-gray-100 text-gray-800";
+      case "Pending": return "bg-yellow-100 text-yellow-800";
+      case "Confirmed": return "bg-blue-100 text-blue-800";
+      case "Preparing": return "bg-orange-100 text-orange-800";
+      case "Out for Delivery": return "bg-purple-100 text-purple-800";
+      case "Delivered": return "bg-green-100 text-green-800";
+      case "Cancelled": return "bg-red-100 text-red-800";
+      default: return "bg-gray-100 text-gray-800";
     }
   };
 
   const getPaymentMethodIcon = (method) => {
     switch (method) {
-      case "Cash on Delivery":
-        return <FaMoneyBillWave className="text-green-600" />;
-      case "Online Payment":
-        return <FaCreditCard className="text-blue-600" />;
-      default:
-        return <FaReceipt className="text-gray-500" />;
-    }
-  };
-
-  const getPaymentStatusColor = (status) => {
-    switch (status) {
-      case "Completed":
-        return "bg-green-100 text-green-800";
-      case "Pending":
-        return "bg-yellow-100 text-yellow-800";
-      case "Failed":
-        return "bg-red-100 text-red-800";
-      case "Refunded":
-        return "bg-purple-100 text-purple-800";
-      default:
-        return "bg-gray-100 text-gray-800";
+      case "Cash on Delivery": return <FaMoneyBillWave className="text-green-600" />;
+      case "Online Payment": return <FaCreditCard className="text-blue-600" />;
+      default: return <FaReceipt className="text-gray-500" />;
     }
   };
 
   const formatDate = (dateString) => {
-    const options = {
+    return new Date(dateString).toLocaleDateString(undefined, {
       year: "numeric",
       month: "short",
       day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
-    };
-    return new Date(dateString).toLocaleDateString(undefined, options);
+    });
   };
 
   if (loading) {
@@ -161,16 +177,44 @@ export default function MyOrders() {
           </p>
         </div>
 
-        {orders.length === 0 ? (
+        {/* Status Tabs */}
+        <div className="mb-6">
+          <div className="border-b border-gray-200">
+            <nav className="-mb-px flex space-x-8 overflow-x-auto">
+              {statusTabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${
+                    activeTab === tab.id
+                      ? "border-blue-500 text-blue-600"
+                      : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  }`}
+                >
+                  {tab.label}
+                  {tab.id !== "all" && (
+                    <span className="ml-1 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                      {orders.filter((order) => order.status === tab.id).length}
+                    </span>
+                  )}
+                </button>
+              ))}
+            </nav>
+          </div>
+        </div>
+
+        {filteredOrders.length === 0 ? (
           <div className="bg-white rounded-lg shadow-sm p-8 text-center">
             <div className="mx-auto h-24 w-24 text-gray-400">
               <FaBoxOpen className="w-full h-full" />
             </div>
             <h3 className="mt-4 text-lg font-medium text-gray-900">
-              No orders yet
+              No {activeTab === "all" ? "" : activeTab} orders found
             </h3>
             <p className="mt-1 text-sm text-gray-500">
-              You haven't placed any orders yet. Start by browsing our menu.
+              {activeTab === "all"
+                ? "You haven't placed any orders yet. Start by browsing our menu."
+                : `You don't have any ${activeTab.toLowerCase()} orders at the moment.`}
             </p>
             <div className="mt-6">
               <button
@@ -184,20 +228,15 @@ export default function MyOrders() {
         ) : (
           <div className="bg-white shadow overflow-hidden sm:rounded-lg">
             <ul className="divide-y divide-gray-200">
-              {orders.map((order) => (
+              {filteredOrders.map((order) => (
                 <li key={order._id}>
                   <div className="px-4 py-5 sm:px-6">
                     <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start">
                       <div className="mb-4 sm:mb-0">
                         <div className="flex items-center">
-                          <span className="mr-3">
-                            {getStatusIcon(order.status)}
-                          </span>
+                          <span className="mr-3">{getStatusIcon(order.status)}</span>
                           <h3 className="text-lg leading-6 font-medium text-gray-900">
-                            Order #
-                            {order._id
-                              .substring(order._id.length - 6)
-                              .toUpperCase()}
+                            Order #{order._id.substring(order._id.length - 6).toUpperCase()}
                           </h3>
                           <span
                             className={`ml-3 px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(
@@ -217,6 +256,15 @@ export default function MyOrders() {
                         )}
                       </div>
                       <div className="flex flex-col sm:flex-row sm:space-x-3 space-y-2 sm:space-y-0">
+                        {order.status === "Delivered" && !order.hasRated && (
+                          <button
+                            onClick={() => handleRateOrder(order)}
+                            className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
+                          >
+                            <FaStar className="mr-2" />
+                            Rate Order
+                          </button>
+                        )}
                         <button
                           onClick={() => navigate(`/track-order/${order._id}`)}
                           className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
@@ -234,8 +282,8 @@ export default function MyOrders() {
                       </div>
                     </div>
 
-                    {/* Payment Information Section */}
-                    <div className="mt-3 flex flex-wrap items-center gap-4">
+                    {/* Payment Information */}
+                    <div className="mt-3 flex items-center gap-4">
                       <div className="flex items-center">
                         <span className="mr-2">
                           {getPaymentMethodIcon(order.paymentMethod)}
@@ -244,17 +292,9 @@ export default function MyOrders() {
                           {order.paymentMethod}
                         </span>
                       </div>
-                      <div className="flex items-center">
-                        <span
-                          className={`px-2.5 py-1 text-xs font-medium rounded-full ${getPaymentStatusColor(
-                            order.paymentStatus
-                          )}`}
-                        >
-                          Payment: {order.paymentStatus}
-                        </span>
-                      </div>
                     </div>
 
+                    {/* Order Items */}
                     <div className="mt-4">
                       <div className="flex overflow-x-auto">
                         {order.items.map((item, index) => (
@@ -273,11 +313,7 @@ export default function MyOrders() {
                     </div>
                     <div className="mt-4 flex justify-between items-center">
                       <p className="text-sm text-gray-500">
-                        {order.items.reduce(
-                          (sum, item) => sum + item.quantity,
-                          0
-                        )}{" "}
-                        items
+                        {order.items.reduce((sum, item) => sum + item.quantity, 0)} items
                       </p>
                       <p className="text-lg font-semibold text-gray-900">
                         LKR {order.totalAmount.toFixed(2)}
@@ -290,6 +326,15 @@ export default function MyOrders() {
           </div>
         )}
       </div>
+
+      {/* Rating Modal */}
+      {showRatingModal && (
+        <RatingModal
+          order={selectedOrder}
+          onClose={() => setShowRatingModal(false)}
+          onSubmit={handleSubmitRating}
+        />
+      )}
     </Layout>
   );
 }

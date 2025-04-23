@@ -8,8 +8,6 @@ const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
 createRoot(document.getElementById("root")).render(
   <LoadScript googleMapsApiKey={apiKey}>
-    <StrictMode>
-      <App />
-    </StrictMode>
+    <App />
   </LoadScript>
 );

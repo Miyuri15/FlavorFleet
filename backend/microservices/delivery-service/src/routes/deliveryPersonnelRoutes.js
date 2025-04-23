@@ -7,9 +7,26 @@ const {
   trackDelivery,
   updateLocation,
 } = require("../controllers/deliveryController");
+const {
+  updateDriverStatus,
+  addDriver,
+  getCurrentDriver,
+} = require("../controllers/driverController");
 const { delivery } = require("../middlewares/auth");
 
 const router = express.Router();
+
+// Route to update the current GPS location
+router.post("/location/update", delivery, updateLocation);
+
+// Route to update the status of a driver
+router.patch("/driver/update-status", delivery, updateDriverStatus);
+
+// Route to add a new driver
+router.post("/driver/add", delivery, addDriver);
+
+// Route to get the current driver's details
+router.get("/driver/me", delivery, getCurrentDriver);
 
 // Route to get deliveries assigned to the logged-in delivery personnel
 router.get("/", delivery, getDeliveries);
@@ -25,8 +42,5 @@ router.patch("/:id/status", delivery, updateDeliveryStatus);
 
 // Route to get current delivery location
 router.get("/:id/track", delivery, trackDelivery);
-
-// Route to update the current GPS location
-router.post("/location/update", delivery, updateLocation);
 
 module.exports = router;

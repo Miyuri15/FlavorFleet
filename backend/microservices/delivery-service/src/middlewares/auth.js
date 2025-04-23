@@ -2,7 +2,22 @@ const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
 const delivery = function (req, res, next) {
-  const token = req.header("Authorization")?.split(" ")[1];
+  const authHeader = req.header("Authorization");
+
+  if (!authHeader) {
+    return res.status(401).send("Authorization header missing");
+  }
+
+  const tokenParts = authHeader.split(" ");
+  if (tokenParts.length !== 2 || tokenParts[0] !== "Bearer") {
+    return res.status(401).send("Invalid Authorization header format");
+  }
+
+  const token = tokenParts[1];
+  if (!token) {
+    return res.status(401).send("Token missing");
+  }
+
   if (!token) return res.status(401).send("Access Denied");
 
   try {

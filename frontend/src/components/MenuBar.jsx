@@ -79,10 +79,10 @@ const MenuBar = () => {
   // Delivery user menu items
   const deliveryMenuItems = [
     {
-      to: "/delivery/orders",
+      to: ROUTES.DELIVERY_ORDERS,
       icon: <FiTruck />,
       text: "Delivery Orders",
-      active: isActive("/delivery/orders"),
+      active: isActive(ROUTES.DELIVERY_ORDERS),
     },
   ];
 

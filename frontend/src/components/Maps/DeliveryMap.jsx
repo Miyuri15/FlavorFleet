@@ -1,5 +1,4 @@
 import React, { useState, useCallback } from "react";
-import { LoadScript } from "@react-google-maps/api";
 import axios from "axios";
 import MapControls from "./MapControls";
 import MapDisplay from "./MapDisplay";
@@ -84,28 +83,26 @@ const DeliveryMap = () => {
         onSubmit={handleSubmit}
       />
 
-      <LoadScript googleMapsApiKey={apiKey}>
-        <MapDisplay
-          mapContainerStyle={containerStyle}
-          center={defaultCenter}
-          zoom={10}
-          onLoad={(map) => setMap(map)}
-          onClick={(e) => {
-            setMarkerPosition({
-              lat: e.latLng.lat(),
-              lng: e.latLng.lng(),
-            });
-          }}
-        >
-          <MapMarker position={markerPosition} />
-          <Directions
-            origin={origin}
-            destination={destination}
-            response={response}
-            onDirectionsCallback={directionsCallback}
-          />
-        </MapDisplay>
-      </LoadScript>
+      <MapDisplay
+        mapContainerStyle={containerStyle}
+        center={defaultCenter}
+        zoom={10}
+        onLoad={(map) => setMap(map)}
+        onClick={(e) => {
+          setMarkerPosition({
+            lat: e.latLng.lat(),
+            lng: e.latLng.lng(),
+          });
+        }}
+      >
+        <MapMarker position={markerPosition} />
+        <Directions
+          origin={origin}
+          destination={destination}
+          response={response}
+          onDirectionsCallback={directionsCallback}
+        />
+      </MapDisplay>
     </div>
   );
 };

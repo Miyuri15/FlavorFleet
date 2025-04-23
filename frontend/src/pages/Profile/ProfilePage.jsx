@@ -143,26 +143,24 @@ const ProfilePage = () => {
         </h1>
 
         {profileData && (
-          <LoadScript googleMapsApiKey={apiKey}>
-            <div className="space-y-6">
-              <ProfileInfo
-                profileData={profileData}
-                onEditResidence={() => setIsEditingResidence(true)}
+          <div className="space-y-6">
+            <ProfileInfo
+              profileData={profileData}
+              onEditResidence={() => setIsEditingResidence(true)}
+            />
+
+            {isEditingResidence && (
+              <ResidenceForm
+                residence={formData.residence}
+                address={profileData.address}
+                onInputChange={handleInputChange}
+                onSubmit={handleResidenceUpdate}
+                onCancel={() => setIsEditingResidence(false)}
               />
+            )}
 
-              {isEditingResidence && (
-                <ResidenceForm
-                  residence={formData.residence}
-                  address={profileData.address}
-                  onInputChange={handleInputChange}
-                  onSubmit={handleResidenceUpdate}
-                  onCancel={() => setIsEditingResidence(false)}
-                />
-              )}
-
-              <ChangePasswordForm onSubmit={handlePasswordChange} />
-            </div>
-          </LoadScript>
+            <ChangePasswordForm onSubmit={handlePasswordChange} />
+          </div>
         )}
       </div>
     </Layout>

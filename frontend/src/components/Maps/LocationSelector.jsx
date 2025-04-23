@@ -26,16 +26,14 @@ const LocationSelector = ({ apiKey, onLocationSelect }) => {
   return (
     <div className="location-selector">
       <div className="map-container">
-        <LoadScript googleMapsApiKey={apiKey}>
-          <GoogleMap
-            mapContainerStyle={containerStyle}
-            center={selectedLocation || defaultCenter}
-            zoom={10}
-            onClick={handleMapClick}
-          >
-            {selectedLocation && <Marker position={selectedLocation} />}
-          </GoogleMap>
-        </LoadScript>
+        <GoogleMap
+          mapContainerStyle={containerStyle}
+          center={selectedLocation || defaultCenter}
+          zoom={10}
+          onClick={handleMapClick}
+        >
+          {selectedLocation && <Marker position={selectedLocation} />}
+        </GoogleMap>
       </div>
 
       <div className="location-controls">

@@ -11,13 +11,29 @@ const OrderService = {
     try {
       const order = new Order(orderData);
       await order.save();
+      
+      // Notify admin (existing functionality)
       await this.notifyAdmin(order);
+      
+      // New: Notify user about order placement
+      await notificationService.sendNotification(
+        order.userId,
+        `Your order #${order._id} has been placed successfully!`,
+        'order_placed',
+        {
+          sendEmail: true,
+          emailSubject: 'Order Placed Successfully',
+          relatedEntity: { type: 'Order', id: order._id }
+        }
+      );
+      
       return order;
     } catch (error) {
       console.error('Error creating order:', error);
       throw new Error('Failed to create order');
     }
   },
+
 
   async getOrderById(orderId) {
     try {
@@ -131,6 +147,12 @@ const OrderService = {
 
   async sendStatusNotifications(order, newStatus, userRole) {
     const notificationConfigs = {
+      'Pending': {
+        message: `Your order #${order._id} has been placed successfully! We'll notify you when it's confirmed.`,
+        type: 'order_placed',
+        sendEmail: true,
+        emailSubject: 'Order Placed Successfully'
+      },
       'Confirmed': {
         message: `Your order #${order._id} has been confirmed and is being processed.`,
         restaurantMessage: `New order #${order._id} has been confirmed (Total: $${order.totalAmount})`,
@@ -175,6 +197,7 @@ const OrderService = {
     if (!config) return;
 
     try {
+       // Send to user for all statuses except Prepared (which goes to delivery agent)
       if (newStatus !== 'Prepared') {
         await notificationService.sendNotification(
           order.userId,

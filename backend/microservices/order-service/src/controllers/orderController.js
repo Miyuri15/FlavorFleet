@@ -9,7 +9,7 @@ const OrderController = {
     try {
       const { restaurantId, items, totalAmount, deliveryAddress, paymentMethod } = req.body;
       const userId = req.user.id;
-
+  
       const newOrder = new Order({
         userId,
         restaurantId,
@@ -19,15 +19,27 @@ const OrderController = {
         paymentMethod,
         status: "Pending"
       });
-
+  
       await newOrder.save();
+      
+      // Send response immediately
       res.status(201).json(newOrder);
+      
+      // Notify user (this happens after response is sent)
+      try {
+        await OrderService.sendStatusNotifications(newOrder, 'Pending', 'user');
+      } catch (notificationError) {
+        console.error('Notification error:', notificationError);
+        // Don't fail the request if notifications fail
+      }
+      
     } catch (error) {
       console.error('Order creation error:', error); 
       res.status(500).json({ message: error.message });
     }
   },
 
+  
   async getOrder(req, res) {
     try {
       res.setHeader('Content-Type', 'application/json');

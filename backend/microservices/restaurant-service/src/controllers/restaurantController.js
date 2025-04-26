@@ -208,6 +208,30 @@ const updateOrderStatus = async (req, res) => {
   }
 };
 
+const deleteRestaurant = async (req, res) => {
+  try {
+    const restaurant = await Restaurant.findById(req.params.id);
+
+    if (!restaurant) {
+      return res.status(404).json({ error: "Restaurant not found" });
+    }
+
+    if (req.user.role !== "admin" && restaurant.owner !== req.user.id) {
+      return res
+        .status(403)
+        .json({ error: "Not authorized to delete this restaurant" });
+    }
+
+    await MenuItem.deleteMany({ restaurant: restaurant._id });
+
+    await restaurant.deleteOne();
+
+    res.json({ message: "Restaurant deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   createRestaurant,
   getAllRestaurants,
@@ -217,4 +241,5 @@ module.exports = {
   updateRestaurantStatus,
   getRestaurantOrders,
   updateOrderStatus,
+  deleteRestaurant,
 };

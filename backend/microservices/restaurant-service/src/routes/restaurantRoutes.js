@@ -9,6 +9,7 @@ const {
   updateRestaurantStatus,
   getRestaurantOrders,
   updateOrderStatus,
+  deleteRestaurant,
 } = require("../controllers/restaurantController");
 const {
   addMenuItem,
@@ -29,6 +30,7 @@ router.get("/:id", getRestaurantById);
 router.post("/", authMiddleware, createRestaurant);
 router.put("/:id", authMiddleware, updateRestaurant);
 router.patch("/:id/availability", authMiddleware, updateRestaurantAvailability);
+router.delete("/:id", authMiddleware, deleteRestaurant);
 
 // Order management routes (restaurant owner only)
 router.get("/:id/orders", authMiddleware, getRestaurantOrders);
@@ -39,9 +41,8 @@ router.post("/:restaurantId/menu", authMiddleware, addMenuItem);
 router.get("/:restaurantId/menu", getMenuItemsByRestaurant);
 router.put("/menu/:menuItemId", authMiddleware, updateMenuItem);
 router.delete("/menu/:menuItemId", authMiddleware, deleteMenuItem);
-router.get('/menu/all', getAllMenuItems); // Public route to get all menu items
+router.get("/menu/all", getAllMenuItems); // Public route to get all menu items
 router.get("/menu/:menuItemId", getMenuItemById);
-
 
 // Admin-only routes
 router.patch(

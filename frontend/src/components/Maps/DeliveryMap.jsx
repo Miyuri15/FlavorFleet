@@ -13,8 +13,8 @@ const containerStyle = {
 };
 
 const defaultCenter = {
-  lat: 40.7128,
-  lng: -74.006,
+  lat: 6.9147,
+  lng: 79.9724,
 };
 
 const DeliveryMap = () => {

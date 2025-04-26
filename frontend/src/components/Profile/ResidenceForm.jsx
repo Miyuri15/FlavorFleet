@@ -4,11 +4,17 @@ import MapMarker from "../Maps/MapMarker";
 
 const ResidenceForm = ({ onSubmit, onCancel, residence, address }) => {
   const [place, setPlace] = useState("");
-  const [selectedLocation, setSelectedLocation] = useState(
-    residence?.coordinates
-      ? { lat: residence.coordinates[1], lng: residence.coordinates[0] }
-      : null
-  );
+  const [selectedLocation, setSelectedLocation] = useState(() => {
+    if (
+      residence?.coordinates &&
+      residence.coordinates.length === 2 &&
+      typeof residence.coordinates[0] === "number" &&
+      typeof residence.coordinates[1] === "number"
+    ) {
+      return { lat: residence.coordinates[1], lng: residence.coordinates[0] };
+    }
+    return null;
+  });
   const [map, setMap] = useState(null);
 
   const containerStyle = {
@@ -18,8 +24,8 @@ const ResidenceForm = ({ onSubmit, onCancel, residence, address }) => {
   };
 
   const defaultCenter = {
-    lat: 40.7128,
-    lng: -74.006,
+    lat: 6.9147,
+    lng: 79.9724,
   };
 
   const handleShowOnMap = useCallback(async () => {

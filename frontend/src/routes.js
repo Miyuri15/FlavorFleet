@@ -24,13 +24,14 @@ const ROUTES = {
   //Restaurant routes
   RESTAURANT_MENU: "/restaurant/menu",
   RESTAURANT_ORDERS: "/restaurant/orders",
+  ADD_RESTAURANT: "/add-restaurant",
 
   // Errors
   ERROR_PAGE: (errorType = ":errorType") => `/error/${errorType}`,
   NOT_FOUND: "*",
 
-  //favourite menu items 
-  FAVOURITE_MENUITEMS:"/favourite-menuitems",
+  //favourite menu items
+  FAVOURITE_MENUITEMS: "/favourite-menuitems",
 };
 
 export default ROUTES;

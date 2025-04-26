@@ -89,16 +89,16 @@ const MenuBar = () => {
   // Restaurant owner menu items
   const restaurantMenuItems = [
     {
-      to: "/restaurant/menu",
+      to: ROUTES.RESTAURANT_MENU,
       icon: <FiMenu />,
       text: "Restaurant Menu",
-      active: isActive("/restaurant/menu"),
+      active: isActive(ROUTES.RESTAURANT_MENU),
     },
     {
-      to: "/restaurant/orders",
+      to: ROUTES.RESTAURANT_ORDERS,
       icon: <FiClipboard />,
       text: "Restaurant Orders",
-      active: isActive("/restaurant/orders"),
+      active: isActive(ROUTES.RESTAURANT_ORDERS),
     },
   ];
 

@@ -25,6 +25,8 @@ const ROUTES = {
   RESTAURANT_MENU: "/restaurant/menu",
   RESTAURANT_ORDERS: "/restaurant/orders",
   ADD_RESTAURANT: "/add-restaurant",
+  RESTAURANT_DETAILS: (id = ":id") => `/restaurant/${id}`,
+  RESTAURANT_EDIT: (id = ":id") => `/restaurant/${id}/edit`,
 
   // Errors
   ERROR_PAGE: (errorType = ":errorType") => `/error/${errorType}`,

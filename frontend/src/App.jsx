@@ -27,6 +27,8 @@ import ProfilePage from "./pages/Profile/ProfilePage";
 import FavoritesPage from "./components/OrderComponent/FavoritesPage";
 import RestaurantDashboard from "./pages/Restaurant/RestaurantDashboard";
 import AddRestaurant from "./pages/Restaurant/AddRestaurant";
+import RestaurantDetails from "./pages/Restaurant/RestaurantDetails";
+import EditRestaurant from "./pages/Restaurant/EditRestaurant";
 
 function App() {
   return (
@@ -123,7 +125,23 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-              {/* <Route path="/restaurant/:id" element={<RestaurantDetails />} /> */}
+              <Route
+                path={ROUTES.RESTAURANT_DETAILS()}
+                element={
+                  <ProtectedRoute requiredRole="restaurant_owner">
+                    <RestaurantDetails />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path={ROUTES.RESTAURANT_EDIT()}
+                element={
+                  <ProtectedRoute requiredRole="restaurant_owner">
+                    <EditRestaurant />
+                  </ProtectedRoute>
+                }
+              />
 
               {/* Dynamic Error Pages (401, 403, 500, etc.) */}
               <Route path={ROUTES.ERROR_PAGE()} element={<Error />} />

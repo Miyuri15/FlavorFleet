@@ -13,10 +13,40 @@ import {
   Upload,
 } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
-import axios from "axios";
+import Swal from "sweetalert2";
+import { foodServiceApi } from "../../../apiClients"; // Added API client import
+import dayjs from "dayjs";
 
 const { Option } = Select;
 const { TextArea } = Input;
+
+const DayTimePicker = ({ day }) => (
+  <Row gutter={16}>
+    <Col span={12}>
+      <Form.Item
+        name={`${day}Open`}
+        label={`${capitalizeFirstLetter(day)} Open`}
+        // rules={[{ required: true }]}
+      >
+        <TimePicker defaultValue={dayjs("09:00", "HH:mm")} format="HH:mm" />
+      </Form.Item>
+    </Col>
+    <Col span={12}>
+      <Form.Item
+        name={`${day}Close`}
+        label={`${capitalizeFirstLetter(day)} Close`}
+        // rules={[{ required: true }]}
+      >
+        <TimePicker defaultValue={dayjs("18:00", "HH:mm")} format="HH:mm" />
+      </Form.Item>
+    </Col>
+  </Row>
+);
+
+// Helper function to capitalize the first letter
+const capitalizeFirstLetter = (string) => {
+  return string.charAt(0).toUpperCase() + string.slice(1);
+};
 
 const AddRestaurant = () => {
   const [form] = Form.useForm();
@@ -29,31 +59,107 @@ const AddRestaurant = () => {
     try {
       setLoading(true);
 
-      // Handle file uploads first if needed
-      // You would typically upload files to a service like AWS S3
-      // and then get the URLs to save with the restaurant data
-
       const restaurantData = {
-        ...values,
+        name: values.name.trim(),
+        description: values.description.trim(),
+        cuisineType: values.cuisineType.trim(),
+        contactNumber: values.contactNumber.trim(),
+        email: values.email.trim(),
         address: {
-          street: values.street,
-          city: values.city,
-          postalCode: values.postalCode,
+          street: values.street.trim(),
+          city: values.city.trim(),
+          postalCode: values.postalCode.trim(),
         },
         openingHours: {
           monday: {
-            open: values.mondayOpen.format("HH:mm"),
-            close: values.mondayClose.format("HH:mm"),
+            open: values.mondayOpen ? values.mondayOpen.format("HH:mm") : null,
+            close: values.mondayClose
+              ? values.mondayClose.format("HH:mm")
+              : null,
           },
-          // Add other days similarly
+          tuesday: {
+            open: values.tuesdayOpen
+              ? values.tuesdayOpen.format("HH:mm")
+              : null,
+            close: values.tuesdayClose
+              ? values.tuesdayClose.format("HH:mm")
+              : null,
+          },
+          wednesday: {
+            open: values.wednesdayOpen
+              ? values.wednesdayOpen.format("HH:mm")
+              : null,
+            close: values.wednesdayClose
+              ? values.wednesdayClose.format("HH:mm")
+              : null,
+          },
+          thursday: {
+            open: values.thursdayOpen
+              ? values.thursdayOpen.format("HH:mm")
+              : null,
+            close: values.thursdayClose
+              ? values.thursdayClose.format("HH:mm")
+              : null,
+          },
+          friday: {
+            open: values.fridayOpen ? values.fridayOpen.format("HH:mm") : null,
+            close: values.fridayClose
+              ? values.fridayClose.format("HH:mm")
+              : null,
+          },
+          saturday: {
+            open: values.saturdayOpen
+              ? values.saturdayOpen.format("HH:mm")
+              : null,
+            close: values.saturdayClose
+              ? values.saturdayClose.format("HH:mm")
+              : null,
+          },
+          sunday: {
+            open: values.sundayOpen ? values.sundayOpen.format("HH:mm") : null,
+            close: values.sundayClose
+              ? values.sundayClose.format("HH:mm")
+              : null,
+          },
         },
       };
 
-      await foodServiceApi.post("/restaurant", restaurantData);
-      message.success("Restaurant added successfully!");
+      // If you need to upload files, use FormData
+      // const formData = new FormData();
+      // formData.append("data", JSON.stringify(restaurantData));
+      // if (logoFile) formData.append("logo", logoFile);
+      // if (bannerFile) formData.append("banner", bannerFile);
+
+      // Send the request
+      const response = await foodServiceApi.post(
+        "/restaurant",
+        restaurantData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      Swal.fire({
+        icon: "success",
+        title: "Restaurant Added!",
+        text: "Your restaurant was successfully added.",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+      form.resetFields();
       navigate("/restaurant-dashboard");
     } catch (error) {
-      message.error("Failed to add restaurant");
+      console.error("Submission error:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Failed to add restaurant",
+        text:
+          error.response?.data?.message ||
+          error.message ||
+          "Something went wrong",
+      });
     } finally {
       setLoading(false);
     }
@@ -75,6 +181,11 @@ const AddRestaurant = () => {
           layout="vertical"
           onFinish={onFinish}
           autoComplete="off"
+          onFinishFailed={({ errorFields }) => {
+            // This will show which fields failed validation
+            form.scrollToField(errorFields[0].name);
+            message.error("Please fill in all required fields correctly");
+          }}
         >
           <Row gutter={16}>
             <Col span={12}>
@@ -155,27 +266,17 @@ const AddRestaurant = () => {
           </Row>
 
           <h3>Opening Hours</h3>
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                name="mondayOpen"
-                label="Monday Open"
-                rules={[{ required: true }]}
-              >
-                <TimePicker format="HH:mm" />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                name="mondayClose"
-                label="Monday Close"
-                rules={[{ required: true }]}
-              >
-                <TimePicker format="HH:mm" />
-              </Form.Item>
-            </Col>
-          </Row>
-          {/* Add other days similarly */}
+          {[
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday",
+          ].map((day) => (
+            <DayTimePicker key={day} day={day} />
+          ))}
 
           <h3>Images</h3>
           <Row gutter={16}>
@@ -218,7 +319,13 @@ const AddRestaurant = () => {
           </Row>
 
           <Form.Item>
-            <Button type="primary" htmlType="submit" loading={loading}>
+            <Button
+              type="primary"
+              htmlType="submit"
+              loading={loading}
+              style={{ width: "100%", marginTop: "16px", color: "#fff" }}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
               Add Restaurant
             </Button>
           </Form.Item>

@@ -1,4 +1,3 @@
-// apiClients.js
 import axios from "axios";
 
 const createApiClient = (baseURL) => {
@@ -17,7 +16,7 @@ const createApiClient = (baseURL) => {
     (error) => {
       if (error.response?.status === 401) {
         localStorage.removeItem("token");
-        // window.location.href = "/login";
+        window.location.href = "/login";
       }
       return Promise.reject(error);
     }

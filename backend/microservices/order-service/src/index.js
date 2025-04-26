@@ -25,10 +25,14 @@ mongoose.connect(process.env.MONGO_URI)
 const cartRoutes = require('./routes/cartRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
+const favoriteRoutes = require('./routes/favoriteRoutes');
+
 
 app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/notifications',notificationRoutes);
+app.use('/api/favorites', favoriteRoutes);
+
 
 // Test Route
 app.get('/', (req, res) => {

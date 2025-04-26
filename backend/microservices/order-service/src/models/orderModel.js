@@ -1,4 +1,15 @@
 const mongoose = require('mongoose');
+const ratingSchema = new mongoose.Schema({
+  restaurantRating: { type: Number, min: 1, max: 5 },
+  deliveryRating: { type: Number, min: 1, max: 5 },
+  itemRatings: [{
+    itemId: { type: mongoose.Schema.Types.ObjectId, ref: 'MenuItem' },
+    rating: { type: Number, min: 1, max: 5 }
+  }],
+  feedback: String,
+  ratedAt: { type: Date, default: Date.now }
+});
+
 
 const orderSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
@@ -29,6 +40,8 @@ const orderSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now },
   cancellationReason: { type: String },
   adminNotes: { type: String },
+  rating: ratingSchema,
+  hasRated: { type: Boolean, default: false },
   normalizedAddress: String
 });
 

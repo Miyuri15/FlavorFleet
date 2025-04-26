@@ -37,5 +37,8 @@ router.patch('/:id/status', authMiddleware, OrderController.updateOrderStatus);
 //count orders
 router.get('/user/orders/count', OrderController.getUserOrdersCount);
 
+// Rating routes
+router.post('/:orderId/ratings', authMiddleware, OrderController.submitRating);
+router.get('/:orderId/ratings', authMiddleware, OrderController.getOrderRatings);
 
 module.exports = router;

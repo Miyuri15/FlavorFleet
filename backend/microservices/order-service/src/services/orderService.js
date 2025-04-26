@@ -1,21 +1,31 @@
 const Order = require('../models/orderModel');
-const notificationService = require('../utils/notificationService');
-const mongoose = require('mongoose');
 const Restaurant = require('../models/Restaurant');
 const MenuItem = require('../models/MenuItem');
-const AppError = require('../utils/appError');
 const User = require('../models/User');
-
+const AppError = require('../utils/appError');
+const mongoose = require('mongoose');
+const notificationService = require('../utils/notificationService');
 
 const OrderService = {
-  // Create a new order
   async createOrder(orderData) {
     try {
       const order = new Order(orderData);
       await order.save();
       
-      // Notify admin about new order
+      // Notify admin (existing functionality)
       await this.notifyAdmin(order);
+      
+      // New: Notify user about order placement
+      await notificationService.sendNotification(
+        order.userId,
+        `Your order #${order._id} has been placed successfully!`,
+        'order_placed',
+        {
+          sendEmail: true,
+          emailSubject: 'Order Placed Successfully',
+          relatedEntity: { type: 'Order', id: order._id }
+        }
+      );
       
       return order;
     } catch (error) {
@@ -24,7 +34,7 @@ const OrderService = {
     }
   },
 
-  // Get order by ID
+
   async getOrderById(orderId) {
     try {
       if (!mongoose.Types.ObjectId.isValid(orderId)) {
@@ -42,7 +52,6 @@ const OrderService = {
     }
   },
 
-  // Get orders by user ID
   async getOrdersByUser(userId) {
     try {
       return await Order.find({ userId })
@@ -54,7 +63,6 @@ const OrderService = {
     }
   },
 
-  // Get orders by restaurant ID
   async getOrdersByRestaurant(restaurantId) {
     try {
       return await Order.find({ restaurantId })
@@ -66,7 +74,6 @@ const OrderService = {
     }
   },
 
-  // Get orders by delivery agent ID
   async getOrdersByDeliveryAgent(deliveryAgentId) {
     try {
       return await Order.find({ deliveryAgentId })
@@ -79,7 +86,6 @@ const OrderService = {
     }
   },
 
-  // Update order status
   async updateOrderStatus(orderId, newStatus, userId, userRole, notes = '') {
     try {
       const order = await Order.findById(orderId);
@@ -111,7 +117,6 @@ const OrderService = {
     }
   },
 
-  // Validate status transitions (keep the same implementation)
   validateStatusTransition(currentStatus, newStatus, userRole) {
     const validTransitions = {
       admin: {
@@ -140,9 +145,14 @@ const OrderService = {
     }
   },
 
-  // Enhanced notification system
   async sendStatusNotifications(order, newStatus, userRole) {
     const notificationConfigs = {
+      'Pending': {
+        message: `Your order #${order._id} has been placed successfully! We'll notify you when it's confirmed.`,
+        type: 'order_placed',
+        sendEmail: true,
+        emailSubject: 'Order Placed Successfully'
+      },
       'Confirmed': {
         message: `Your order #${order._id} has been confirmed and is being processed.`,
         restaurantMessage: `New order #${order._id} has been confirmed (Total: $${order.totalAmount})`,
@@ -187,8 +197,8 @@ const OrderService = {
     if (!config) return;
 
     try {
-      // Notify customer
-      if (newStatus !== 'Prepared') { // Prepared only goes to delivery agent
+       // Send to user for all statuses except Prepared (which goes to delivery agent)
+      if (newStatus !== 'Prepared') {
         await notificationService.sendNotification(
           order.userId,
           config.message,
@@ -201,7 +211,6 @@ const OrderService = {
         );
       }
 
-      // Notify restaurant staff (for relevant statuses)
       if (['Confirmed', 'Delivered'].includes(newStatus)) {
         await notificationService.notifyRestaurant(
           order.restaurantId,
@@ -214,7 +223,6 @@ const OrderService = {
         );
       }
 
-      // Notify delivery agent (for relevant statuses)
       if (['Prepared', 'Out for Delivery', 'Delivered'].includes(newStatus) && order.deliveryAgentId) {
         await notificationService.sendNotification(
           order.deliveryAgentId,
@@ -229,11 +237,9 @@ const OrderService = {
       }
     } catch (error) {
       console.error('Error sending notifications:', error);
-      // Don't fail the whole operation if notifications fail
     }
   },
 
-  // Notify admin about new order
   async notifyAdmin(order) {
     try {
       await notificationService.notifyAdmin(
@@ -249,7 +255,6 @@ const OrderService = {
     }
   },
 
-  // Cancel order
   async cancelOrder(orderId, userId, reason) {
     try {
       const order = await Order.findById(orderId);
@@ -271,10 +276,8 @@ const OrderService = {
       throw new Error(`Failed to cancel order: ${error.message}`);
     }
   },
-  //tracking related services
 
   async getOrderForTracking(orderId) {
-    // Validate order ID format
     if (!orderId || !/^[0-9a-fA-F]{24}$/.test(orderId)) {
       throw new AppError('Invalid order ID format', 400);
     }
@@ -288,7 +291,6 @@ const OrderService = {
       throw new AppError('Order not found', 404);
     }
 
-    // Calculate estimated delivery if not set
     if (!order.estimatedDeliveryTime) {
       const statusTimestamp = order.status === 'Pending' ? 
         order.createdAt : 
@@ -300,7 +302,6 @@ const OrderService = {
       );
     }
 
-    // Format response data
     return {
       ...order,
       currentStatus: order.status,
@@ -309,19 +310,15 @@ const OrderService = {
   },
 
   calculateEstimatedDelivery(timestamp, status) {
-    // Define expected durations for each stage (in minutes)
     const statusDurations = {
-      'Pending': 15,      // Time until confirmation
-      'Confirmed': 15,    // Restaurant confirmation
-      'Preparing': 30,    // Food preparation
-      'Prepared': 15,     // Driver pickup
-      'Out for Delivery': 30 // Actual delivery
+      'Pending': 15,
+      'Confirmed': 15,
+      'Preparing': 30,
+      'Prepared': 15,
+      'Out for Delivery': 30
     };
 
-    // Status progression order
     const statusFlow = ['Pending', 'Confirmed', 'Preparing', 'Prepared', 'Out for Delivery'];
-    
-    // Calculate total remaining time
     let totalMinutes = 0;
     const currentIndex = statusFlow.indexOf(status);
     
@@ -330,11 +327,9 @@ const OrderService = {
         totalMinutes += statusDurations[statusFlow[i]] || 0;
       }
     } else {
-      // Default fallback
       totalMinutes = 60;
     }
 
-    // Calculate delivery time
     const deliveryTime = new Date(timestamp);
     deliveryTime.setMinutes(deliveryTime.getMinutes() + totalMinutes);
     return deliveryTime;
@@ -362,27 +357,21 @@ const OrderService = {
 
   async getDeliveryIncomingOrders(deliveryAgentId) {
     try {
-      // Validate ID format
       if (!mongoose.Types.ObjectId.isValid(deliveryAgentId)) {
         throw new Error('Invalid delivery agent ID');
       }
   
-      // Find delivery agent
       const agent = await User.findById(deliveryAgentId).lean();
       if (!agent || agent.role !== 'delivery') {
         throw new Error('Delivery agent not found');
       }
   
-      // Get preferred routes (support both singular and plural field names)
-      const routes = agent.preferredRoutes || 
-                   (agent.preferredRoute ? [agent.preferredRoute] : []);
+      // Use the single preferredRoute string
+      const route = agent.preferredRoute || '';
   
-      // Create search pattern
-      const searchPattern = routes.length > 0
-        ? new RegExp(routes.join('|'), 'i')
-        : /.*/;
+      // Create search pattern from the single route
+      const searchPattern = route ? new RegExp(route, 'i') : /.*/;
   
-      // Build query
       const query = {
         $or: [
           {
@@ -397,22 +386,19 @@ const OrderService = {
         ]
       };
   
-      // Execute query
       return await Order.find(query)
         .populate('restaurantId', 'name address')
         .populate('userId', 'name phone')
         .populate('deliveryAgentId', 'firstName lastName contactNumber')
         .sort({ createdAt: -1 });
-  
     } catch (error) {
       console.error('Error in getDeliveryIncomingOrders:', error);
       throw new Error(error.message || 'Failed to fetch orders');
     }
   },
 
-  getUserOrdersCount: async (userId) => {
+  async getUserOrdersCount(userId) {
     try {
-      // Fix: Use new mongoose.Types.ObjectId()
       const counts = await Order.aggregate([
         { $match: { userId: new mongoose.Types.ObjectId(userId) } },
         { 
@@ -452,10 +438,140 @@ const OrderService = {
       console.error('Error in orderService.getUserOrdersCount:', error);
       throw error;
     }
-  }
+  },
 
-};
-
+  // RATING RELATED SERVICES
+  async submitRating(orderId, ratingData) {
+    const order = await Order.findById(orderId);
+    if (!order) {
+      throw new AppError('Order not found', 404);
+    }
   
+    if (order.status !== 'Delivered') {
+      throw new AppError('Only delivered orders can be rated', 400);
+    }
+  
+    if (order.hasRated) {
+      throw new AppError('Order has already been rated', 400);
+    }
+  
+    // Create rating object
+    const rating = {
+      restaurantRating: ratingData.restaurantRating,
+      deliveryRating: ratingData.deliveryRating,
+      itemRatings: ratingData.itemRatings.map(item => ({
+        itemId: item.itemId,
+        rating: item.rating
+      })),
+      feedback: ratingData.feedback,
+      ratedAt: new Date()
+    };
+  
+    // Update order with rating
+    order.rating = rating;
+    order.hasRated = true;
+    await order.save();
+  
+    // Update all related ratings
+    await this.updateRestaurantRating(order.restaurantId, ratingData.restaurantRating);
+    
+    if (order.deliveryAgentId) {
+      await this.updateDeliveryAgentRating(order.deliveryAgentId, ratingData.deliveryRating);
+    }
+    
+    // Add this to update menu item ratings
+    await this.updateMenuItemRatings(ratingData.itemRatings);
+  
+    return order;
+  },
+  
+  async updateRestaurantRating(restaurantId, newRating) {
+    try {
+      const restaurant = await Restaurant.findById(restaurantId);
+      if (!restaurant) return;
+  
+      const totalRatings = restaurant.ratingCount || 0;
+      const currentAvg = restaurant.averageRating || 0;
+      const newAvg = (currentAvg * totalRatings + newRating) / (totalRatings + 1);
+  
+      restaurant.averageRating = parseFloat(newAvg.toFixed(2));
+      restaurant.ratingCount = totalRatings + 1;
+      await restaurant.save();
+    } catch (error) {
+      console.error('Error updating restaurant rating:', error);
+      throw new Error('Failed to update restaurant rating');
+    }
+  },
+  
+  async updateMenuItemRatings(itemRatings) {
+    try {
+      // Use bulk operations for better performance
+      const bulkOps = itemRatings.map(itemRating => ({
+        updateOne: {
+          filter: { _id: itemRating.itemId },
+          update: {
+            $inc: { 
+              ratingCount: 1,
+              ratingSum: itemRating.rating 
+            }
+          }
+        }
+      }));
+  
+      // Execute bulk operation
+      await MenuItem.bulkWrite(bulkOps);
+  
+      // Now update averages for all affected menu items
+      const itemIds = itemRatings.map(item => item.itemId);
+      const items = await MenuItem.find({ _id: { $in: itemIds } });
+  
+      for (const item of items) {
+        // Calculate new average if we have both sum and count
+        if (item.ratingSum && item.ratingCount) {
+          item.averageRating = parseFloat((item.ratingSum / item.ratingCount).toFixed(2));
+          await item.save();
+        }
+      }
+  
+    } catch (error) {
+      console.error('Error updating menu item ratings:', error);
+      throw new Error('Failed to update menu item ratings');
+    }
+  },
+
+  async updateDeliveryAgentRating(deliveryAgentId, newRating) {
+    try {
+      const agent = await User.findById(deliveryAgentId);
+      if (!agent || agent.role !== 'delivery') return;
+  
+      const totalRatings = agent.deliveryRatingCount || 0;
+      const currentAvg = agent.deliveryRating || 0;
+      const newAvg = (currentAvg * totalRatings + newRating) / (totalRatings + 1);
+  
+      agent.deliveryRating = parseFloat(newAvg.toFixed(2));
+      agent.deliveryRatingCount = totalRatings + 1;
+      await agent.save();
+    } catch (error) {
+      console.error('Error updating delivery agent rating:', error);
+      throw new Error('Failed to update delivery agent rating');
+    }
+  },
+
+  async getRestaurantRatings(restaurantId) {
+    const orders = await Order.find({ 
+      restaurantId,
+      hasRated: true 
+    })
+    .select('rating createdAt')
+    .sort({ createdAt: -1 })
+    .limit(50)
+    .lean();
+
+    return orders.map(order => ({
+      rating: order.rating,
+      date: order.createdAt
+    }));
+  }
+};
 
 module.exports = OrderService;

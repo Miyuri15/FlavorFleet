@@ -1,11 +1,19 @@
-//OrderPage.jsx
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import Layout from "../../components/Layout";
 import Swal from "sweetalert2";
-import { FaShoppingCart, FaFilter, FaTimes } from "react-icons/fa";
+import {
+  FaShoppingCart,
+  FaFilter,
+  FaTimes,
+  FaHeart,
+  FaRegHeart,
+} from "react-icons/fa";
 import RestaurantList from "../../components/OrderComponent/RestaurantList";
+import MenuItemDetails from "../../components/OrderComponent/MenuItemDetails";
+import { useNavigate } from "react-router-dom";
+import RatingStars from "../../components/OrderComponent/RatingStars";
 
 const ORDER_BACKEND_URL = import.meta.env.VITE_ORDER_BACKEND_URL;
 const RESTAURANT_BACKEND_URL = import.meta.env.VITE_RESTAURANT_BACKEND_URL;
@@ -20,7 +28,8 @@ const OrderPage = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [selectedRestaurantId, setSelectedRestaurantId] = useState(null);
   const [restaurantsData, setRestaurantsData] = useState([]);
-
+  const [selectedMenuItem, setSelectedMenuItem] = useState(null);
+  const navigate = useNavigate();
   const token = localStorage.getItem("token");
   if (!token) return;
 
@@ -144,6 +153,29 @@ const OrderPage = () => {
   const clearFilters = () => {
     setSelectedCategories([]);
   };
+  const handleMenuItemClick = async (itemId) => {
+    try {
+      setLoading(true);
+      const response = await axios.get(
+        `${RESTAURANT_BACKEND_URL}/api/restaurant/menu/${itemId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setSelectedMenuItem(response.data);
+    } catch (error) {
+      console.error("Error fetching menu item details:", error);
+      Swal.fire({
+        title: "Error!",
+        text: "Failed to load menu item details",
+        icon: "error",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Add item to cart
   const addToCart = async (item) => {
@@ -170,7 +202,7 @@ const OrderPage = () => {
       const cartItems = cartResponse.data;
 
       if (cartItems.length > 0) {
-        const currentRestaurantId = cartItems[0].restaurantId; // Assuming all items are from the same restaurant
+        const currentRestaurantId = cartItems[0].restaurantId;
 
         if (currentRestaurantId !== item.restaurant?._id) {
           // Clear cart if the restaurant is different
@@ -272,20 +304,24 @@ const OrderPage = () => {
 
   return (
     <Layout>
-      <div className="p-6 max-w-8xl mx-auto min-h-screen">
-        <div className="flex justify-between items-center mb-6">
+      <div className="px-4 sm:px-6 lg:px-8 max-w-8xl mx-auto min-h-screen">
+        {/* Header Section - Responsive */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 pt-4">
           <h1 className="text-2xl font-bold">Order Food</h1>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto">
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+              className="flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm sm:text-base"
             >
               {showFilters ? <FaTimes /> : <FaFilter />}
-              {showFilters ? "Hide Filters" : "Show Filters"}
+              <span className="hidden sm:inline">
+                {showFilters ? "Hide Filters" : "Show Filters"}
+              </span>
             </button>
             <Link
               to="/cart"
               className="relative p-2 text-gray-700 hover:text-gray-900 transition-colors"
+              aria-label="Shopping Cart"
             >
               <FaShoppingCart className="w-6 h-6" />
               {cartItemCount > 0 && (
@@ -294,14 +330,23 @@ const OrderPage = () => {
                 </span>
               )}
             </Link>
+
+            <button
+              onClick={() => navigate("/favourite-menuitems")}
+              className="p-2 text-gray-700 hover:text-red-500 transition-colors"
+              title="View Favorites"
+              aria-label="Favorites"
+            >
+              <FaHeart className="w-6 h-6" />
+            </button>
           </div>
         </div>
 
-        {/* Filter Section */}
+        {/* Filter Section - Responsive */}
         {showFilters && (
-          <div className="mb-8 p-6 bg-white rounded-lg shadow-md">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold">Filters</h2>
+          <div className="mb-6 p-4 sm:p-6 bg-white rounded-lg shadow-md">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+              <h2 className="text-lg sm:text-xl font-semibold">Filters</h2>
               <button
                 onClick={clearFilters}
                 className="text-sm text-blue-600 hover:text-blue-800"
@@ -310,8 +355,8 @@ const OrderPage = () => {
               </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
-              {/* Categories Filter Only */}
+            <div className="grid grid-cols-1 gap-4 sm:gap-6">
+              {/* Categories Filter */}
               <div>
                 <h3 className="font-medium mb-2">Categories</h3>
                 <div className="flex flex-wrap gap-2">
@@ -319,7 +364,7 @@ const OrderPage = () => {
                     <button
                       key={category}
                       onClick={() => toggleCategory(category)}
-                      className={`px-3 py-1 rounded-full text-sm ${
+                      className={`px-2 py-1 sm:px-3 sm:py-1 rounded-full text-xs sm:text-sm ${
                         selectedCategories.includes(category)
                           ? "bg-blue-600 text-white"
                           : "bg-gray-200 text-gray-800 hover:bg-gray-300"
@@ -334,9 +379,9 @@ const OrderPage = () => {
           </div>
         )}
 
-        {/* Active Filters Indicator (updated) */}
+        {/* Active Filters Indicator - Responsive */}
         {selectedCategories.length > 0 && (
-          <div className="mb-4 flex items-center gap-2">
+          <div className="mb-4 flex flex-wrap items-center gap-2">
             <span className="text-sm text-gray-600">Active filters:</span>
             {selectedCategories.map((category) => (
               <span
@@ -347,6 +392,7 @@ const OrderPage = () => {
                 <button
                   onClick={() => toggleCategory(category)}
                   className="ml-1 text-blue-600 hover:text-blue-800"
+                  aria-label={`Remove ${category} filter`}
                 >
                   <FaTimes size={10} />
                 </button>
@@ -366,7 +412,7 @@ const OrderPage = () => {
           <div className="mb-4 flex items-center">
             <button
               onClick={() => setSelectedRestaurantId(null)}
-              className="flex items-center text-blue-600 hover:text-blue-800"
+              className="flex items-center text-blue-600 hover:text-blue-800 text-sm sm:text-base"
             >
               <FaTimes className="mr-1" />
               Clear restaurant selection
@@ -374,15 +420,16 @@ const OrderPage = () => {
           </div>
         )}
 
-        {/* Food Grid */}
+        {/* Food Grid - Responsive */}
         {filteredFoodItems.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 pb-8">
             {filteredFoodItems.map((item) => (
               <div
                 key={item._id}
-                className="bg-white p-4 rounded-lg shadow hover:shadow-lg transition"
+                className="bg-white p-3 sm:p-4 rounded-lg shadow hover:shadow-lg transition cursor-pointer"
+                onClick={() => handleMenuItemClick(item._id)}
               >
-                <div className="w-full h-40 rounded-lg mb-4 overflow-hidden bg-gray-100">
+                <div className="w-full aspect-square rounded-lg mb-3 sm:mb-4 overflow-hidden bg-gray-100 relative">
                   <img
                     src={item.imageUrl}
                     alt={item.name}
@@ -392,28 +439,38 @@ const OrderPage = () => {
                       e.target.src = "/img/PepperoniPizza.jpg";
                     }}
                   />
+                  {item.averageRating > 0 && (
+                    <div className="absolute bottom-2 left-2">
+                      <RatingStars rating={item.averageRating} />
+                    </div>
+                  )}
                 </div>
-                <h2 className="text-xl font-bold">{item.name}</h2>
-                <p className="text-gray-600">
+                <h2 className="text-lg sm:text-xl font-bold line-clamp-1">{item.name}</h2>
+                <p className="text-gray-600 text-sm sm:text-base line-clamp-1">
                   {item.restaurant?.name}
                   {item.restaurant?.address?.street &&
                     ` - ${item.restaurant.address.street}`}
                 </p>
-                <p className="text-green-600 font-semibold">
-                  LKR {item.price.toFixed(2)}
-                </p>
-                <p
-                  className={`text-sm font-semibold ${
-                    item.isAvailable ? "text-green-600" : "text-red-600"
-                  }`}
-                >
-                  {item.isAvailable ? "In Stock" : "Out of Stock"}
-                </p>
+                <div className="flex justify-between items-center mt-1">
+                  <p className="text-green-600 font-semibold text-sm sm:text-base">
+                    LKR {item.price.toFixed(2)}
+                  </p>
+                  <p
+                    className={`text-xs sm:text-sm font-semibold ${
+                      item.isAvailable ? "text-green-600" : "text-red-600"
+                    }`}
+                  >
+                    {item.isAvailable ? "In Stock" : "Out of Stock"}
+                  </p>
+                </div>
                 {selectedRestaurantId && (
                   <button
-                    onClick={() => addToCart(item)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      addToCart(item);
+                    }}
                     disabled={!item.isAvailable}
-                    className={`w-full mt-4 px-4 py-2 rounded-lg ${
+                    className={`w-full mt-3 sm:mt-4 px-3 py-2 sm:px-4 sm:py-2 rounded-lg text-sm sm:text-base ${
                       item.isAvailable
                         ? "bg-blue-600 text-white hover:bg-blue-700"
                         : "bg-gray-300 text-gray-700 cursor-not-allowed"
@@ -426,17 +483,23 @@ const OrderPage = () => {
             ))}
           </div>
         ) : (
-          <div className="text-center py-12">
-            <h3 className="text-xl font-medium text-gray-600">
+          <div className="text-center py-8 sm:py-12">
+            <h3 className="text-lg sm:text-xl font-medium text-gray-600">
               No food items match your filters
             </h3>
             <button
               onClick={clearFilters}
-              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              className="mt-3 sm:mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm sm:text-base"
             >
               Clear Filters
             </button>
           </div>
+        )}
+        {selectedMenuItem && (
+          <MenuItemDetails
+            item={selectedMenuItem}
+            onClose={() => setSelectedMenuItem(null)}
+          />
         )}
       </div>
     </Layout>

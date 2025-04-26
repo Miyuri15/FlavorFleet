@@ -1,5 +1,29 @@
 import React from "react";
-import { FaStore, FaUtensils } from "react-icons/fa";
+import { FaStore, FaUtensils, FaStar, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
+
+// Reusable RatingStars component
+const RatingStars = ({ rating, size = 12 }) => {
+  const fullStars = Math.floor(rating);
+  const hasHalfStar = rating % 1 >= 0.5;
+  const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+
+  return (
+    <div className="flex items-center gap-1">
+      <div className="flex text-yellow-400">
+        {[...Array(fullStars)].map((_, i) => (
+          <FaStar key={`full-${i}`} size={size} />
+        ))}
+        {hasHalfStar && <FaStarHalfAlt size={size} />}
+        {[...Array(emptyStars)].map((_, i) => (
+          <FaRegStar key={`empty-${i}`} size={size} />
+        ))}
+      </div>
+      <span className="text-xs text-gray-600">
+        {rating.toFixed(1)}
+      </span>
+    </div>
+  );
+};
 
 const RestaurantList = ({ 
   restaurants, 
@@ -23,7 +47,7 @@ const RestaurantList = ({
             }`}
           >
             <div className="flex flex-col items-center text-center">
-              <div className="w-16 h-16 mb-2 rounded-full overflow-hidden bg-gray-200">
+              <div className="relative w-16 h-16 mb-2 rounded-full overflow-hidden bg-gray-200">
                 <img
                   src={restaurant.logo}
                   alt={restaurant.name}
@@ -33,12 +57,26 @@ const RestaurantList = ({
                     e.target.src = "/img/default-restaurant.png";
                   }}
                 />
+                {/* Rating badge
+                {restaurant.averageRating > 0 && (
+                  <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 bg-white px-2 py-1 rounded-full shadow-sm">
+                    <RatingStars rating={restaurant.averageRating} size={10} />
+                  </div>
+                )} */}
               </div>
               <h3 className="font-semibold">{restaurant.name}</h3>
               <p className="text-sm text-gray-600">{restaurant.cuisineType}</p>
-              <div className="flex items-center mt-1 text-xs text-gray-500">
-                <FaUtensils className="mr-1" />
-                <span>{restaurant.menuItems?.length || 0} items</span>
+              <div className="flex items-center justify-between w-full mt-1 text-xs text-gray-500">
+                <div className="flex items-center">
+                  <FaUtensils className="mr-1" />
+                  <span>{restaurant.menuItems?.length || 0} items</span>
+                </div>
+                {/* Alternative rating display option */}
+                {restaurant.averageRating > 0 && (
+                  <div className="hidden sm:flex items-center">
+                    <RatingStars rating={restaurant.averageRating} size={10} />
+                  </div>
+                )}
               </div>
             </div>
           </div>

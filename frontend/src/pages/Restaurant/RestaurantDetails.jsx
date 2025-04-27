@@ -13,18 +13,16 @@ import {
   message,
 } from "antd";
 import {
-  ClockCircleOutlined,
   PhoneOutlined,
   MailOutlined,
   EnvironmentOutlined,
-  ArrowLeftOutlined,
   EditOutlined,
   DeleteOutlined,
 } from "@ant-design/icons";
 import { foodServiceApi } from "../../../apiClients";
 import { useAuth } from "../../context/AuthContext";
 import Swal from "sweetalert2";
-import "./Restaurant.css"; // Optional for custom styles
+import "./Restaurant.css";
 import ROUTES from "../../routes";
 import Layout from "../../components/Layout";
 
@@ -98,6 +96,36 @@ const RestaurantDetails = () => {
     }
   };
 
+  const renderOpeningHours = () => {
+    const days = [
+      "monday",
+      "tuesday",
+      "wednesday",
+      "thursday",
+      "friday",
+      "saturday",
+      "sunday",
+    ];
+
+    return days.map((day) => (
+      <Row key={day} gutter={16} style={{ marginBottom: 8 }}>
+        <Col span={6}>
+          <Text strong>{day.charAt(0).toUpperCase() + day.slice(1)}:</Text>
+        </Col>
+        <Col span={18}>
+          {restaurant.openingHours[day]?.open ? (
+            <Text>
+              {restaurant.openingHours[day].open} -{" "}
+              {restaurant.openingHours[day].close}
+            </Text>
+          ) : (
+            <Text type="secondary">Closed</Text>
+          )}
+        </Col>
+      </Row>
+    ));
+  };
+
   if (loading) {
     return (
       <Layout>
@@ -120,36 +148,6 @@ const RestaurantDetails = () => {
     );
   }
 
-  const renderOpeningHours = () => {
-    const days = [
-      "monday",
-      "tuesday",
-      "wednesday",
-      "thursday",
-      "friday",
-      "saturday",
-      "sunday",
-    ];
-
-    return days.map((day) => (
-      <Row key={day} gutter={16} style={{ marginBottom: 8 }} className="pt-5">
-        <Col span={6}>
-          <Text strong>{day.charAt(0).toUpperCase() + day.slice(1)}:</Text>
-        </Col>
-        <Col span={18}>
-          {restaurant.openingHours[day]?.open ? (
-            <Text>
-              {restaurant.openingHours[day].open} -{" "}
-              {restaurant.openingHours[day].close}
-            </Text>
-          ) : (
-            <Text type="secondary">Closed</Text>
-          )}
-        </Col>
-      </Row>
-    ));
-  };
-
   return (
     <Layout>
       <div className="restaurant-details-container">
@@ -163,17 +161,6 @@ const RestaurantDetails = () => {
             <Tag color={restaurant.isAvailable ? "green" : "red"}>
               {restaurant.isAvailable ? "OPEN" : "CLOSED"}
             </Tag>
-          }
-          cover={
-            restaurant.banner ? (
-              <Image
-                src={restaurant.banner}
-                alt={`${restaurant.name} banner`}
-                height={300}
-                style={{ objectFit: "cover" }}
-                preview={false}
-              />
-            ) : null
           }
           actions={[
             <Button

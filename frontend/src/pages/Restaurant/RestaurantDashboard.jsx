@@ -6,6 +6,7 @@ import { PlusOutlined } from "@ant-design/icons";
 import { foodServiceApi } from "../../../apiClients";
 import Swal from "sweetalert2";
 import ROUTES from "../../routes";
+import Loading from "../../components/Loading/Loading";
 
 const RestaurantDashboard = () => {
   const navigate = useNavigate();
@@ -107,7 +108,7 @@ const RestaurantDashboard = () => {
         </Row>
 
         {loading ? (
-          <p>Loading...</p>
+          <Loading />
         ) : (
           <Row gutter={[16, 16]}>
             {restaurants.map((restaurant) => (

@@ -29,6 +29,9 @@ import RestaurantDashboard from "./pages/Restaurant/RestaurantDashboard";
 import AddRestaurant from "./pages/Restaurant/AddRestaurant";
 import RestaurantDetails from "./pages/Restaurant/RestaurantDetails";
 import EditRestaurant from "./pages/Restaurant/EditRestaurant";
+import MenuManagement from "./pages/MenuItems/MenuManagement";
+import RestaurantMenu from "./pages/MenuItems/RestaurantMenu";
+import MenuItemForm from "./pages/MenuItems/MenuItemForm";
 
 function App() {
   return (
@@ -139,6 +142,40 @@ function App() {
                 element={
                   <ProtectedRoute requiredRole="restaurant_owner">
                     <EditRestaurant />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path={ROUTES.RESTAURANT_MENU}
+                element={
+                  <ProtectedRoute requiredRole="restaurant_owner">
+                    <MenuManagement />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path={ROUTES.RESTAURANT_MENU_MANAGE()}
+                element={
+                  <ProtectedRoute requiredRole="restaurant_owner">
+                    <RestaurantMenu />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path={ROUTES.RESTAURANT_MENU_ADD()}
+                element={
+                  <ProtectedRoute requiredRole="restaurant_owner">
+                    <MenuItemForm />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path={ROUTES.RESTAURANT_MENU_EDIT()}
+                element={
+                  <ProtectedRoute requiredRole="restaurant_owner">
+                    <MenuItemForm />
                   </ProtectedRoute>
                 }
               />

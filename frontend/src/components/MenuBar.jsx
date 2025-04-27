@@ -7,6 +7,7 @@ import {
   FiTruck,
   FiMap,
   FiUser,
+  FiMenu,
 } from "react-icons/fi";
 import { useAuth } from "../context/AuthContext";
 import LogoutDialog from "./LogoutDialog";
@@ -17,6 +18,7 @@ const MenuBar = () => {
   const { user, logout } = useAuth();
   const isAdmin = user?.role === "admin";
   const isDelivery = user?.role === "delivery";
+  const isRestaurantOwner = user?.role === "restaurant_owner";
 
   // Function to check if a route is active
   const isActive = (...paths) =>
@@ -26,6 +28,7 @@ const MenuBar = () => {
   const getDashboardPath = () => {
     if (isAdmin) return ROUTES.ADMIN_DASHBOARD;
     if (isDelivery) return ROUTES.DELIVERY_DASHBOARD;
+    if (isRestaurantOwner) return ROUTES.RESTAURANT_DASHBOARD;
     return ROUTES.USER_DASHBOARD;
   };
 
@@ -83,11 +86,28 @@ const MenuBar = () => {
     },
   ];
 
+  // Restaurant owner menu items
+  const restaurantMenuItems = [
+    {
+      to: ROUTES.RESTAURANT_MENU,
+      icon: <FiMenu />,
+      text: "Restaurant Menu",
+      active: isActive(ROUTES.RESTAURANT_MENU),
+    },
+    {
+      to: ROUTES.RESTAURANT_ORDERS,
+      icon: <FiClipboard />,
+      text: "Restaurant Orders",
+      active: isActive(ROUTES.RESTAURANT_ORDERS),
+    },
+  ];
+
   // Combine menu items based on user role
   const menuItems = [
     ...commonMenuItems,
-    ...(!isAdmin && !isDelivery ? userMenuItems : []),
+    ...(!isAdmin && !isDelivery && !isRestaurantOwner ? userMenuItems : []),
     ...(isDelivery ? deliveryMenuItems : []),
+    ...(isRestaurantOwner ? restaurantMenuItems : []),
   ];
 
   return (

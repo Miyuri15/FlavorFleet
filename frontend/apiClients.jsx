@@ -1,4 +1,3 @@
-// apiClients.js
 import axios from "axios";
 
 const createApiClient = (baseURL) => {

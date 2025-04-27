@@ -25,6 +25,10 @@ import DeliveryDetailsPage from "./pages/Delivery/DeliveryDetailsPage";
 import DeliveryDashboard from "./components/Delivery/DeliveryDashboard";
 import ProfilePage from "./pages/Profile/ProfilePage";
 import FavoritesPage from "./components/OrderComponent/FavoritesPage";
+import RestaurantDashboard from "./pages/Restaurant/RestaurantDashboard";
+import AddRestaurant from "./pages/Restaurant/AddRestaurant";
+import RestaurantDetails from "./pages/Restaurant/RestaurantDetails";
+import EditRestaurant from "./pages/Restaurant/EditRestaurant";
 
 function App() {
   return (
@@ -61,7 +65,6 @@ function App() {
                 path={ROUTES.DELIVERY_MAP}
                 element={<DeliveryDetailsPage />}
               />
-
               {/* Protected route with role-based access */}
               <Route
                 path={ROUTES.ADMIN_DASHBOARD}
@@ -81,6 +84,65 @@ function App() {
                 }
               />
 
+              {/* <Route
+                path={ROUTES.RESTAURANT_DASHBOARD}
+                element={
+                  <ProtectedRoute requiredRole="restaurant_owner">
+                    <RestaurantDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path={ROUTES.RESTAURANT_MENU}
+                element={
+                  <ProtectedRoute requiredRole="restaurant_owner">
+                    <MenuManagement />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path={ROUTES.RESTAURANT_ORDERS}
+                element={
+                  <ProtectedRoute requiredRole="restaurant_owner">
+                    <Orders />
+                  </ProtectedRoute>
+                }
+              /> */}
+
+              <Route
+                path={ROUTES.RESTAURANT_DASHBOARD}
+                element={
+                  <ProtectedRoute requiredRole="restaurant_owner">
+                    <RestaurantDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path={ROUTES.ADD_RESTAURANT}
+                element={
+                  <ProtectedRoute requiredRole="restaurant_owner">
+                    <AddRestaurant />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path={ROUTES.RESTAURANT_DETAILS()}
+                element={
+                  <ProtectedRoute requiredRole="restaurant_owner">
+                    <RestaurantDetails />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path={ROUTES.RESTAURANT_EDIT()}
+                element={
+                  <ProtectedRoute requiredRole="restaurant_owner">
+                    <EditRestaurant />
+                  </ProtectedRoute>
+                }
+              />
+
               {/* Dynamic Error Pages (401, 403, 500, etc.) */}
               <Route path={ROUTES.ERROR_PAGE()} element={<Error />} />
 
@@ -89,13 +151,11 @@ function App() {
                 path={ROUTES.NOT_FOUND}
                 element={<Error errorType="404" />}
               />
-                          <Route
-              path={ROUTES.FAVOURITE_MENUITEMS}
-              element={<FavoritesPage/>}
-            />
-
+              <Route
+                path={ROUTES.FAVOURITE_MENUITEMS}
+                element={<FavoritesPage />}
+              />
             </Routes>
-
           </div>
         </Router>
       </ThemeProvider>

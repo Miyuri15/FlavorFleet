@@ -10,8 +10,8 @@ const containerStyle = {
 const LocationSelector = ({ apiKey, onLocationSelect }) => {
   const [selectedLocation, setSelectedLocation] = useState(null);
   const defaultCenter = {
-    lat: 40.7128, // New York City
-    lng: -74.006,
+    lat: 6.9147,
+    lng: 79.9724,
   };
 
   const handleMapClick = (event) => {

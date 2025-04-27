@@ -71,20 +71,59 @@ const updateRestaurant = async (req, res) => {
 
     // Check if user is owner or admin
     if (req.user.role !== "admin" && restaurant.owner !== req.user.id) {
-      return res
-        .status(403)
-        .json({ error: "Not authorized to update this restaurant" });
+      return res.status(403).json({
+        error: "Not authorized to update this restaurant",
+      });
+    }
+
+    let updateData;
+
+    // Handle both JSON and FormData
+    if (req.body.data) {
+      // Parse the JSON string from FormData
+      updateData = JSON.parse(req.body.data);
+
+      // Handle file uploads if present
+      if (req.files?.logo) {
+        updateData.logo = req.files.logo[0].path; // Adjust based on your storage
+      }
+      if (req.files?.banner) {
+        updateData.banner = req.files.banner[0].path;
+      }
+    } else {
+      // Regular JSON request
+      updateData = req.body;
+    }
+
+    // Clean up opening hours - convert empty strings to null
+    if (updateData.openingHours) {
+      Object.keys(updateData.openingHours).forEach((day) => {
+        if (updateData.openingHours[day].open === "") {
+          updateData.openingHours[day].open = null;
+        }
+        if (updateData.openingHours[day].close === "") {
+          updateData.openingHours[day].close = null;
+        }
+      });
     }
 
     const updatedRestaurant = await Restaurant.findByIdAndUpdate(
       req.params.id,
-      req.body,
-      { new: true }
+      updateData,
+      {
+        new: true,
+        runValidators: true, // Important for validation
+        omitUndefined: true,
+      }
     );
 
     res.json(updatedRestaurant);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("Update error:", error);
+    res.status(500).json({
+      error: error.message,
+      details: error.errors, // Include validation errors if any
+    });
   }
 };
 
@@ -208,6 +247,30 @@ const updateOrderStatus = async (req, res) => {
   }
 };
 
+const deleteRestaurant = async (req, res) => {
+  try {
+    const restaurant = await Restaurant.findById(req.params.id);
+
+    if (!restaurant) {
+      return res.status(404).json({ error: "Restaurant not found" });
+    }
+
+    if (req.user.role !== "admin" && restaurant.owner !== req.user.id) {
+      return res
+        .status(403)
+        .json({ error: "Not authorized to delete this restaurant" });
+    }
+
+    await MenuItem.deleteMany({ restaurant: restaurant._id });
+
+    await restaurant.deleteOne();
+
+    res.json({ message: "Restaurant deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   createRestaurant,
   getAllRestaurants,
@@ -217,4 +280,5 @@ module.exports = {
   updateRestaurantStatus,
   getRestaurantOrders,
   updateOrderStatus,
+  deleteRestaurant,
 };

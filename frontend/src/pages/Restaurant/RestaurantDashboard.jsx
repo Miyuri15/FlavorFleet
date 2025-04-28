@@ -1,12 +1,19 @@
 import React, { useState, useEffect } from "react";
 import Layout from "../../components/Layout";
 import { useNavigate } from "react-router-dom";
-import { Button, Switch, message, Card, Row, Col, Tag } from "antd";
-import { PlusOutlined } from "@ant-design/icons";
+import { Button, Switch, Card, Row, Col, Tag, Typography, Space } from "antd";
+import {
+  PlusOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  ShopOutlined,
+} from "@ant-design/icons";
 import { foodServiceApi } from "../../../apiClients";
 import Swal from "sweetalert2";
 import ROUTES from "../../routes";
 import Loading from "../../components/Loading/Loading";
+
+const { Title, Text } = Typography;
 
 const RestaurantDashboard = () => {
   const navigate = useNavigate();
@@ -23,7 +30,12 @@ const RestaurantDashboard = () => {
       setRestaurants(data);
       setLoading(false);
     } catch (error) {
-      message.error("Failed to fetch restaurants");
+      Swal.fire({
+        title: "Error!",
+        text: "Failed to fetch restaurants. Please try again.",
+        icon: "error",
+        confirmButtonColor: "#ff4d4f",
+      });
       setLoading(false);
     }
   };
@@ -33,74 +45,104 @@ const RestaurantDashboard = () => {
       await foodServiceApi.patch(`/restaurant/${id}/availability`, {
         isAvailable: !currentStatus,
       });
-      Swal.fire(
-        "Updated!",
-        "Your restaurant status has been updated.",
-        "success"
+
+      setRestaurants(
+        restaurants.map((restaurant) =>
+          restaurant._id === id
+            ? { ...restaurant, isAvailable: !currentStatus }
+            : restaurant
+        )
       );
 
-      fetchRestaurants();
+      Swal.fire({
+        title: "Success!",
+        text: `Restaurant has been ${
+          !currentStatus ? "activated" : "deactivated"
+        }`,
+        icon: "success",
+        confirmButtonColor: "#52c41a",
+        timer: 1500,
+        showConfirmButton: false,
+      });
     } catch (error) {
-      Swal.fire("Error!", "Failed to update the restaurant status.", "error");
+      Swal.fire({
+        title: "Error!",
+        text: "Failed to update the restaurant status.",
+        icon: "error",
+        confirmButtonColor: "#ff4d4f",
+      });
     }
   };
 
-  // Add this to your component
   const handleDeleteRestaurant = async (restaurantId) => {
     try {
       const confirmed = await Swal.fire({
         title: "Are you sure?",
-        text: "You won't be able to revert this!",
+        text: "This will permanently delete the restaurant and all its menu items!",
         icon: "warning",
         showCancelButton: true,
-        confirmButtonColor: "#d33",
-        cancelButtonColor: "#3085d6",
+        confirmButtonColor: "#ff4d4f",
+        cancelButtonColor: "#1890ff",
         confirmButtonText: "Yes, delete it!",
+        customClass: {
+          container: "font-sans",
+        },
       });
 
       if (!confirmed.isConfirmed) return;
 
-      const response = await foodServiceApi.delete(
-        `/restaurant/${restaurantId}`
-      );
+      await foodServiceApi.delete(`/restaurant/${restaurantId}`);
 
       setRestaurants(restaurants.filter((r) => r._id !== restaurantId));
-      Swal.fire("Deleted!", "Your restaurant has been deleted.", "success");
-    } catch (error) {
-      console.error("Delete error:", error);
+
       Swal.fire({
+        title: "Deleted!",
+        text: "Your restaurant has been deleted.",
+        icon: "success",
+        confirmButtonColor: "#52c41a",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+    } catch (error) {
+      Swal.fire({
+        title: "Error!",
+        text: error.response?.data?.error || "Failed to delete restaurant",
         icon: "error",
-        title: "Failed to delete restaurant",
-        text:
-          error.response?.data?.error ||
-          error.message ||
-          "Something went wrong",
+        confirmButtonColor: "#ff4d4f",
       });
     }
   };
 
   return (
     <Layout>
-      <div style={{ padding: "20px" }}>
+      <div style={{ padding: "24px", fontFamily: "'Inter', sans-serif" }}>
         <Row
           justify="space-between"
           align="middle"
-          style={{ marginBottom: 20 }}
+          style={{ marginBottom: 24 }}
         >
           <Col>
-            <h1>Restaurant Dashboard</h1>
+            <Space align="center">
+              <ShopOutlined style={{ fontSize: "24px", color: "#1890ff" }} />
+              <Title level={2} style={{ margin: 0, color: "#1d1d1f" }}>
+                My Restaurants
+              </Title>
+            </Space>
+            <Text type="secondary" style={{ display: "block", marginTop: 4 }}>
+              Manage your restaurant establishments
+            </Text>
           </Col>
           <Col>
             <Button
               type="primary"
               icon={<PlusOutlined />}
-              onClick={() => navigate("/add-restaurant")}
+              onClick={() => navigate(ROUTES.ADD_RESTAURANT)}
               style={{
-                backgroundColor: "#1890ff", // Explicit primary color
-                color: "white",
-                border: "none",
-                boxShadow: "0 2px 0 rgba(0, 0, 0, 0.045)",
+                backgroundColor: "#1890ff",
+                fontWeight: 500,
+                boxShadow: "0 2px 8px rgba(24, 144, 255, 0.2)",
               }}
+              size="large"
             >
               Add Restaurant
             </Button>
@@ -109,13 +151,147 @@ const RestaurantDashboard = () => {
 
         {loading ? (
           <Loading />
+        ) : restaurants.length === 0 ? (
+          <Card
+            style={{
+              textAlign: "center",
+              padding: "40px 24px",
+              borderRadius: "12px",
+              boxShadow: "0 1px 2px rgba(0, 0, 0, 0.1)",
+            }}
+          >
+            <ShopOutlined
+              style={{
+                fontSize: "48px",
+                color: "#bfbfbf",
+                marginBottom: "16px",
+              }}
+            />
+            <Title level={4} style={{ marginBottom: "8px" }}>
+              No Restaurants Yet
+            </Title>
+            <Text type="secondary" style={{ marginBottom: "24px" }}>
+              You haven't added any restaurants yet. Get started by adding your
+              first establishment.
+            </Text>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => navigate(ROUTES.ADD_RESTAURANT)}
+              style={{
+                backgroundColor: "#1890ff",
+                fontWeight: 500,
+              }}
+            >
+              Add Your First Restaurant
+            </Button>
+          </Card>
         ) : (
-          <Row gutter={[16, 16]}>
+          <Row gutter={[24, 24]}>
             {restaurants.map((restaurant) => (
-              <Col xs={24} sm={12} md={8} lg={6} key={restaurant._id}>
+              <Col xs={24} sm={12} lg={8} xl={6} key={restaurant._id}>
                 <Card
-                  title={restaurant.name}
-                  extra={
+                  hoverable
+                  style={{
+                    borderRadius: "12px",
+                    boxShadow: "0 1px 2px rgba(0, 0, 0, 0.1)",
+                    border: "none",
+                    overflow: "hidden",
+                  }}
+                  cover={
+                    <div
+                      style={{
+                        height: "160px",
+                        backgroundColor: "#f0f2f5",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      {restaurant.imageUrl ? (
+                        <img
+                          src={restaurant.imageUrl}
+                          alt={restaurant.name}
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                          }}
+                        />
+                      ) : (
+                        <ShopOutlined
+                          style={{ fontSize: "48px", color: "#bfbfbf" }}
+                        />
+                      )}
+                    </div>
+                  }
+                  actions={[
+                    <Button
+                      type="text"
+                      icon={<EditOutlined />}
+                      onClick={() =>
+                        navigate(ROUTES.RESTAURANT_DETAILS(restaurant._id))
+                      }
+                      key="edit"
+                    >
+                      Manage
+                    </Button>,
+                    <Button
+                      danger
+                      type="text"
+                      icon={<DeleteOutlined />}
+                      onClick={() => handleDeleteRestaurant(restaurant._id)}
+                      key="delete"
+                    >
+                      Delete
+                    </Button>,
+                  ]}
+                >
+                  <div style={{ marginBottom: "16px" }}>
+                    <Title
+                      level={4}
+                      style={{
+                        marginBottom: "8px",
+                        color: "#1d1d1f",
+                        fontWeight: 600,
+                      }}
+                    >
+                      {restaurant.name}
+                    </Title>
+                    <Text
+                      type="secondary"
+                      style={{
+                        display: "block",
+                        marginBottom: "12px",
+                        fontSize: "14px",
+                      }}
+                    >
+                      {restaurant.description || "No description provided"}
+                    </Text>
+                  </div>
+
+                  <Space size={[8, 8]} wrap style={{ marginBottom: "16px" }}>
+                    <Tag color={restaurant.isAvailable ? "green" : "red"}>
+                      {restaurant.isAvailable ? "Open" : "Closed"}
+                    </Tag>
+                    <Tag color="blue">{restaurant.cuisineType}</Tag>
+                    {restaurant.registrationStatus === "approved" ? (
+                      <Tag color="success">Verified</Tag>
+                    ) : (
+                      <Tag color="warning">Pending Approval</Tag>
+                    )}
+                  </Space>
+
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <Text strong style={{ fontSize: "14px" }}>
+                      Availability:
+                    </Text>
                     <Switch
                       checked={restaurant.isAvailable}
                       onChange={() =>
@@ -124,41 +300,10 @@ const RestaurantDashboard = () => {
                           restaurant.isAvailable
                         )
                       }
+                      checkedChildren="ON"
+                      unCheckedChildren="OFF"
                     />
-                  }
-                  actions={[
-                    <Button
-                      type="link"
-                      onClick={() =>
-                        navigate(ROUTES.RESTAURANT_DETAILS(restaurant._id))
-                      }
-                      key="view"
-                    >
-                      View Details
-                    </Button>,
-                    <Button
-                      type="text"
-                      danger
-                      onClick={() => handleDeleteRestaurant(restaurant._id)}
-                      key="delete"
-                    >
-                      Delete
-                    </Button>,
-                  ]}
-                >
-                  <p>{restaurant.description}</p>
-                  <p>
-                    <strong>Status:</strong>{" "}
-                    {restaurant.isAvailable ? (
-                      <Tag color="green">Open</Tag>
-                    ) : (
-                      <Tag color="red">Closed</Tag>
-                    )}
-                  </p>
-                  <p>
-                    <strong>Cuisine:</strong>{" "}
-                    <Tag>{restaurant.cuisineType}</Tag>
-                  </p>
+                  </div>
                 </Card>
               </Col>
             ))}

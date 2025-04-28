@@ -583,7 +583,32 @@ const OrderService = {
       rating: order.rating,
       date: order.createdAt
     }));
+  },
+
+async cancelOrder(orderId, userId) {  // Removed reason parameter
+  const order = await Order.findOne({
+    where: {
+      id: orderId,
+      userId: userId
+    }
+  });
+
+  if (!order) {
+    throw new Error('Order not found');
   }
+
+  if (order.status !== 'Pending') {  // Match case
+    throw new Error('Only pending orders can be canceled');
+  }
+
+  const updatedOrder = await order.update({
+    status: 'Cancelled',  // Match case
+    canceledAt: new Date()
+  });
+
+  return updatedOrder;
+}
+
 };
 
 module.exports = OrderService;

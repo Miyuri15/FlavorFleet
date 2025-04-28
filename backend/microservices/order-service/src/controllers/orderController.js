@@ -125,21 +125,31 @@ const OrderController = {
     }
   },
 
-  async cancelOrder(req, res) {
-    try {
-      const order = await OrderService.cancelOrder(
-        req.params.id, 
-        req.user.id, 
-        req.body.reason
-      );
-      
-      res.json(order);
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
-  },
+async cancelOrder(req, res) {
+  try {
+    const order = await Order.findOneAndUpdate(
+      {
+        _id: req.params.id,
+        userId: req.user.id,  // Verify ownership
+        status: 'Pending'     // Match your frontend's status case
+      },
+      { 
+        status: 'Cancelled',  // Match your frontend's status case
+        canceledAt: new Date() 
+      },
+      { new: true }
+    );
 
-  trackOrder: catchAsync(async (req, res, next) => {
+    if (!order) {
+      return res.status(400).json({ error: "Order cannot be canceled" });
+    }
+
+    res.json(order);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+},
+trackOrder: catchAsync(async (req, res, next) => {
     const order = await OrderService.getOrderForTracking(req.params.id);
     res.status(200).json({
       status: 'success',

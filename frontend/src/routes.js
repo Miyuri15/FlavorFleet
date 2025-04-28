@@ -27,7 +27,10 @@ const ROUTES = {
   ADD_RESTAURANT: "/add-restaurant",
   RESTAURANT_DETAILS: (id = ":id") => `/restaurant/${id}`,
   RESTAURANT_EDIT: (id = ":id") => `/restaurant/${id}/edit`,
-
+  RESTAURANT_MENU_MANAGE: (id = ":id") => `/restaurant/${id}/menu`,
+  RESTAURANT_MENU_ADD: (id = ":id") => `/restaurant/${id}/menu/add`,
+  RESTAURANT_MENU_EDIT: (id = ":id", menuItemId = ":menuItemId") =>
+    `/restaurant/${id}/menu/edit/${menuItemId}`,
   // Errors
   ERROR_PAGE: (errorType = ":errorType") => `/error/${errorType}`,
   NOT_FOUND: "*",

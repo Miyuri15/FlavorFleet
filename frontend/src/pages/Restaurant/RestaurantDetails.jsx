@@ -6,11 +6,11 @@ import {
   Typography,
   Row,
   Col,
-  Image,
-  Tag,
   Divider,
   Skeleton,
-  message,
+  Tag,
+  Space,
+  Image,
 } from "antd";
 import {
   PhoneOutlined,
@@ -18,11 +18,13 @@ import {
   EnvironmentOutlined,
   EditOutlined,
   DeleteOutlined,
+  ClockCircleOutlined,
+  ShopOutlined,
+  StarOutlined,
 } from "@ant-design/icons";
 import { foodServiceApi } from "../../../apiClients";
 import { useAuth } from "../../context/AuthContext";
 import Swal from "sweetalert2";
-import "./Restaurant.css";
 import ROUTES from "../../routes";
 import Layout from "../../components/Layout";
 
@@ -48,9 +50,12 @@ const RestaurantDetails = () => {
         }
       } catch (error) {
         console.error("Error fetching restaurant:", error);
-        message.error(
-          error.response?.data?.error || "Failed to fetch restaurant"
-        );
+        Swal.fire({
+          title: "Error!",
+          text: error.response?.data?.error || "Failed to fetch restaurant",
+          icon: "error",
+          confirmButtonColor: "#ff4d4f",
+        });
         navigate(ROUTES.RESTAURANT_DASHBOARD);
       } finally {
         setLoading(false);
@@ -64,11 +69,11 @@ const RestaurantDetails = () => {
     try {
       const confirmed = await Swal.fire({
         title: "Are you sure?",
-        text: "You won't be able to revert this!",
+        text: "This will permanently delete the restaurant and all its menu items!",
         icon: "warning",
         showCancelButton: true,
-        confirmButtonColor: "#d33",
-        cancelButtonColor: "#3085d6",
+        confirmButtonColor: "#ff4d4f",
+        cancelButtonColor: "#1890ff",
         confirmButtonText: "Yes, delete it!",
       });
 
@@ -78,18 +83,23 @@ const RestaurantDetails = () => {
       const response = await foodServiceApi.delete(`/restaurant/${id}`, {});
 
       if (response.status === 200) {
-        Swal.fire("Deleted!", "Restaurant has been deleted.", "success");
+        Swal.fire({
+          title: "Deleted!",
+          text: "Restaurant has been deleted.",
+          icon: "success",
+          confirmButtonColor: "#52c41a",
+          timer: 1500,
+          showConfirmButton: false,
+        });
         navigate(ROUTES.RESTAURANT_DASHBOARD);
       }
     } catch (error) {
       console.error("Delete error:", error);
       Swal.fire({
+        title: "Error!",
+        text: error.response?.data?.error || "Failed to delete restaurant",
         icon: "error",
-        title: "Failed to delete restaurant",
-        text:
-          error.response?.data?.error ||
-          error.message ||
-          "Something went wrong",
+        confirmButtonColor: "#ff4d4f",
       });
     } finally {
       setDeleting(false);
@@ -98,38 +108,49 @@ const RestaurantDetails = () => {
 
   const renderOpeningHours = () => {
     const days = [
-      "monday",
-      "tuesday",
-      "wednesday",
-      "thursday",
-      "friday",
-      "saturday",
-      "sunday",
+      { name: "Monday", key: "monday" },
+      { name: "Tuesday", key: "tuesday" },
+      { name: "Wednesday", key: "wednesday" },
+      { name: "Thursday", key: "thursday" },
+      { name: "Friday", key: "friday" },
+      { name: "Saturday", key: "saturday" },
+      { name: "Sunday", key: "sunday" },
     ];
 
-    return days.map((day) => (
-      <Row key={day} gutter={16} style={{ marginBottom: 8 }}>
-        <Col span={6}>
-          <Text strong>{day.charAt(0).toUpperCase() + day.slice(1)}:</Text>
-        </Col>
-        <Col span={18}>
-          {restaurant.openingHours[day]?.open ? (
-            <Text>
-              {restaurant.openingHours[day].open} -{" "}
-              {restaurant.openingHours[day].close}
+    return (
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(2, 1fr)",
+          gap: "12px",
+        }}
+      >
+        {days.map((day) => (
+          <div key={day.key} style={{ display: "flex", alignItems: "center" }}>
+            <ClockCircleOutlined
+              style={{ marginRight: "8px", color: "#1890ff" }}
+            />
+            <Text strong style={{ minWidth: "80px" }}>
+              {day.name}:
             </Text>
-          ) : (
-            <Text type="secondary">Closed</Text>
-          )}
-        </Col>
-      </Row>
-    ));
+            {restaurant.openingHours[day.key]?.open ? (
+              <Text>
+                {restaurant.openingHours[day.key].open} -{" "}
+                {restaurant.openingHours[day.key].close}
+              </Text>
+            ) : (
+              <Text type="secondary">Closed</Text>
+            )}
+          </div>
+        ))}
+      </div>
+    );
   };
 
   if (loading) {
     return (
       <Layout>
-        <div style={{ padding: "24px" }}>
+        <div style={{ padding: "24px", maxWidth: "1200px", margin: "0 auto" }}>
           <Skeleton active paragraph={{ rows: 10 }} />
         </div>
       </Layout>
@@ -139,9 +160,22 @@ const RestaurantDetails = () => {
   if (!restaurant) {
     return (
       <Layout>
-        <div style={{ padding: "24px" }}>
+        <div style={{ padding: "24px", maxWidth: "1200px", margin: "0 auto" }}>
           <Card>
-            <Text>Restaurant not found</Text>
+            <Space
+              direction="vertical"
+              align="center"
+              style={{ width: "100%", padding: "40px 0" }}
+            >
+              <ShopOutlined style={{ fontSize: "48px", color: "#bfbfbf" }} />
+              <Title level={4}>Restaurant not found</Title>
+              <Button
+                type="primary"
+                onClick={() => navigate(ROUTES.RESTAURANT_DASHBOARD)}
+              >
+                Back to Dashboard
+              </Button>
+            </Space>
           </Card>
         </div>
       </Layout>
@@ -150,139 +184,158 @@ const RestaurantDetails = () => {
 
   return (
     <Layout>
-      <div className="restaurant-details-container">
+      <div style={{ padding: "24px", maxWidth: "1200px", margin: "0 auto" }}>
         <Card
-          title={
-            <Title level={2} style={{ margin: 0 }}>
-              {restaurant.name}
-            </Title>
-          }
-          extra={
-            <Tag color={restaurant.isAvailable ? "green" : "red"}>
-              {restaurant.isAvailable ? "OPEN" : "CLOSED"}
-            </Tag>
+          style={{
+            borderRadius: "12px",
+            boxShadow: "0 1px 8px rgba(0, 0, 0, 0.1)",
+          }}
+          cover={
+            <div
+              style={{
+                height: "300px",
+                backgroundColor: "#f0f2f5",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                overflow: "hidden",
+              }}
+            >
+              {restaurant.imageUrl ? (
+                <img
+                  src={restaurant.imageUrl}
+                  alt={restaurant.name}
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                />
+              ) : (
+                <ShopOutlined style={{ fontSize: "64px", color: "#bfbfbf" }} />
+              )}
+            </div>
           }
           actions={[
             <Button
               type="primary"
               icon={<EditOutlined />}
               onClick={() => navigate(ROUTES.RESTAURANT_EDIT(id))}
-              //need to change colors
-              style={{ backgroundColor: "#1890ff", borderColor: "#1890ff" }}
+              style={{
+                backgroundColor: "#1890ff",
+                borderColor: "#1890ff",
+                fontWeight: 500,
+              }}
+              size="large"
+              block
             >
-              Edit
+              Edit Restaurant
             </Button>,
             <Button
               danger
               icon={<DeleteOutlined />}
               onClick={handleDelete}
               loading={deleting}
+              size="large"
+              block
             >
-              Delete
+              Delete Restaurant
             </Button>,
           ]}
         >
+          <div style={{ marginBottom: "24px" }}>
+            <Space align="center" style={{ marginBottom: "8px" }}>
+              <Title level={2} style={{ margin: 0 }}>
+                {restaurant.name}
+              </Title>
+              <Tag
+                color={restaurant.isAvailable ? "green" : "red"}
+                style={{
+                  fontSize: "14px",
+                  padding: "4px 8px",
+                  fontWeight: 600,
+                }}
+              >
+                {restaurant.isAvailable ? "OPEN" : "CLOSED"}
+              </Tag>
+            </Space>
+
+            <Space size={[8, 8]} wrap style={{ marginBottom: "16px" }}>
+              <Tag color="blue" icon={<ShopOutlined />}>
+                {restaurant.cuisineType}
+              </Tag>
+              <Tag
+                color={
+                  restaurant.registrationStatus === "approved"
+                    ? "green"
+                    : restaurant.registrationStatus === "pending"
+                    ? "orange"
+                    : "red"
+                }
+                icon={<StarOutlined />}
+              >
+                {restaurant.registrationStatus.toUpperCase()}
+              </Tag>
+              <Tag color="geekblue">
+                {restaurant.deliveryRadius} km delivery
+              </Tag>
+            </Space>
+
+            <Paragraph style={{ fontSize: "16px", color: "#1d1d1f" }}>
+              {restaurant.description || "No description provided"}
+            </Paragraph>
+          </div>
+
+          <Divider style={{ margin: "24px 0" }} />
+
           <Row gutter={24}>
-            <Col xs={24} md={16}>
-              <div style={{ marginBottom: 24 }}>
-                <Title level={4}>About</Title>
-                <Paragraph>{restaurant.description}</Paragraph>
-              </div>
-
-              <Divider />
-
-              <div style={{ marginBottom: 24 }}>
-                <Title level={4}>Opening Hours</Title>
-                {renderOpeningHours()}
-              </div>
-
-              <Divider />
-
-              <div style={{ marginBottom: 24 }}>
-                <Title level={4}>Contact Information</Title>
-                <Row gutter={16} style={{ marginBottom: 12 }}>
-                  <Col span={24}>
-                    <Text>
-                      <PhoneOutlined style={{ marginRight: 8 }} />
-                      {restaurant.contactNumber}
-                    </Text>
-                  </Col>
-                </Row>
-                <Row gutter={16} style={{ marginBottom: 12 }}>
-                  <Col span={24}>
-                    <Text>
-                      <MailOutlined style={{ marginRight: 8 }} />
-                      {restaurant.email}
-                    </Text>
-                  </Col>
-                </Row>
-              </div>
+            <Col xs={24} md={12}>
+              <Title level={4} style={{ marginBottom: "16px" }}>
+                <ClockCircleOutlined style={{ marginRight: "8px" }} />
+                Opening Hours
+              </Title>
+              {renderOpeningHours()}
             </Col>
 
-            <Col xs={24} md={8}>
-              <div style={{ marginBottom: 24 }}>
-                <Title level={4}>Location</Title>
-                <Row gutter={16} style={{ marginBottom: 12 }}>
-                  <Col span={24}>
-                    <Text>
-                      <EnvironmentOutlined style={{ marginRight: 8 }} />
-                      {restaurant.address.street}, {restaurant.address.city},{" "}
-                      {restaurant.address.postalCode}
-                    </Text>
-                  </Col>
-                </Row>
-
-                {/* You can add a map component here */}
-                <div
-                  style={{ height: 200, background: "#f0f0f0", marginTop: 16 }}
-                >
-                  {/* Placeholder for map */}
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      height: "100%",
-                      color: "#999",
-                    }}
-                  >
-                    Map would display here
-                  </div>
-                </div>
+            <Col xs={24} md={12}>
+              <Title level={4} style={{ marginBottom: "16px" }}>
+                <EnvironmentOutlined style={{ marginRight: "8px" }} />
+                Location
+              </Title>
+              <div style={{ marginBottom: "16px" }}>
+                <Text strong>Address:</Text>
+                <Paragraph style={{ marginTop: "8px" }}>
+                  {restaurant.address.street}, {restaurant.address.city},{" "}
+                  {restaurant.address.postalCode}
+                </Paragraph>
               </div>
 
-              <Divider />
+              <div style={{ marginBottom: "16px" }}>
+                <Text strong>Contact:</Text>
+                <Paragraph style={{ marginTop: "8px" }}>
+                  <Space direction="vertical">
+                    <Text>
+                      <PhoneOutlined style={{ marginRight: "8px" }} />
+                      {restaurant.contactNumber}
+                    </Text>
+                    <Text>
+                      <MailOutlined style={{ marginRight: "8px" }} />
+                      {restaurant.email}
+                    </Text>
+                  </Space>
+                </Paragraph>
+              </div>
 
-              <div>
-                <Title level={4}>Details</Title>
-                <Row gutter={16} style={{ marginBottom: 12 }}>
-                  <Col span={24}>
-                    <Text strong>Cuisine Type: </Text>
-                    <Tag>{restaurant.cuisineType}</Tag>
-                  </Col>
-                </Row>
-                <Row gutter={16} style={{ marginBottom: 12 }}>
-                  <Col span={24}>
-                    <Text strong>Delivery Radius: </Text>
-                    <Text>{restaurant.deliveryRadius} km</Text>
-                  </Col>
-                </Row>
-                <Row gutter={16} style={{ marginBottom: 12 }}>
-                  <Col span={24}>
-                    <Text strong>Registration Status: </Text>
-                    <Tag
-                      color={
-                        restaurant.registrationStatus === "approved"
-                          ? "green"
-                          : restaurant.registrationStatus === "pending"
-                          ? "orange"
-                          : "red"
-                      }
-                    >
-                      {restaurant.registrationStatus.toUpperCase()}
-                    </Tag>
-                  </Col>
-                </Row>
+              {/* Map placeholder */}
+              <div
+                style={{
+                  height: "200px",
+                  backgroundColor: "#f5f5f5",
+                  borderRadius: "8px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "#999",
+                  marginTop: "16px",
+                }}
+              >
+                <Text>Map would be displayed here</Text>
               </div>
             </Col>
           </Row>

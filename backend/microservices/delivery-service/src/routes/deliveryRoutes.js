@@ -1,3 +1,5 @@
+// routes/deliveryRoutes.js
+
 const express = require("express");
 const {
   getDeliveries,
@@ -11,6 +13,9 @@ const { delivery } = require("../middlewares/auth");
 
 const router = express.Router();
 
+// Route to update the current GPS location
+router.post("/location/update", delivery, updateLocation);
+
 // Route to get deliveries assigned to the logged-in delivery personnel
 router.get("/", delivery, getDeliveries);
 
@@ -23,10 +28,7 @@ router.post("/:id/reject", delivery, rejectDelivery);
 // Route to update the status of a delivery (picked up/delivered)
 router.patch("/:id/status", delivery, updateDeliveryStatus);
 
-// Route to get current delivery location
+// Route to track delivery
 router.get("/:id/track", delivery, trackDelivery);
-
-// Route to update the current GPS location
-router.post("/location/update", delivery, updateLocation);
 
 module.exports = router;

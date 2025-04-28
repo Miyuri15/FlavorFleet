@@ -56,6 +56,7 @@ function Login() {
           token: result.token,
           username: decodedToken.username,
           role: decodedToken.role,
+          userId: decodedToken.id,
         };
 
         // Set user in AuthContext

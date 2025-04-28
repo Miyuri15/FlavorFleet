@@ -1,5 +1,11 @@
 import React from "react";
-import { FaStore, FaUtensils, FaStar, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
+import {
+  FaStore,
+  FaUtensils,
+  FaStar,
+  FaStarHalfAlt,
+  FaRegStar,
+} from "react-icons/fa";
 
 // Reusable RatingStars component
 const RatingStars = ({ rating, size = 12 }) => {
@@ -18,17 +24,15 @@ const RatingStars = ({ rating, size = 12 }) => {
           <FaRegStar key={`empty-${i}`} size={size} />
         ))}
       </div>
-      <span className="text-xs text-gray-600">
-        {rating.toFixed(1)}
-      </span>
+      <span className="text-xs text-gray-600">{rating.toFixed(1)}</span>
     </div>
   );
 };
 
-const RestaurantList = ({ 
-  restaurants, 
+const RestaurantList = ({
+  restaurants,
   onSelectRestaurant,
-  selectedRestaurantId 
+  selectedRestaurantId,
 }) => {
   return (
     <div className="mb-8">
@@ -49,7 +53,7 @@ const RestaurantList = ({
             <div className="flex flex-col items-center text-center">
               <div className="relative w-16 h-16 mb-2 rounded-full overflow-hidden bg-gray-200">
                 <img
-                  src={restaurant.logo}
+                  src={restaurant.logo || "/img/default-restaurant.png"}
                   alt={restaurant.name}
                   className="w-full h-full object-cover"
                   onError={(e) => {

@@ -17,7 +17,6 @@ import OrderDetails from "./components/OrderComponent/[id]/OrderDetails";
 import TrackOrder from "./components/OrderComponent/[id]/TrackOrder";
 import IncomingOrders from "./components/OrderComponent/IncomingOrders";
 import PaymentPage from "./components/OrderComponent/PaymentPage";
-// import FindDeliveryPerson from "./components/OrderComponent/FindDeliveryPerson";
 import Error from "./pages/Error/Error";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminDashboard from "./components/AdminDashboard";
@@ -32,6 +31,7 @@ import EditRestaurant from "./pages/Restaurant/EditRestaurant";
 import MenuManagement from "./pages/MenuItems/MenuManagement";
 import RestaurantMenu from "./pages/MenuItems/RestaurantMenu";
 import MenuItemForm from "./pages/MenuItems/MenuItemForm";
+import RestaurantOrdersPage from "./pages/RestaurantOrders/RestaurantOrdersPage";
 
 function App() {
   return (
@@ -176,6 +176,14 @@ function App() {
                 element={
                   <ProtectedRoute requiredRole="restaurant_owner">
                     <MenuItemForm />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path={ROUTES.RESTAURANT_ORDERS}
+                element={
+                  <ProtectedRoute requiredRole="restaurant_owner">
+                    <RestaurantOrdersPage />
                   </ProtectedRoute>
                 }
               />

@@ -8,7 +8,8 @@ services:
       - "5001:5001"
     networks:
       - app-network
-
+    environment:
+      - DOCKERIZED=true
     env_file:
       - ./backend/microservices/delivery-service/.env
 
@@ -35,6 +36,8 @@ services:
       - "5002:5002"
     networks:
       - app-network
+    environment:
+      - DOCKERIZED=true
     env_file:
       - ./backend/microservices/payment-service/.env
 
@@ -61,6 +64,8 @@ services:
       - "5004:5004"
     networks:
       - app-network
+    environment:
+      - DOCKERIZED=true
     env_file:
       - ./backend/gateway/.env
 

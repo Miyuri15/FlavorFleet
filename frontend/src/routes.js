@@ -18,7 +18,7 @@ const ROUTES = {
 
   // Protected Routes
   ADMIN_DASHBOARD: "/admin/dashboard",
-  DELIVERY_DASHBOARD: "/deliverydashboard",
+  DELIVERY_DASHBOARD: "/delivery-dashboard",
   RESTAURANT_DASHBOARD: "/restaurant-dashboard",
 
   //Restaurant routes
@@ -31,6 +31,11 @@ const ROUTES = {
   RESTAURANT_MENU_ADD: (id = ":id") => `/restaurant/${id}/menu/add`,
   RESTAURANT_MENU_EDIT: (id = ":id", menuItemId = ":menuItemId") =>
     `/restaurant/${id}/menu/edit/${menuItemId}`,
+
+  //Delivery Routes
+  DELIVERY_ORDERS: "/delivery/orders",
+  DELIVERY_ORDER_DETAILS: (id = ":id") => `/delivery/orders/${id}`,
+
   // Errors
   ERROR_PAGE: (errorType = ":errorType") => `/error/${errorType}`,
   NOT_FOUND: "*",

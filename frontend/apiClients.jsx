@@ -1,13 +1,22 @@
 import axios from "axios";
 
+const BASE_DELIVERY_URL = import.meta.env.VITE_DELIVERY_BACKEND_URL;
+
 const createApiClient = (baseURL) => {
   const instance = axios.create({
     baseURL,
-    withCredentials: true,
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
     },
+  });
+
+  // Add request interceptor
+  instance.interceptors.request.use((config) => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
   });
 
   // Add response interceptor
@@ -31,4 +40,5 @@ export const foodServiceApi = createApiClient(
 export const cartServiceApi = createApiClient(
   `${import.meta.env.VITE_ORDER_BACKEND_URL}/api`
 );
+export const deliveryServiceApi = createApiClient(`${BASE_DELIVERY_URL}/api`);
 // Add more services as needed

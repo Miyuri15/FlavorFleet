@@ -1,30 +1,36 @@
 import { useEffect, useState } from "react";
+import api from "../../../api";
 
-export default function DeliveryDetailsForm({ onDetailsSubmit, onPaymentMethodSelect, paymentMethod }) {
+export default function DeliveryDetailsForm({
+  onDetailsSubmit,
+  onPaymentMethodSelect,
+  paymentMethod,
+}) {
   const [formData, setFormData] = useState({
-    fullName: '',
-    contactNo: '',
-    address: '',
-    city: '',
-    postalCode: '',
-    specialInstructions:''
+    fullName: "",
+    contactNo: "",
+    address: "",
+    city: "",
+    postalCode: "",
+    specialInstructions: "",
   });
 
   useEffect(() => {
     // Fetch user details from your API
     const fetchUserDetails = async () => {
       try {
-        const response = await fetch('/api/user/current');
+        // const response = await fetch('/api/user/current');
+        const response = await api.get(`/auth/current`);
         const user = await response.json();
         setFormData({
           fullName: `${user.firstName} ${user.lastName}`,
-          contactNo: user.phone || '',
-          address: user.address || '',
-          city: user.city || '',
-          postalCode: user.postalCode || ''
+          contactNo: user.phone || "",
+          address: user.address || "",
+          city: user.city || "",
+          postalCode: user.postalCode || "",
         });
       } catch (error) {
-        console.error('Error fetching user details:', error);
+        console.error("Error fetching user details:", error);
       }
     };
 
@@ -33,26 +39,28 @@ export default function DeliveryDetailsForm({ onDetailsSubmit, onPaymentMethodSe
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!formData.address || !formData.city) {
-      alert('Please fill complete address details');
+      alert("Please fill complete address details");
       return;
     }
     const fullAddress = `${formData.address}, ${formData.city}, ${formData.postalCode}`;
     onDetailsSubmit({ ...formData, address: fullAddress });
   };
-  
+
   return (
     <div className="bg-white p-6 rounded-lg shadow-md">
       <h2 className="text-xl font-semibold mb-4">Delivery Information</h2>
       <form onSubmit={handleSubmit}>
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium  text-gray-700 mb-1">Full Name</label>
+            <label className="block text-sm font-medium  text-gray-700 mb-1">
+              Full Name
+            </label>
             <input
               type="text"
               name="fullName"
@@ -64,7 +72,9 @@ export default function DeliveryDetailsForm({ onDetailsSubmit, onPaymentMethodSe
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Contact Number</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Contact Number
+            </label>
             <input
               type="tel"
               name="contactNo"
@@ -76,7 +86,9 @@ export default function DeliveryDetailsForm({ onDetailsSubmit, onPaymentMethodSe
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Address
+            </label>
             <textarea
               name="address"
               rows="3"
@@ -89,7 +101,9 @@ export default function DeliveryDetailsForm({ onDetailsSubmit, onPaymentMethodSe
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                City
+              </label>
               <input
                 type="text"
                 name="city"
@@ -100,7 +114,9 @@ export default function DeliveryDetailsForm({ onDetailsSubmit, onPaymentMethodSe
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Postal Code</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Postal Code
+              </label>
               <input
                 type="text"
                 name="postalCode"
@@ -112,7 +128,9 @@ export default function DeliveryDetailsForm({ onDetailsSubmit, onPaymentMethodSe
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Special Instructions</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Special Instructions
+            </label>
             <textarea
               name="specialInstructions"
               rows="3"
@@ -122,7 +140,6 @@ export default function DeliveryDetailsForm({ onDetailsSubmit, onPaymentMethodSe
               required
             />
           </div>
-
 
           <button
             type="submit"
@@ -138,14 +155,22 @@ export default function DeliveryDetailsForm({ onDetailsSubmit, onPaymentMethodSe
           <h3 className="text-lg font-medium mb-4">Select Payment Method</h3>
           <div className="flex space-x-4">
             <button
-              onClick={() => onPaymentMethodSelect('cash')}
-              className={`flex-1 py-3 rounded-md border-2 ${paymentMethod === 'cash' ? 'border-green-500 bg-green-50' : 'border-gray-300'}`}
+              onClick={() => onPaymentMethodSelect("cash")}
+              className={`flex-1 py-3 rounded-md border-2 ${
+                paymentMethod === "cash"
+                  ? "border-green-500 bg-green-50"
+                  : "border-gray-300"
+              }`}
             >
               Cash on Delivery
             </button>
             <button
-              onClick={() => onPaymentMethodSelect('card')}
-              className={`flex-1 py-3 rounded-md border-2 ${paymentMethod === 'card' ? 'border-green-500 bg-green-50' : 'border-gray-300'}`}
+              onClick={() => onPaymentMethodSelect("card")}
+              className={`flex-1 py-3 rounded-md border-2 ${
+                paymentMethod === "card"
+                  ? "border-green-500 bg-green-50"
+                  : "border-gray-300"
+              }`}
             >
               Pay Now
             </button>

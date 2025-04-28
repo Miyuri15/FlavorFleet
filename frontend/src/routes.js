@@ -15,6 +15,7 @@ const ROUTES = {
   INCOMING_ORDERS: "/incoming-orders",
   PAYMENT: "/payment",
   DELIVERY_MAP: "/deliveryMap",
+  RESTAURANT_MENU_PAGE: "/restaurants/:restaurantId",
 
   // Protected Routes
   ADMIN_DASHBOARD: "/admin/dashboard",

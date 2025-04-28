@@ -154,6 +154,9 @@ const UserDashboard = () => {
     fetchRestuarants();
   }, [token]);
 
+  const handleRestaurantClick = (restaurantId) => {
+    navigate(`/restaurants/${restaurantId}`);
+  };
   // Dummy data for promotions
   const promotions = [
     {
@@ -375,7 +378,10 @@ const UserDashboard = () => {
       <Slider {...carouselSettings}>
         {restuarants.map((restuarant) => (
           <div key={restuarant.id} className="p-2">
-            <div className="bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow text-center h-full">
+            <div
+              className="bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow text-center h-full cursor-pointer"
+              onClick={() => handleRestaurantClick(restuarant._id)}
+            >
               <img
                 src={
                   restuarant.banner ||

@@ -32,6 +32,7 @@ import MenuManagement from "./pages/MenuItems/MenuManagement";
 import RestaurantMenu from "./pages/MenuItems/RestaurantMenu";
 import MenuItemForm from "./pages/MenuItems/MenuItemForm";
 import RestaurantOrdersPage from "./pages/RestaurantOrders/RestaurantOrdersPage";
+import RestaurantMenuPage from "./components/OrderComponent/RestaurantMenuPage";
 
 function App() {
   return (
@@ -48,6 +49,10 @@ function App() {
               <Route path={ROUTES.CART} element={<CartPage />} />
               <Route path={ROUTES.PROFILE} element={<ProfilePage />} />
               <Route path={ROUTES.PLACE_ORDER} element={<PlaceOrderPage />} />
+              <Route
+                path={ROUTES.RESTAURANT_MENU_PAGE}
+                element={<RestaurantMenuPage />}
+              />
               <Route
                 path={ROUTES.ORDER_CONFIRMATION()}
                 element={<OrderConfirmationPage />}

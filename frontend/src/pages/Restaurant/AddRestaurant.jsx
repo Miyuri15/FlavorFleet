@@ -14,8 +14,9 @@ import {
 } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import Swal from "sweetalert2";
-import { foodServiceApi } from "../../../apiClients"; // Added API client import
+import { foodServiceApi } from "../../../apiClients";
 import dayjs from "dayjs";
+import { GoogleMap, Marker } from "@react-google-maps/api";
 
 const { Option } = Select;
 const { TextArea } = Input;
@@ -26,7 +27,6 @@ const DayTimePicker = ({ day }) => (
       <Form.Item
         name={`${day}Open`}
         label={`${capitalizeFirstLetter(day)} Open`}
-        // rules={[{ required: true }]}
       >
         <TimePicker defaultValue={dayjs("09:00", "HH:mm")} format="HH:mm" />
       </Form.Item>
@@ -35,18 +35,15 @@ const DayTimePicker = ({ day }) => (
       <Form.Item
         name={`${day}Close`}
         label={`${capitalizeFirstLetter(day)} Close`}
-        // rules={[{ required: true }]}
       >
         <TimePicker defaultValue={dayjs("18:00", "HH:mm")} format="HH:mm" />
       </Form.Item>
     </Col>
   </Row>
 );
-
 // Helper function to capitalize the first letter
-const capitalizeFirstLetter = (string) => {
-  return string.charAt(0).toUpperCase() + string.slice(1);
-};
+const capitalizeFirstLetter = (string) =>
+  string.charAt(0).toUpperCase() + string.slice(1);
 
 const AddRestaurant = () => {
   const [form] = Form.useForm();
@@ -54,10 +51,49 @@ const AddRestaurant = () => {
   const [loading, setLoading] = useState(false);
   const [logoFile, setLogoFile] = useState(null);
   const [bannerFile, setBannerFile] = useState(null);
+  const [mapCenter, setMapCenter] = useState({ lat: 6.9271, lng: 79.8612 });
+
+  const geocodeAddress = async (addressString) => {
+    if (!window.google) {
+      console.error("Google Maps not loaded");
+      return;
+    }
+    const geocoder = new window.google.maps.Geocoder();
+    return new Promise((resolve, reject) => {
+      geocoder.geocode({ address: addressString }, (results, status) => {
+        if (status === "OK" && results[0]) {
+          const location = results[0].geometry.location;
+          resolve({ lat: location.lat(), lng: location.lng() });
+        } else {
+          reject(new Error("Geocoding failed: " + status));
+        }
+      });
+    });
+  };
 
   const onFinish = async (values) => {
     try {
       setLoading(true);
+
+      const openingHours = {};
+      [
+        "monday",
+        "tuesday",
+        "wednesday",
+        "thursday",
+        "friday",
+        "saturday",
+        "sunday",
+      ].forEach((day) => {
+        openingHours[day] = {
+          open: values[`${day}Open`]
+            ? values[`${day}Open`].format("HH:mm")
+            : null,
+          close: values[`${day}Close`]
+            ? values[`${day}Close`].format("HH:mm")
+            : null,
+        };
+      });
 
       const restaurantData = {
         name: values.name.trim(),
@@ -69,59 +105,9 @@ const AddRestaurant = () => {
           street: values.street.trim(),
           city: values.city.trim(),
           postalCode: values.postalCode.trim(),
+          coordinates: mapCenter, // Using mapCenter
         },
-        openingHours: {
-          monday: {
-            open: values.mondayOpen ? values.mondayOpen.format("HH:mm") : null,
-            close: values.mondayClose
-              ? values.mondayClose.format("HH:mm")
-              : null,
-          },
-          tuesday: {
-            open: values.tuesdayOpen
-              ? values.tuesdayOpen.format("HH:mm")
-              : null,
-            close: values.tuesdayClose
-              ? values.tuesdayClose.format("HH:mm")
-              : null,
-          },
-          wednesday: {
-            open: values.wednesdayOpen
-              ? values.wednesdayOpen.format("HH:mm")
-              : null,
-            close: values.wednesdayClose
-              ? values.wednesdayClose.format("HH:mm")
-              : null,
-          },
-          thursday: {
-            open: values.thursdayOpen
-              ? values.thursdayOpen.format("HH:mm")
-              : null,
-            close: values.thursdayClose
-              ? values.thursdayClose.format("HH:mm")
-              : null,
-          },
-          friday: {
-            open: values.fridayOpen ? values.fridayOpen.format("HH:mm") : null,
-            close: values.fridayClose
-              ? values.fridayClose.format("HH:mm")
-              : null,
-          },
-          saturday: {
-            open: values.saturdayOpen
-              ? values.saturdayOpen.format("HH:mm")
-              : null,
-            close: values.saturdayClose
-              ? values.saturdayClose.format("HH:mm")
-              : null,
-          },
-          sunday: {
-            open: values.sundayOpen ? values.sundayOpen.format("HH:mm") : null,
-            close: values.sundayClose
-              ? values.sundayClose.format("HH:mm")
-              : null,
-          },
-        },
+        openingHours,
       };
 
       // If you need to upload files, use FormData
@@ -130,16 +116,7 @@ const AddRestaurant = () => {
       // if (logoFile) formData.append("logo", logoFile);
       // if (bannerFile) formData.append("banner", bannerFile);
 
-      // Send the request
-      const response = await foodServiceApi.post(
-        "/restaurant",
-        restaurantData,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await foodServiceApi.post("/restaurant", restaurantData);
 
       Swal.fire({
         icon: "success",
@@ -165,12 +142,7 @@ const AddRestaurant = () => {
     }
   };
 
-  const normFile = (e) => {
-    if (Array.isArray(e)) {
-      return e;
-    }
-    return e && e.fileList;
-  };
+  const normFile = (e) => (Array.isArray(e) ? e : e && e.fileList);
 
   return (
     <Layout>
@@ -181,12 +153,26 @@ const AddRestaurant = () => {
           layout="vertical"
           onFinish={onFinish}
           autoComplete="off"
+          onValuesChange={async (changed, allValues) => {
+            if (changed.street || changed.city || changed.postalCode) {
+              const addressString = `${allValues.street || ""}, ${
+                allValues.city || ""
+              }, ${allValues.postalCode || ""}`;
+              try {
+                const coords = await geocodeAddress(addressString);
+                setMapCenter(coords);
+                message.success("Location updated from address");
+              } catch (error) {
+                console.error(error);
+              }
+            }
+          }}
           onFinishFailed={({ errorFields }) => {
-            // This will show which fields failed validation
             form.scrollToField(errorFields[0].name);
-            message.error("Please fill in all required fields correctly");
+            message.error("Please fill all required fields correctly");
           }}
         >
+          {/* Basic Details */}
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item
@@ -242,6 +228,27 @@ const AddRestaurant = () => {
               </Form.Item>
             </Col>
           </Row>
+
+          <div style={{ marginTop: "24px" }}>
+            <h3>Select Location</h3>
+            <GoogleMap
+              mapContainerStyle={{
+                width: "100%",
+                height: "400px",
+                borderRadius: "8px",
+              }}
+              center={mapCenter}
+              zoom={15}
+              onClick={(e) => {
+                const clickedLat = e.latLng.lat();
+                const clickedLng = e.latLng.lng();
+                setMapCenter({ lat: clickedLat, lng: clickedLng });
+                message.success("Location updated from Map Click!");
+              }}
+            >
+              {mapCenter && <Marker position={mapCenter} />}
+            </GoogleMap>
+          </div>
 
           <h3>Contact Information</h3>
           <Row gutter={16}>

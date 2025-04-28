@@ -27,6 +27,7 @@ import { useAuth } from "../../context/AuthContext";
 import Swal from "sweetalert2";
 import ROUTES from "../../routes";
 import Layout from "../../components/Layout";
+import { GoogleMap, Marker } from "@react-google-maps/api";
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -323,20 +324,43 @@ const RestaurantDetails = () => {
               </div>
 
               {/* Map placeholder */}
-              <div
-                style={{
-                  height: "200px",
-                  backgroundColor: "#f5f5f5",
-                  borderRadius: "8px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  color: "#999",
-                  marginTop: "16px",
-                }}
-              >
-                <Text>Map would be displayed here</Text>
-              </div>
+              {restaurant.address?.coordinates?.lat &&
+              restaurant.address?.coordinates?.lng ? (
+                <GoogleMap
+                  mapContainerStyle={{
+                    height: "200px",
+                    width: "100%",
+                    borderRadius: "8px",
+                  }}
+                  center={{
+                    lat: restaurant.address.coordinates.lat,
+                    lng: restaurant.address.coordinates.lng,
+                  }}
+                  zoom={15}
+                >
+                  <Marker
+                    position={{
+                      lat: restaurant.address.coordinates.lat,
+                      lng: restaurant.address.coordinates.lng,
+                    }}
+                  />
+                </GoogleMap>
+              ) : (
+                <div
+                  style={{
+                    height: "200px",
+                    backgroundColor: "#f5f5f5",
+                    borderRadius: "8px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "#999",
+                    marginTop: "16px",
+                  }}
+                >
+                  <Text>No location available</Text>
+                </div>
+              )}
             </Col>
           </Row>
         </Card>

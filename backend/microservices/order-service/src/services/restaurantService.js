@@ -18,7 +18,6 @@ const getRestaurantServiceUrl = () => {
   const url = isDocker
     ? "http://restaurant-service:5003/api"
     : "http://localhost:5003/api";
-  console.log(`Using Restaurant Service URL: ${url} (Docker: ${isDocker})`);
   return url;
 };
 

@@ -3,6 +3,8 @@ const OrderService = require("../services/orderService");
 const mongoose = require("mongoose");
 const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/appError");
+const RestaurantService = require("../services/restaurantService");
+const DeliveryService = require("../services/deliveryService");
 
 const OrderController = {
   async createOrder(req, res) {
@@ -327,6 +329,56 @@ const OrderController = {
       status: "success",
       data: {
         ratings,
+      },
+    });
+  }),
+
+  assignDeliveryAgent: catchAsync(async (req, res, next) => {
+    const { orderId } = req.params;
+    const { restaurantId } = req.body;
+
+    const restaurant = await RestaurantService.getRestaurantById(restaurantId);
+
+    if (!restaurant) {
+      return next(new AppError("Restaurant not found", 404));
+    }
+
+    console.log("Restaurant details:", restaurant);
+
+    if (
+      !restaurant.address ||
+      !restaurant.address.coordinates ||
+      restaurant.address.coordinates.lat == null ||
+      restaurant.address.coordinates.lng == null
+    ) {
+      return next(new AppError("Restaurant coordinates not found", 400));
+    }
+
+    const { lat, lng } = restaurant.address.coordinates;
+
+    const nearbyAgents = await DeliveryService.findNearbyDeliveryAgents(
+      lat,
+      lng
+    );
+
+    if (!nearbyAgents.length) {
+      return next(new AppError("No delivery agents available nearby", 404));
+    }
+
+    const selectedAgent = nearbyAgents[0];
+
+    console.log("Selected Delivery Agent:", selectedAgent);
+
+    const order = await OrderService.assignDeliveryAgent(
+      orderId,
+      selectedAgent.driverId // Or selectedAgent._id depending on your model
+    );
+
+    res.status(200).json({
+      status: "success",
+      data: {
+        order,
+        assignedAgent: selectedAgent,
       },
     });
   }),

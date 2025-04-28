@@ -40,7 +40,5 @@ export const foodServiceApi = createApiClient(
 export const cartServiceApi = createApiClient(
   `${import.meta.env.VITE_ORDER_BACKEND_URL}/api`
 );
-export const deliveryServiceApi = createApiClient(
-  `${BASE_DELIVERY_URL}/api/deliveries`
-);
+export const deliveryServiceApi = createApiClient(`${BASE_DELIVERY_URL}/api`);
 // Add more services as needed

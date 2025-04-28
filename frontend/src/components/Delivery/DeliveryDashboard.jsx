@@ -11,14 +11,14 @@ const DeliveryDashboard = () => {
   useEffect(() => {
     const initializeDriver = async () => {
       try {
-        const res = await deliveryServiceApi.get("/driver/me");
+        const res = await deliveryServiceApi.get("drivers/me");
         setDriver(res.data);
         setDriverStatus(res.data.status || "offline");
       } catch (error) {
         if (error.response && error.response.status === 404) {
           // Driver not found, add driver
           try {
-            const addRes = await deliveryServiceApi.post("/driver/add", {
+            const addRes = await deliveryServiceApi.post("drivers/add", {
               driverId: user.userId,
             });
             setDriver(addRes.data);
@@ -43,7 +43,7 @@ const DeliveryDashboard = () => {
     setDriverStatus(newStatus);
 
     try {
-      const res = await deliveryServiceApi.patch("/driver/update-status", {
+      const res = await deliveryServiceApi.patch("drivers/update-status", {
         driverId: user.userId,
         status: newStatus,
       });

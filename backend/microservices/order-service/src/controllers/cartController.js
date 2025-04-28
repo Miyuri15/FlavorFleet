@@ -22,8 +22,10 @@ const cartController = {
       res.status(201).json(cartItem);
     } catch (error) {
       res.status(400).json({ message: error.message });
+      console.log('Error adding to cart');
     }
   },
+
   async updateCartItem(req, res) {
     try {
       const userId = req.user.id;

@@ -315,7 +315,7 @@ function Register() {
                 <p className="text-red-500">{formik.errors.confirmPassword}</p>
               )}
 
-            <Button type="submit" disabled={isLoading || !formik.isValid}>
+            <Button type="button" disabled={isLoading || !formik.isValid}>
               {isLoading ? "Registering..." : "Register"}
             </Button>
           </form>

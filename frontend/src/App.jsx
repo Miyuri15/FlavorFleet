@@ -31,6 +31,7 @@ import EditRestaurant from "./pages/Restaurant/EditRestaurant";
 import MenuManagement from "./pages/MenuItems/MenuManagement";
 import RestaurantMenu from "./pages/MenuItems/RestaurantMenu";
 import MenuItemForm from "./pages/MenuItems/MenuItemForm";
+import RestaurantOrdersPage from "./pages/RestaurantOrders/RestaurantOrdersPage";
 
 function App() {
   return (
@@ -175,6 +176,14 @@ function App() {
                 element={
                   <ProtectedRoute requiredRole="restaurant_owner">
                     <MenuItemForm />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path={ROUTES.RESTAURANT_ORDERS}
+                element={
+                  <ProtectedRoute requiredRole="restaurant_owner">
+                    <RestaurantOrdersPage />
                   </ProtectedRoute>
                 }
               />

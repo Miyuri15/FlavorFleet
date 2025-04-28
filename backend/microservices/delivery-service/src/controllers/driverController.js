@@ -103,9 +103,41 @@ async function findNearbyDrivers(req, res) {
   }
 }
 
+async function updateDriverLocation(req, res) {
+  try {
+    const { driverId, lat, lng } = req.body;
+
+    if (!driverId || lat == null || lng == null) {
+      return res
+        .status(400)
+        .json({ error: "driverId, lat, and lng are required" });
+    }
+
+    const driver = await Driver.findOne({ driverId });
+
+    if (!driver) {
+      return res.status(404).json({ error: "Driver not found" });
+    }
+
+    driver.currentLocation = {
+      type: "Point",
+      coordinates: [parseFloat(lng), parseFloat(lat)], // GeoJSON format [lng, lat]
+    };
+    driver.lastActive = new Date(); // Update last active time
+
+    await driver.save();
+
+    res.status(200).json({ message: "Location updated successfully", driver });
+  } catch (error) {
+    console.error("Error updating driver location:", error);
+    res.status(500).json({ error: error.message });
+  }
+}
+
 module.exports = {
   updateDriverStatus,
   addDriver,
   getCurrentDriver,
   findNearbyDrivers,
+  updateDriverLocation,
 };

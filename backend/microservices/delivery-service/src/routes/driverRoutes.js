@@ -4,6 +4,7 @@ const {
   addDriver,
   getCurrentDriver,
   findNearbyDrivers,
+  updateDriverLocation,
 } = require("../controllers/driverController");
 const { delivery } = require("../middlewares/auth");
 
@@ -20,5 +21,8 @@ router.get("/me", delivery, getCurrentDriver);
 
 // Route to find nearby drivers
 router.get("/nearby", findNearbyDrivers);
+
+// Route to update the driver's location
+router.patch("/update-location", delivery, updateDriverLocation);
 
 module.exports = router;

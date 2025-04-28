@@ -632,6 +632,37 @@ const OrderService = {
       date: order.createdAt,
     }));
   },
+
+  async assignDeliveryAgent(orderId, driverId) {
+    try {
+      const order = await Order.findById(orderId);
+      if (!order) {
+        throw new Error("Order not found");
+      }
+
+      order.deliveryAgentId = driverId;
+      order.status = "Out for Delivery";
+      order.updatedAt = new Date();
+
+      await order.save();
+
+      await notificationService.sendNotification(
+        driverId,
+        `You have been assigned to deliver order #${order._id}.`,
+        "order_assigned",
+        {
+          sendEmail: true,
+          emailSubject: "New Delivery Assignment",
+          relatedEntity: { type: "Order", id: order._id },
+        }
+      );
+
+      return order;
+    } catch (error) {
+      console.error("Error assigning delivery agent:", error);
+      throw new Error("Failed to assign delivery agent");
+    }
+  },
 };
 
 module.exports = OrderService;

@@ -334,7 +334,8 @@ const OrderController = {
   }),
 
   assignDeliveryAgent: catchAsync(async (req, res, next) => {
-    const { orderId } = req.params;
+    const { id } = req.params;
+    const orderId = id;
     const { restaurantId } = req.body;
 
     const restaurant = await RestaurantService.getRestaurantById(restaurantId);
@@ -342,8 +343,6 @@ const OrderController = {
     if (!restaurant) {
       return next(new AppError("Restaurant not found", 404));
     }
-
-    console.log("Restaurant details:", restaurant);
 
     if (
       !restaurant.address ||
@@ -367,11 +366,9 @@ const OrderController = {
 
     const selectedAgent = nearbyAgents[0];
 
-    console.log("Selected Delivery Agent:", selectedAgent);
-
     const order = await OrderService.assignDeliveryAgent(
       orderId,
-      selectedAgent.driverId // Or selectedAgent._id depending on your model
+      selectedAgent.driverId
     );
 
     res.status(200).json({

@@ -5,6 +5,7 @@ const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/appError");
 const RestaurantService = require("../services/restaurantService");
 const DeliveryService = require("../services/deliveryService");
+const NotificationService = require("../utils/notificationService");
 
 const OrderController = {
   async createOrder(req, res) {
@@ -333,7 +334,7 @@ const OrderController = {
     });
   }),
 
-  assignDeliveryAgent: catchAsync(async (req, res, next) => {
+  notifyNearbyDeliveryAgents: catchAsync(async (req, res, next) => {
     const { id } = req.params;
     const orderId = id;
     const { restaurantId } = req.body;
@@ -364,19 +365,61 @@ const OrderController = {
       return next(new AppError("No delivery agents available nearby", 404));
     }
 
-    const selectedAgent = nearbyAgents[0];
-
-    const order = await OrderService.assignDeliveryAgent(
-      orderId,
-      selectedAgent.driverId
+    await Promise.all(
+      nearbyAgents.map(async (agent) => {
+        await NotificationService.sendNotification(
+          agent.driverId,
+          `New delivery available for order #${orderId}. Accept quickly!`,
+          "new_delivery_available",
+          {
+            sendEmail: true,
+            emailSubject: "New Delivery Opportunity",
+            relatedEntity: { type: "Order", id: orderId },
+          }
+        );
+      })
     );
 
     res.status(200).json({
       status: "success",
-      data: {
-        order,
-        assignedAgent: selectedAgent,
-      },
+      message: "Nearby delivery agents have been notified about the order.",
+    });
+  }),
+
+  acceptDelivery: catchAsync(async (req, res, next) => {
+    const { id } = req.params; // orderId
+    const driverId = req.user.id; // assuming the agent is authenticated
+
+    const order = await Order.findById(id);
+
+    if (!order) {
+      return next(new AppError("Order not found", 404));
+    }
+
+    if (order.deliveryAgentId) {
+      return next(new AppError("Order already accepted by another agent", 400));
+    }
+
+    order.deliveryAgentId = driverId;
+    order.status = "Out for Delivery";
+    order.updatedAt = new Date();
+    await order.save();
+
+    await NotificationService.sendNotification(
+      driverId,
+      `You have successfully accepted the delivery for order #${order._id}.`,
+      "delivery_accepted",
+      {
+        sendEmail: true,
+        emailSubject: "Delivery Accepted",
+        relatedEntity: { type: "Order", id: order._id },
+      }
+    );
+
+    res.status(200).json({
+      status: "success",
+      message: "You have accepted the delivery successfully",
+      data: { order },
     });
   }),
 };

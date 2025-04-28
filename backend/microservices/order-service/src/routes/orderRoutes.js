@@ -26,8 +26,11 @@ router.get("/delivery/orders", OrderController.getDeliveryAgentOrders);
 // Update order status
 router.patch("/:id/status", OrderController.updateOrderStatus);
 
-//Assign delivery agent to order
-router.post("/:id/assign-delivery", OrderController.assignDeliveryAgent);
+//Notify nearby delivery agents
+router.post(
+  "/:id/notify-delivery-agents",
+  OrderController.notifyNearbyDeliveryAgents
+);
 
 // Cancel order
 router.post("/:id/cancel", OrderController.cancelOrder);

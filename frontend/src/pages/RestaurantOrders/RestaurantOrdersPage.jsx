@@ -67,19 +67,19 @@ const RestaurantOrdersPage = () => {
     }
   };
 
-  const assignDeliveryAgent = async (orderId, restaurantId) => {
+  const notifyNearbyDeliveryAgents = async (orderId, restaurantId) => {
     try {
       const response = await cartServiceApi.post(
-        `/orders/${orderId}/assign-delivery`,
+        `/orders/${orderId}/notify-delivery-agents`,
         {
           restaurantId,
         }
       );
-      toast.success("Delivery agent assigned successfully!");
+      toast.success("Nearby delivery agents have been notified!");
       fetchOrders(selectedRestaurantId);
     } catch (error) {
       toast.error(
-        error.response?.data?.error || "Failed to assign delivery agent"
+        error.response?.data?.error || "Failed to notify nearby delivery agents"
       );
     }
   };
@@ -141,7 +141,7 @@ const RestaurantOrdersPage = () => {
       title: "Status",
       dataIndex: "status",
       key: "status",
-      render: (status) => {
+      render: (_, record) => {
         const statusMap = {
           Pending: { color: "orange", text: "Pending" },
           Confirmed: { color: "blue", text: "Confirmed" },
@@ -151,10 +151,22 @@ const RestaurantOrdersPage = () => {
           Delivered: { color: "green", text: "Delivered" },
           Cancelled: { color: "red", text: "Cancelled" },
         };
+
         return (
-          <Tag color={statusMap[status]?.color || "gray"}>
-            {statusMap[status]?.text || status}
-          </Tag>
+          <Space direction="vertical">
+            <Tag color={statusMap[record.status]?.color || "gray"}>
+              {statusMap[record.status]?.text || record.status}
+            </Tag>
+            {/* Delivery assignment status */}
+            {record.status === "Prepared" ||
+            record.status === "Out for Delivery" ? (
+              record.deliveryAgentId ? (
+                <Tag color="green">Delivery Agent Assigned</Tag>
+              ) : (
+                <Tag color="volcano">Waiting for Delivery Agent</Tag>
+              )
+            ) : null}
+          </Space>
         );
       },
     },
@@ -193,10 +205,10 @@ const RestaurantOrdersPage = () => {
           {record.status === "Prepared" && (
             <Button
               onClick={() =>
-                assignDeliveryAgent(record.orderId, selectedRestaurantId)
+                notifyNearbyDeliveryAgents(record.orderId, selectedRestaurantId)
               }
             >
-              Assign Delivery Agent
+              Notify Nearby Delivery Agents
             </Button>
           )}
         </Space>

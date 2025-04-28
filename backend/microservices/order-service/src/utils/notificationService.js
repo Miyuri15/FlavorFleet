@@ -1,6 +1,7 @@
 const nodemailer = require('nodemailer');
 const Notification = require('../models/notificationModel');
 const User = require('../models/User');
+const SMSService = require('../services/smsService');
 const logger = console; // Replace with your logger if needed
 
 // Email transporter configuration
@@ -50,6 +51,7 @@ const sendEmail = async (to, subject, text, html, orderDetails) => {
 const NotificationService = {
   async sendNotification(userId, message, type = 'order_update', options = {}) {
     try {
+      // Create in-app notification
       const notification = await Notification.create({
         userId,
         message,
@@ -58,6 +60,7 @@ const NotificationService = {
         isRead: false,
       });
 
+      // Send email if requested
       if (options.sendEmail) {
         const user = await User.findById(userId).select('email');
         if (user?.email) {
@@ -74,6 +77,16 @@ const NotificationService = {
         }
       }
 
+      // Send SMS if requested and it's an order-related notification
+      if (options.sendSMS && options.relatedEntity?.type === 'Order') {
+        await SMSService.sendOrderSMS(
+          userId,
+          options.relatedEntity.id,
+          type,
+          options.cancellationReason
+        );
+      }
+
       return true;
     } catch (error) {
       console.error('Notification failed:', error.message);
@@ -83,6 +96,7 @@ const NotificationService = {
       return false;
     }
   },
+  
   
   async notifyAdmin(message, options = {}) {
     try {

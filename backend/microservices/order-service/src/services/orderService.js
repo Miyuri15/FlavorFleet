@@ -5,6 +5,7 @@ const User = require('../models/User');
 const AppError = require('../utils/appError');
 const mongoose = require('mongoose');
 const notificationService = require('../utils/notificationService');
+const SMSService = require('./smsService');
 
 const OrderService = {
   async createOrder(orderData) {
@@ -149,8 +150,10 @@ const OrderService = {
     const notificationConfigs = {
       'Pending': {
         message: `Your order #${order._id} has been placed successfully! We'll notify you when it's confirmed.`,
+        restaurantMessage: `New order #${order._id} has been received (Total: $${order.totalAmount})`,
         type: 'order_placed',
         sendEmail: true,
+        sendSMS: true,
         emailSubject: 'Order Placed Successfully'
       },
       'Confirmed': {
@@ -158,24 +161,28 @@ const OrderService = {
         restaurantMessage: `New order #${order._id} has been confirmed (Total: $${order.totalAmount})`,
         type: 'order_confirmed',
         sendEmail: true,
+        sendSMS: true,
         emailSubject: 'Order Confirmed'
       },
       'Preparing': {
         message: `Restaurant has started preparing your order #${order._id}`,
         type: 'order_preparing',
         sendEmail: true,
+        sendSMS: true,
         emailSubject: 'Order Being Prepared'
       },
       'Prepared': {
         message: `Order #${order._id} is ready for pickup`,
         type: 'order_ready',
         sendEmail: true,
+        sendSMS: true,
         emailSubject: 'Order Ready for Pickup'
       },
       'Out for Delivery': {
         message: `Your order #${order._id} is on its way!`,
         type: 'order_out_for_delivery',
         sendEmail: true,
+        sendSMS: true,
         emailSubject: 'Order On The Way'
       },
       'Delivered': {
@@ -183,13 +190,16 @@ const OrderService = {
         restaurantMessage: `Order #${order._id} has been delivered to customer`,
         type: 'order_delivered',
         sendEmail: true,
+        sendSMS: true,
         emailSubject: 'Order Delivered'
       },
       'Cancelled': {
         message: `Order #${order._id} has been cancelled${order.cancellationReason ? `: ${order.cancellationReason}` : ''}`,
         type: 'order_cancelled',
         sendEmail: true,
-        emailSubject: 'Order Cancelled'
+        sendSMS: true,
+        emailSubject: 'Order Cancelled',
+        cancellationReason: order.cancellationReason
       }
     };
 
@@ -197,7 +207,7 @@ const OrderService = {
     if (!config) return;
 
     try {
-       // Send to user for all statuses except Prepared (which goes to delivery agent)
+      // Send to user for all statuses except Prepared (which goes to delivery agent)
       if (newStatus !== 'Prepared') {
         await notificationService.sendNotification(
           order.userId,
@@ -205,8 +215,10 @@ const OrderService = {
           config.type,
           {
             sendEmail: config.sendEmail,
+            sendSMS: config.sendSMS,
             emailSubject: config.emailSubject,
-            relatedEntity: { type: 'Order', id: order._id }
+            relatedEntity: { type: 'Order', id: order._id },
+            cancellationReason: config.cancellationReason
           }
         );
       }

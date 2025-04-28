@@ -19,7 +19,6 @@ import {
 } from "antd";
 import {
   SaveOutlined,
-  ArrowLeftOutlined,
   UploadOutlined,
   DeleteOutlined,
 } from "@ant-design/icons";
@@ -29,6 +28,7 @@ import Swal from "sweetalert2";
 import dayjs from "dayjs";
 import ROUTES from "../../routes";
 import Layout from "../../components/Layout";
+import { GoogleMap, Marker } from "@react-google-maps/api";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -42,6 +42,7 @@ const EditRestaurant = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [restaurant, setRestaurant] = useState(null);
+  const [mapCenter, setMapCenter] = useState({ lat: 6.9271, lng: 79.8612 });
   const [logoFile, setLogoFile] = useState(null);
   const [bannerFile, setBannerFile] = useState(null);
   const [currentLogo, setCurrentLogo] = useState("");
@@ -85,12 +86,20 @@ const EditRestaurant = () => {
           form.setFieldsValue({
             ...data,
             ...openingHours,
-            latitude: data?.address?.coordinates?.lat,
-            longitude: data?.address?.coordinates?.lng,
             street: data?.address?.street,
             city: data?.address?.city,
             postalCode: data?.address?.postalCode,
           });
+
+          if (
+            data?.address?.coordinates?.lat &&
+            data?.address?.coordinates?.lng
+          ) {
+            setMapCenter({
+              lat: data.address.coordinates.lat,
+              lng: data.address.coordinates.lng,
+            });
+          }
         }
       } catch (error) {
         console.error("Error fetching restaurant:", error);
@@ -111,13 +120,31 @@ const EditRestaurant = () => {
     fetchRestaurant();
   }, [id, form, navigate]);
 
+  const geocodeAddress = async (addressString) => {
+    if (!window.google) {
+      console.error("Google Maps JS not loaded");
+      return;
+    }
+
+    const geocoder = new window.google.maps.Geocoder();
+    return new Promise((resolve, reject) => {
+      geocoder.geocode({ address: addressString }, (results, status) => {
+        if (status === "OK" && results[0]) {
+          const location = results[0].geometry.location;
+          resolve({ lat: location.lat(), lng: location.lng() });
+        } else {
+          reject(new Error("Geocoding failed: " + status));
+        }
+      });
+    });
+  };
+
   const onFinish = async (values) => {
     try {
       setSubmitting(true);
 
-      // Prepare opening hours - ensure null for closed days
       const openingHours = {};
-      const days = [
+      [
         "monday",
         "tuesday",
         "wednesday",
@@ -125,16 +152,13 @@ const EditRestaurant = () => {
         "friday",
         "saturday",
         "sunday",
-      ];
-
-      days.forEach((day) => {
+      ].forEach((day) => {
         openingHours[day] = {
           open: values[`${day}Open`]?.format("HH:mm") || null,
           close: values[`${day}Close`]?.format("HH:mm") || null,
         };
       });
 
-      // Prepare the restaurant data object
       const restaurantData = {
         name: values.name.trim(),
         description: values.description.trim(),
@@ -145,21 +169,15 @@ const EditRestaurant = () => {
           street: values.street.trim(),
           city: values.city.trim(),
           postalCode: values.postalCode.trim(),
-          coordinates: {
-            lat: values.latitude,
-            lng: values.longitude,
-          },
+          coordinates: mapCenter,
         },
         openingHours,
         deliveryRadius: values.deliveryRadius,
         isAvailable: values.isAvailable,
       };
 
-      // Determine if we're uploading files
-      const hasFiles = logoFile || bannerFile;
       let response;
-
-      if (hasFiles) {
+      if (logoFile || bannerFile) {
         const formData = new FormData();
         formData.append("data", JSON.stringify(restaurantData));
         if (logoFile) formData.append("logo", logoFile);
@@ -178,7 +196,7 @@ const EditRestaurant = () => {
       }
 
       if (response.status === 200) {
-        Swal.fire("Updated!", "Your restaurant has been updated.", "success");
+        Swal.fire("Updated!", "Restaurant has been updated.", "success");
         navigate(ROUTES.RESTAURANT_DETAILS(id));
       }
     } catch (error) {
@@ -208,12 +226,7 @@ const EditRestaurant = () => {
     }
   };
 
-  const normFile = (e) => {
-    if (Array.isArray(e)) {
-      return e;
-    }
-    return e && e.fileList;
-  };
+  const normFile = (e) => (Array.isArray(e) ? e : e && e.fileList);
 
   if (loading) {
     return (
@@ -248,12 +261,32 @@ const EditRestaurant = () => {
           <Form
             form={form}
             layout="vertical"
+            onValuesChange={async (changedValues, allValues) => {
+              if (
+                changedValues.street ||
+                changedValues.city ||
+                changedValues.postalCode
+              ) {
+                const addressString = `${allValues.street || ""}, ${
+                  allValues.city || ""
+                }, ${allValues.postalCode || ""}`;
+                try {
+                  const coords = await geocodeAddress(addressString);
+                  setMapCenter(coords);
+                  message.success("Location updated from address");
+                } catch (error) {
+                  console.error(error);
+                  message.warning("Couldn't geocode address");
+                }
+              }
+            }}
             onFinish={onFinish}
             initialValues={{
               isAvailable: true,
               deliveryRadius: 5,
             }}
           >
+            {/* Basic Details */}
             <Row gutter={16}>
               <Col span={12}>
                 <Form.Item
@@ -289,6 +322,7 @@ const EditRestaurant = () => {
               <TextArea rows={4} />
             </Form.Item>
 
+            {/* Address Section */}
             <Divider orientation="left">Address</Divider>
             <Row gutter={16}>
               <Col span={8}>
@@ -322,36 +356,42 @@ const EditRestaurant = () => {
               </Col>
             </Row>
 
-            <Row gutter={16}>
-              <Col span={12}>
-                <Form.Item
-                  name="latitude"
-                  label="Latitude"
-                  rules={[{ required: true, message: "Please enter latitude" }]}
-                >
-                  <InputNumber style={{ width: "100%" }} step={0.0001} />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item
-                  name="longitude"
-                  label="Longitude"
-                  rules={[
-                    { required: true, message: "Please enter longitude" },
-                  ]}
-                >
-                  <InputNumber style={{ width: "100%" }} step={0.0001} />
-                </Form.Item>
-              </Col>
-            </Row>
+            {/* Map Section */}
+            <div style={{ marginTop: "24px" }}>
+              <Title level={4}>Select Location</Title>
+              <GoogleMap
+                mapContainerStyle={{
+                  width: "100%",
+                  height: "400px",
+                  borderRadius: "8px",
+                }}
+                center={mapCenter}
+                zoom={15}
+                onClick={(e) => {
+                  const clickedLat = e.latLng.lat();
+                  const clickedLng = e.latLng.lng();
+                  setMapCenter({ lat: clickedLat, lng: clickedLng });
+                  message.success("Location updated from Map Click!");
+                }}
+              >
+                {mapCenter && <Marker position={mapCenter} />}
+              </GoogleMap>
+            </div>
 
+            {/* Contact Section */}
             <Divider orientation="left">Contact Information</Divider>
             <Row gutter={16}>
               <Col span={12}>
                 <Form.Item
                   name="contactNumber"
                   label="Phone Number"
-                  rules={[{ required: true, message: "Please enter phone" }]}
+                  rules={[
+                    { required: true, message: "Please enter phone" },
+                    {
+                      pattern: /^[0-9]{10}$/,
+                      message: "Phone number must be 10 digits",
+                    },
+                  ]}
                 >
                   <Input />
                 </Form.Item>

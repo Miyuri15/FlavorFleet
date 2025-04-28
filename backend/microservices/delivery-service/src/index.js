@@ -2,7 +2,8 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 require("dotenv").config();
-const deliveryRoutes = require("./routes/deliveryPersonnelRoutes");
+const deliveryRoutes = require("./routes/deliveryRoutes");
+const driverRoutes = require("./routes/driverRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -29,6 +30,7 @@ app.get("/", (req, res) => {
 
 // Delivery API Routes
 app.use("/api/deliveries", deliveryRoutes);
+app.use("/api/drivers", driverRoutes);
 
 // Start Server
 app.listen(PORT, () => {

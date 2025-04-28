@@ -73,8 +73,39 @@ async function getCurrentDriver(req, res) {
   }
 }
 
+async function findNearbyDrivers(req, res) {
+  try {
+    const { lat, lng, radius = 5000 } = req.query;
+
+    if (!lat || !lng) {
+      return res
+        .status(400)
+        .json({ error: "Latitude and Longitude are required" });
+    }
+
+    const drivers = await Driver.find({
+      status: "available", // Only available drivers
+      currentLocation: {
+        $near: {
+          $geometry: {
+            type: "Point",
+            coordinates: [parseFloat(lng), parseFloat(lat)],
+          },
+          $maxDistance: parseFloat(radius), // search radius in meters
+        },
+      },
+    });
+
+    res.status(200).json({ data: drivers });
+  } catch (error) {
+    console.error("Error finding nearby drivers:", error);
+    res.status(500).json({ error: error.message });
+  }
+}
+
 module.exports = {
   updateDriverStatus,
   addDriver,
   getCurrentDriver,
+  findNearbyDrivers,
 };

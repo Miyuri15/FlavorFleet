@@ -64,12 +64,21 @@ const OrderService = {
 
   async getOrdersByRestaurant(restaurantId) {
     try {
-      return await Order.find({ restaurantId })
-        .populate("userId", "name phone")
-        .sort({ createdAt: -1 });
+      const orders = await Order.find({ restaurantId })
+        .populate("userId", "name phone email")
+        .sort({ createdAt: -1 })
+        .lean();
+
+      return orders.map((order) => ({
+        ...order,
+        orderId: order._id,
+        customerName: order.userId?.name || "Guest",
+        customerPhone: order.userId?.phone || "N/A",
+        customerEmail: order.userId?.email || "N/A",
+      }));
     } catch (error) {
-      console.error("Error fetching restaurant orders:", error);
-      throw new Error("Failed to fetch restaurant orders");
+      console.error("Error fetching orders:", error);
+      throw new Error("Failed to fetch orders");
     }
   },
 
@@ -126,6 +135,12 @@ const OrderService = {
         Confirmed: ["Cancelled"],
       },
       restaurant: {
+        Confirmed: ["Preparing", "Cancelled"],
+        Preparing: ["Prepared", "Cancelled"],
+        Prepared: ["Cancelled"],
+      },
+      restaurant_owner: {
+        Pending: ["Confirmed", "Cancelled"],
         Confirmed: ["Preparing", "Cancelled"],
         Preparing: ["Prepared", "Cancelled"],
         Prepared: ["Cancelled"],

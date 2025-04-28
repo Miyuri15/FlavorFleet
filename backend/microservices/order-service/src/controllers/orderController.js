@@ -95,19 +95,30 @@ const OrderController = {
 
   async getRestaurantOrders(req, res) {
     try {
-      if (
-        req.user.role !== "restaurant" &&
-        req.user.role !== "restaurant_owner"
-      ) {
+      if (!["restaurant", "restaurant_owner"].includes(req.user.role)) {
         return res.status(403).json({ error: "Unauthorized access" });
       }
 
-      const orders = await OrderService.getOrdersByRestaurant(
-        req.user.restaurantId
-      );
-      res.json(orders);
+      const { restaurantId } = req.query;
+
+      if (!restaurantId) {
+        return res
+          .status(400)
+          .json({ error: "Missing restaurantId query parameter" });
+      }
+
+      const orders = await OrderService.getOrdersByRestaurant(restaurantId);
+
+      res.json({
+        success: true,
+        data: orders,
+      });
     } catch (error) {
-      res.status(400).json({ error: error.message });
+      console.error("Error fetching restaurant orders:", error);
+      res.status(400).json({
+        success: false,
+        error: error.message,
+      });
     }
   },
 

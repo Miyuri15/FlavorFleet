@@ -9,6 +9,8 @@ import {
   FiTrash2,
   FiCoffee,
   FiAlertTriangle,
+  FiToggleLeft,
+  FiToggleRight,
 } from "react-icons/fi";
 import Loading from "../../components/Loading/Loading";
 import Swal from "sweetalert2";
@@ -22,6 +24,7 @@ function RestaurantMenu() {
   const [menuItems, setMenuItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [updatingItemId, setUpdatingItemId] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -83,6 +86,45 @@ function RestaurantMenu() {
           container: "font-sans",
         },
       });
+    }
+  };
+
+  const toggleAvailability = async (itemId, currentStatus) => {
+    setUpdatingItemId(itemId);
+    try {
+      const response = await foodServiceApi.put(`/restaurant/menu/${itemId}`, {
+        isAvailable: !currentStatus,
+      });
+
+      setMenuItems(
+        menuItems.map((item) =>
+          item._id === itemId ? { ...item, isAvailable: !currentStatus } : item
+        )
+      );
+
+      MySwal.fire({
+        title: "Success!",
+        text: `Menu item ${!currentStatus ? "activated" : "deactivated"}`,
+        icon: "success",
+        confirmButtonColor: "#10b981",
+        timer: 1500,
+        showConfirmButton: false,
+        customClass: {
+          container: "font-sans",
+        },
+      });
+    } catch (err) {
+      MySwal.fire({
+        title: "Error!",
+        text: err.response?.data?.error || "Failed to update availability",
+        icon: "error",
+        confirmButtonColor: "#ef4444",
+        customClass: {
+          container: "font-sans",
+        },
+      });
+    } finally {
+      setUpdatingItemId(null);
     }
   };
 
@@ -173,7 +215,9 @@ function RestaurantMenu() {
             {menuItems.map((item) => (
               <div
                 key={item._id}
-                className="border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow bg-white"
+                className={`border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow bg-white ${
+                  !item.isAvailable ? "opacity-70" : ""
+                }`}
               >
                 {/* Item Image */}
                 <div className="h-48 bg-gray-100 flex items-center justify-center relative">
@@ -185,6 +229,13 @@ function RestaurantMenu() {
                     />
                   ) : (
                     <FiCoffee className="text-4xl text-gray-400" />
+                  )}
+                  {!item.isAvailable && (
+                    <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
+                      <span className="bg-red-500 text-white px-2 py-1 rounded text-sm font-medium">
+                        Unavailable
+                      </span>
+                    </div>
                   )}
                 </div>
 
@@ -220,22 +271,58 @@ function RestaurantMenu() {
 
                   {/* Action Buttons */}
                   <div className="flex justify-between items-center border-t pt-4">
-                    <Link
-                      to={`${ROUTES.RESTAURANT_DETAILS(id)}/menu/edit/${
-                        item._id
-                      }`}
-                      className="text-blue-500 hover:text-blue-700 flex items-center gap-1 text-sm font-medium"
-                    >
-                      <FiEdit2 />
-                      Edit
-                    </Link>
-                    <button
-                      onClick={() => handleDelete(item._id)}
-                      className="text-red-500 hover:text-red-700 flex items-center gap-1 text-sm font-medium"
-                    >
-                      <FiTrash2 />
-                      Delete
-                    </button>
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() =>
+                          toggleAvailability(item._id, item.isAvailable)
+                        }
+                        disabled={updatingItemId === item._id}
+                        className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 ${
+                          item.isAvailable ? "bg-emerald-500" : "bg-gray-200"
+                        }`}
+                      >
+                        <span className="sr-only">Toggle availability</span>
+                        <span
+                          className={`inline-block w-4 h-4 transform transition-transform rounded-full bg-white ${
+                            item.isAvailable ? "translate-x-6" : "translate-x-1"
+                          }`}
+                        />
+                        {updatingItemId === item._id ? (
+                          <span className="absolute inset-0 flex items-center justify-center">
+                            <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>
+                          </span>
+                        ) : (
+                          <span className="absolute inset-0 flex items-center justify-center text-white text-xs">
+                            {item.isAvailable ? (
+                              <FiToggleRight className="w-3 h-3" />
+                            ) : (
+                              <FiToggleLeft className="w-3 h-3 text-gray-500" />
+                            )}
+                          </span>
+                        )}
+                      </button>
+                      <span className="text-xs text-gray-500">
+                        {item.isAvailable ? "Available" : "Unavailable"}
+                      </span>
+                    </div>
+                    <div className="flex space-x-4">
+                      <Link
+                        to={`${ROUTES.RESTAURANT_DETAILS(id)}/menu/edit/${
+                          item._id
+                        }`}
+                        className="text-blue-500 hover:text-blue-700 flex items-center gap-1 text-sm font-medium"
+                      >
+                        <FiEdit2 />
+                        Edit
+                      </Link>
+                      <button
+                        onClick={() => handleDelete(item._id)}
+                        className="text-red-500 hover:text-red-700 flex items-center gap-1 text-sm font-medium"
+                      >
+                        <FiTrash2 />
+                        Delete
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>

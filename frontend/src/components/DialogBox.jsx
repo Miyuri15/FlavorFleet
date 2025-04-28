@@ -13,8 +13,11 @@ export default function DialogBox({
       text: text,
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#2563eb",
-      cancelButtonColor: "#d33",
+      customClass: {
+        confirmButton: "my-confirm-button",
+        cancelButton: "my-cancel-button",
+      },
+      buttonsStyling: false,
       confirmButtonText: confirmText,
     }).then((result) => {
       if (result.isConfirmed) {

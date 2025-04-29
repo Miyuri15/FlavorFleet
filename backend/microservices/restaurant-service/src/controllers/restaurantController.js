@@ -18,7 +18,15 @@ const handleFileUpload = (file, folder) => {
   const filename = `${uniqueSuffix}${ext}`;
   const filePath = path.join(uploadDir, filename);
 
-  fs.writeFileSync(filePath, file.buffer);
+  // Handle both express-fileupload and multer
+  if (file.buffer) {
+    fs.writeFileSync(filePath, file.buffer); // For express-fileupload
+  } else if (file.path) {
+    fs.renameSync(file.path, filePath); // For multer
+  } else {
+    throw new Error("Invalid file upload: no buffer or path found");
+  }
+
   return `/uploads/${folder}/${filename}`;
 };
 
@@ -32,6 +40,16 @@ const createRestaurant = async (req, res) => {
     }
 
     let restaurantData = req.body;
+
+    // Convert lat/lng to numbers
+    if (restaurantData.coordinates) {
+      restaurantData.coordinates.lat = parseFloat(
+        restaurantData.coordinates.lat
+      );
+      restaurantData.coordinates.lng = parseFloat(
+        restaurantData.coordinates.lng
+      );
+    }
 
     // Handle file uploads
     if (req.files?.logo) {
@@ -98,7 +116,10 @@ const updateRestaurant = async (req, res) => {
     }
 
     // Check if user is owner or admin
-    if (req.user.role !== "admin" && restaurant.owner !== req.user.id) {
+    if (
+      req.user.role !== "admin" &&
+      restaurant.owner.toString() !== req.user.id
+    ) {
       return res.status(403).json({
         error: "Not authorized to update this restaurant",
       });
@@ -110,17 +131,16 @@ const updateRestaurant = async (req, res) => {
     if (req.body.data) {
       // Parse the JSON string from FormData
       updateData = JSON.parse(req.body.data);
-
-      // Handle file uploads if present
-      if (req.files?.logo) {
-        updateData.logo = req.files.logo[0].path; // Adjust based on your storage
-      }
-      if (req.files?.banner) {
-        updateData.banner = req.files.banner[0].path;
-      }
     } else {
-      // Regular JSON request
       updateData = req.body;
+    }
+
+    // Handle file uploads consistently
+    if (req.files?.logo) {
+      updateData.logo = handleFileUpload(req.files.logo[0], "logos");
+    }
+    if (req.files?.banner) {
+      updateData.banner = handleFileUpload(req.files.banner[0], "banners");
     }
 
     // Clean up opening hours - convert empty strings to null
@@ -140,7 +160,7 @@ const updateRestaurant = async (req, res) => {
       updateData,
       {
         new: true,
-        runValidators: true, // Important for validation
+        runValidators: true,
         omitUndefined: true,
       }
     );
@@ -150,7 +170,7 @@ const updateRestaurant = async (req, res) => {
     console.error("Update error:", error);
     res.status(500).json({
       error: error.message,
-      details: error.errors, // Include validation errors if any
+      details: error.errors,
     });
   }
 };

@@ -63,7 +63,7 @@ function Register() {
       try {
         const dataToSend = { ...values, role };
         const response = await fetch(
-          `${GATEWAY_BACKEND_URL}/api/auth/register`,
+          ${GATEWAY_BACKEND_URL}/api/auth/register,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -134,7 +134,7 @@ function Register() {
         <div className="flex flex-col justify-center mt-6">
           {/* Role Buttons */}
           <div className="flex flex-wrap gap-2 mb-4">
-            {["user", "admin", "delivery", "restaurant_owner"].map((r) => (
+            {["user", "delivery", "restaurant_owner"].map((r) => (
               <button
                 key={r}
                 type="button"
@@ -146,8 +146,7 @@ function Register() {
                 }`}
               >
                 {r === "user" && "User"}
-                {r === "admin" && "Admin"}
-                {r === "delivery" && "Delivery"}
+                {r === "delivery" && "Delivery Person"}
                 {r === "restaurant_owner" && "Restaurant Owner"}
               </button>
             ))}
@@ -260,7 +259,7 @@ function Register() {
                   className="input"
                   {...formik.getFieldProps("preferredRoute")}
                 >
-                  <option value="">Select Preferred Route</option>
+                  <option value="">Select Preferred Area</option>
                   {[
                     "Colombo",
                     "Kelaniya",

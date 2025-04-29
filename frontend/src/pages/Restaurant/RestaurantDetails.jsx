@@ -73,8 +73,10 @@ const RestaurantDetails = () => {
         text: "This will permanently delete the restaurant and all its menu items!",
         icon: "warning",
         showCancelButton: true,
-        confirmButtonColor: "#ff4d4f",
-        cancelButtonColor: "#1890ff",
+        customClass: {
+          confirmButton: "my-confirm-button",
+          cancelButton: "my-cancel-button",
+        },
         confirmButtonText: "Yes, delete it!",
       });
 
@@ -202,9 +204,9 @@ const RestaurantDetails = () => {
                 overflow: "hidden",
               }}
             >
-              {restaurant.imageUrl ? (
+              {restaurant.banner ? (
                 <img
-                  src={restaurant.imageUrl}
+                  src={restaurant.banner}
                   alt={restaurant.name}
                   style={{ width: "100%", height: "100%", objectFit: "cover" }}
                 />

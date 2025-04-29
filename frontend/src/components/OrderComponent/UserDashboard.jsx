@@ -335,38 +335,6 @@ const UserDashboard = () => {
     }
   };
 
-  let promotionContent;
-  if (loading) {
-    promotionContent = <p className="text-gray-600">Loading promotions...</p>;
-  } else if (error) {
-    promotionContent = (
-      <p className="text-red-500">Error loading promotions: {error}</p>
-    );
-  } else if (promotions.length === 0) {
-    promotionContent = <p className="text-gray-600">No promotions found.</p>;
-  } else {
-    promotionContent = (
-      <Slider {...carouselSettings}>
-        {promotions.map((promotion) => (
-          <div key={promotion.id} className="p-2">
-            <div className="bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow text-center h-full">
-              <img
-                src={promotion.foodImage}
-                alt={promotion.title}
-                className="w-full h-40 object-cover mb-2 rounded-lg"
-              />
-              <p className="font-bold text-gray-800">{promotion.title}</p>
-              <p className="text-gray-600">{promotion.description}</p>
-              <button className="mt-2 bg-orange-500 text-white px-4 py-1 rounded hover:bg-orange-600 transition-all text-sm">
-                View Details
-              </button>
-            </div>
-          </div>
-        ))}
-      </Slider>
-    );
-  }
-
   let restaurantContent;
   if (loading) {
     restaurantContent = <p className="text-gray-600">Loading restaurants...</p>;
@@ -730,12 +698,6 @@ const UserDashboard = () => {
               </div>
             </div>
           </div>
-        </div>
-
-        {/* Promotions Section */}
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold mb-4 text-gray-800">Promotions</h2>
-          {promotionContent}
         </div>
 
         {/* Explore Restaurants Section */}

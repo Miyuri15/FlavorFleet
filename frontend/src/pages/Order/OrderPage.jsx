@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import Layout from "../../components/Layout";
 import Swal from "sweetalert2";
@@ -12,7 +12,6 @@ import {
 } from "react-icons/fa";
 import RestaurantList from "../../components/OrderComponent/RestaurantList";
 import MenuItemDetails from "../../components/OrderComponent/MenuItemDetails";
-import { useNavigate } from "react-router-dom";
 import RatingStars from "../../components/OrderComponent/RatingStars";
 
 const ORDER_BACKEND_URL = import.meta.env.VITE_ORDER_BACKEND_URL;
@@ -65,7 +64,7 @@ const OrderPage = () => {
       try {
         // Fetch restaurants
         const restaurantsResponse = await axios.get(
-          `${RESTAURANT_BACKEND_URL}/api/restaurant/`,
+          `${RESTAURANT_BACKEND_URL}/api/restaurant?status=approved`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -445,7 +444,9 @@ const OrderPage = () => {
                     </div>
                   )}
                 </div>
-                <h2 className="text-lg sm:text-xl font-bold line-clamp-1">{item.name}</h2>
+                <h2 className="text-lg sm:text-xl font-bold line-clamp-1">
+                  {item.name}
+                </h2>
                 <p className="text-gray-600 text-sm sm:text-base line-clamp-1">
                   {item.restaurant?.name}
                   {item.restaurant?.address?.street &&

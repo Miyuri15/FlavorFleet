@@ -9,6 +9,7 @@ import {
 } from "@ant-design/icons";
 import { foodServiceApi } from "../../apiClients";
 import Swal from "sweetalert2";
+import { toast, ToastContainer } from "react-toastify";
 
 const { Title, Text } = Typography;
 
@@ -43,10 +44,10 @@ const AdminDashboard = () => {
         registrationStatus: status,
       });
 
-      message.success(`Restaurant ${status} successfully`);
+      toast.success(`Restaurant ${status} successfully`);
       fetchPendingRestaurants(); // Refresh the list
     } catch (error) {
-      message.error(`Failed to ${status} restaurant`);
+      toast.error(`Failed to ${status} restaurant`);
     }
   };
 
@@ -101,7 +102,9 @@ const AdminDashboard = () => {
       key: "status",
       render: (_, record) => (
         <Tag color="orange" icon={<LoadingOutlined />}>
-          Pending Approval
+          {record.registrationStatus === "pending"
+            ? "Pending Approval"
+            : record.registrationStatus}
         </Tag>
       ),
     },
@@ -171,6 +174,19 @@ const AdminDashboard = () => {
           )}
         </Card>
       </div>
+
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
     </Layout>
   );
 };

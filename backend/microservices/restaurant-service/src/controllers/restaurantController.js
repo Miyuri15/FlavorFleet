@@ -41,6 +41,16 @@ const createRestaurant = async (req, res) => {
 
     let restaurantData = req.body;
 
+    // Convert lat/lng to numbers
+    if (restaurantData.coordinates) {
+      restaurantData.coordinates.lat = parseFloat(
+        restaurantData.coordinates.lat
+      );
+      restaurantData.coordinates.lng = parseFloat(
+        restaurantData.coordinates.lng
+      );
+    }
+
     // Handle file uploads
     if (req.files?.logo) {
       restaurantData.logo = handleFileUpload(req.files.logo[0], "logos");

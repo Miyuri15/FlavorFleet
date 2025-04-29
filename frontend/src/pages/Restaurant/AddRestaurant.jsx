@@ -119,6 +119,8 @@ const AddRestaurant = () => {
             : null,
         };
       });
+      console.log(mapCenter);
+      alert(mapCenter);
 
       const formData = new FormData();
       formData.append("name", values.name.trim());
@@ -343,6 +345,10 @@ const AddRestaurant = () => {
                 label="Phone Number"
                 rules={[
                   { required: true, message: "Please input phone number!" },
+                  {
+                    pattern: /^\+?[0-9]{10,15}$/,
+                    message: "Please enter a valid phone number!",
+                  },
                 ]}
               >
                 <Input />

@@ -96,7 +96,9 @@ const OrderPage = () => {
         const transformedData = foodResponse.data.map((item) => ({
           ...item,
           isAvailable: item.isAvailable, // Keep original boolean value
-          imageUrl: item.image || "/img/ChocolateLavaCake.jpeg",
+          imageUrl:
+            item.image ||
+            "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60",
           restaurant: {
             ...item.restaurant,
             address: item.restaurant?.address,

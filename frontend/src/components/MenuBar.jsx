@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   FiHome,
@@ -9,6 +9,7 @@ import {
   FiUser,
   FiMenu,
 } from "react-icons/fi";
+import { IoMdMenu, IoMdClose } from "react-icons/io";
 import { useAuth } from "../context/AuthContext";
 import LogoutDialog from "./LogoutDialog";
 import ROUTES from "../routes";
@@ -16,6 +17,7 @@ import ROUTES from "../routes";
 const MenuBar = () => {
   const location = useLocation();
   const { user, logout } = useAuth();
+  const [isOpen, setIsOpen] = useState(false);
   const isAdmin = user?.role === "admin";
   const isDelivery = user?.role === "delivery";
   const isRestaurantOwner = user?.role === "restaurant_owner";
@@ -144,27 +146,39 @@ const MenuBar = () => {
   ];
 
   return (
-    <aside className="w-64 bg-gray-100 dark:bg-gray-900 text-text-light dark:text-white h-screen p-4 shadow-md">
-      <ul className="space-y-4">
-        {menuItems.map((item, index) => (
-          <MenuItem
-            key={index}
-            to={item.to}
-            icon={item.icon}
-            text={item.text}
-            isActive={item.active}
-          />
-        ))}
-        <LogoutDialog logout={logout} />
-      </ul>
-    </aside>
+    <>
+      <div className="fixed top-4 left-4 z-50 md:hidden">
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="text-3xl bg-gray-100 dark:bg-gray-800 p-2 rounded-lg shadow-md"
+        >
+          {isOpen ? <IoMdClose /> : <IoMdMenu />}
+        </button>
+      </div>
+      <aside className="w-64 bg-gray-100 dark:bg-gray-900 text-text-light dark:text-white h-screen p-4 shadow-md">
+        <ul className="space-y-4 mt-14 md:mt-0">
+          {menuItems.map((item, index) => (
+            <MenuItem
+              key={index}
+              to={item.to}
+              icon={item.icon}
+              text={item.text}
+              isActive={item.active}
+              closeMenu={() => setIsOpen(false)}
+            />
+          ))}
+          <LogoutDialog logout={logout} />
+        </ul>
+      </aside>
+    </>
   );
 };
 
-const MenuItem = ({ to, icon, text, isActive }) => (
+const MenuItem = ({ to, icon, text, isActive, closeMenu }) => (
   <li>
     <Link
       to={to}
+      onClick={closeMenu}
       className={`flex items-center gap-3 p-3 rounded-lg text-lg font-medium transition-all duration-300
                 hover:bg-blue-800 hover:text-white dark:hover:bg-blue-400 ${
                   isActive

@@ -297,24 +297,15 @@ const deleteRestaurant = async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
+};
 
-  // Get pending restaurants (admin only)
-  // const getPendingRestaurants = async (req, res) => {
-  //   try {
-  //     if (req.user.role !== "admin") {
-  //       return res
-  //         .status(403)
-  //         .json({ error: "Only admin can view pending restaurants" });
-  //     }
-
-  //     const restaurants = await Restaurant.find({
-  //       registrationStatus: "pending",
-  //     });
-  //     res.json(restaurants);
-  //   } catch (error) {
-  //     res.status(500).json({ error: error.message });
-  //   }
-  // };
+const getRestaurantsByOwner = async (req, res) => {
+  try {
+    const restaurants = await Restaurant.find({ owner: req.user.id });
+    res.json(restaurants);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
 module.exports = {
@@ -327,5 +318,5 @@ module.exports = {
   getRestaurantOrders,
   updateOrderStatus,
   deleteRestaurant,
-  // getPendingRestaurants,
+  getRestaurantsByOwner,
 };

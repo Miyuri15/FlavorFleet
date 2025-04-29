@@ -22,6 +22,7 @@ import { foodServiceApi } from "../../../apiClients";
 import Swal from "sweetalert2";
 import ROUTES from "../../routes";
 import Loading from "../../components/Loading/Loading";
+import { useAuth } from "../../context/AuthContext";
 
 const { Title, Text } = Typography;
 
@@ -29,14 +30,17 @@ const RestaurantDashboard = () => {
   const navigate = useNavigate();
   const [restaurants, setRestaurants] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
 
   useEffect(() => {
-    fetchRestaurants();
-  }, []);
+    if (user) {
+      fetchRestaurants();
+    }
+  }, [user]);
 
   const fetchRestaurants = async () => {
     try {
-      const { data } = await foodServiceApi.get("/restaurant");
+      const { data } = await foodServiceApi.get("/restaurant/owner/me");
       setRestaurants(data);
       setLoading(false);
     } catch (error) {

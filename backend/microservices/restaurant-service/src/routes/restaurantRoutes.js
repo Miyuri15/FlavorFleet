@@ -10,6 +10,7 @@ const {
   getRestaurantOrders,
   updateOrderStatus,
   deleteRestaurant,
+  getRestaurantsByOwner,
 } = require("../controllers/restaurantController");
 const {
   addMenuItem,
@@ -43,6 +44,7 @@ router.post("/", authMiddleware, uploadFiles, createRestaurant);
 router.put("/:id", authMiddleware, uploadFiles, updateRestaurant);
 router.patch("/:id/availability", authMiddleware, updateRestaurantAvailability);
 router.delete("/:id", authMiddleware, deleteRestaurant);
+router.get("/owner/me", authMiddleware, getRestaurantsByOwner);
 
 // Order management routes (restaurant owner only)
 router.get("/:id/orders", authMiddleware, getRestaurantOrders);

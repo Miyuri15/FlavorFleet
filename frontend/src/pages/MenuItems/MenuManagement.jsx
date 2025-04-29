@@ -17,17 +17,19 @@ import {
 } from "react-icons/fi";
 import Loading from "../../components/Loading/Loading";
 import Swal from "sweetalert2";
+import { useAuth } from "../../context/AuthContext";
 
 function MenuManagement() {
   const [restaurants, setRestaurants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [updatingId, setUpdatingId] = useState(null);
+  const { user } = useAuth();
 
   useEffect(() => {
     const fetchRestaurants = async () => {
       try {
-        const response = await foodServiceApi.get("/restaurant");
+        const response = await foodServiceApi.get("/restaurant/owner/me");
         setRestaurants(response.data);
         setLoading(false);
       } catch (err) {
@@ -36,8 +38,10 @@ function MenuManagement() {
       }
     };
 
-    fetchRestaurants();
-  }, []);
+    if (user) {
+      fetchRestaurants();
+    }
+  }, [user]);
 
   // Function to determine if restaurant is currently open based on opening hours
   const isRestaurantOpenNow = (restaurant) => {

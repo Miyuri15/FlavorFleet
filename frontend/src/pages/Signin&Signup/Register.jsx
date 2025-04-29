@@ -27,6 +27,7 @@ function Register() {
       adminName: "",
       organization: "",
       preferredRoute: "",
+      restaurantName: "",
     },
     validationSchema: Yup.lazy((values) =>
       Yup.object({
@@ -51,6 +52,9 @@ function Register() {
         }),
         ...(role === "delivery" && {
           preferredRoute: Yup.string().required("Preferred route is required"),
+        }),
+        ...(role === "restaurant_owner" && {
+          restaurantName: Yup.string().required("Restaurant name is required"),
         }),
       })
     ),
@@ -129,13 +133,13 @@ function Register() {
 
         <div className="flex flex-col justify-center mt-6">
           {/* Role Buttons */}
-          <div className="flex space-x-4 mb-4">
-            {["user", "admin", "delivery"].map((r) => (
+          <div className="flex flex-wrap gap-2 mb-4">
+            {["user", "admin", "delivery", "restaurant_owner"].map((r) => (
               <button
                 key={r}
                 type="button"
                 onClick={() => setRole(r)}
-                className={`w-full border-2 rounded-lg py-2 ${
+                className={`flex-1 min-w-[120px] border-2 rounded-lg py-2 ${
                   role === r
                     ? "bg-blue-900 text-white"
                     : "bg-gray-50 text-blue-900"
@@ -143,7 +147,8 @@ function Register() {
               >
                 {r === "user" && "User"}
                 {r === "admin" && "Admin"}
-                {r === "delivery" && "Delivery Person"}
+                {r === "delivery" && "Delivery"}
+                {r === "restaurant_owner" && "Restaurant Owner"}
               </button>
             ))}
           </div>
@@ -176,6 +181,23 @@ function Register() {
                 {formik.touched.organization && formik.errors.organization && (
                   <p className="text-red-500">{formik.errors.organization}</p>
                 )}
+              </>
+            )}
+
+            {role === "restaurant_owner" && (
+              <>
+                <input
+                  name="restaurantName"
+                  placeholder="Restaurant Name"
+                  className="input"
+                  {...formik.getFieldProps("restaurantName")}
+                />
+                {formik.touched.restaurantName &&
+                  formik.errors.restaurantName && (
+                    <p className="text-red-500">
+                      {formik.errors.restaurantName}
+                    </p>
+                  )}
               </>
             )}
 

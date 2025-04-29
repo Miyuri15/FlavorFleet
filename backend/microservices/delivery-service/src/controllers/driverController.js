@@ -134,10 +134,32 @@ async function updateDriverLocation(req, res) {
   }
 }
 
+async function getDriverById(req, res) {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({ error: "Driver ID is required" });
+    }
+
+    const driver = await Driver.findOne({ driverId: id });
+
+    if (!driver) {
+      return res.status(404).json({ error: "Driver not found" });
+    }
+
+    return res.status(200).json(driver);
+  } catch (error) {
+    console.error("Error fetching driver:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+}
+
 module.exports = {
   updateDriverStatus,
   addDriver,
   getCurrentDriver,
   findNearbyDrivers,
   updateDriverLocation,
+  getDriverById,
 };

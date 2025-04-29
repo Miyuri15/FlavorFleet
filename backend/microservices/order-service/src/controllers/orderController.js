@@ -19,9 +19,56 @@ const OrderController = {
       } = req.body;
       const userId = req.user.id;
 
+      let restaurantDetails = null;
+
+      try {
+        const restaurant = await RestaurantService.getRestaurantById(
+          restaurantId
+        );
+
+        if (!restaurant) {
+          return res.status(404).json({ message: "Restaurant not found" });
+        }
+
+        const { address } = restaurant;
+
+        if (!address || !address.coordinates) {
+          return res
+            .status(400)
+            .json({ message: "Restaurant address or coordinates missing" });
+        }
+
+        const { lat, lng } = address.coordinates;
+
+        if (lat == null || lng == null) {
+          return res
+            .status(400)
+            .json({ message: "Restaurant coordinates incomplete" });
+        }
+
+        restaurantDetails = {
+          name: restaurant.name,
+          address: {
+            street: address.street || "",
+            city: address.city || "",
+            postalCode: address.postalCode || "",
+            coordinates: {
+              type: "Point",
+              coordinates: [lng, lat], // GeoJSON format
+            },
+          },
+        };
+      } catch (error) {
+        console.error("Failed to fetch restaurant info:", error.message);
+        return res
+          .status(500)
+          .json({ message: "Failed to fetch restaurant information" });
+      }
+
       const newOrder = new Order({
         userId,
         restaurantId,
+        restaurantDetails,
         items,
         totalAmount,
         deliveryAddress,
@@ -228,6 +275,25 @@ const OrderController = {
     }
   },
 
+  getNearbyOrders: catchAsync(async (req, res, next) => {
+    const driverId = req.user.id;
+
+    const driver = await DeliveryService.getDriverById(driverId);
+
+    if (!driver) {
+      return next(new AppError("Driver not found", 404));
+    }
+
+    const [lng, lat] = driver.currentLocation.coordinates;
+
+    const nearbyOrders = await OrderService.findNearbyPreparedOrders(lat, lng);
+
+    res.status(200).json({
+      status: "success",
+      data: nearbyOrders,
+    });
+  }),
+
   getUserOrdersCount: catchAsync(async (req, res) => {
     try {
       if (!req.user?.id) {
@@ -422,6 +488,26 @@ const OrderController = {
       data: { order },
     });
   }),
+
+  async updatePaymentStatus(req, res) {
+    try {
+      const { id } = req.params;
+      const { paymentStatus } = req.body;
+
+      const order = await Order.findById(id);
+      if (!order) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+
+      order.paymentStatus = paymentStatus;
+      await order.save();
+
+      res.status(200).json({ message: "Payment status updated", order });
+    } catch (error) {
+      console.error("Error updating payment status:", error);
+      res.status(500).json({ message: "Internal Server Error" });
+    }
+  },
 };
 
 module.exports = OrderController;

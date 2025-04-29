@@ -663,6 +663,22 @@ const OrderService = {
       throw new Error("Failed to assign delivery agent");
     }
   },
+
+  async findNearbyPreparedOrders(lat, lng) {
+    return Order.find({
+      status: "Prepared",
+      deliveryAgentId: { $exists: false },
+      "restaurantDetails.address.coordinates": {
+        $nearSphere: {
+          $geometry: {
+            type: "Point",
+            coordinates: [lng, lat],
+          },
+          $maxDistance: 5000, // 5 km
+        },
+      },
+    }).populate("restaurantId");
+  },
 };
 
 module.exports = OrderService;

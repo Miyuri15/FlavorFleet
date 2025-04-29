@@ -39,6 +39,22 @@ const DeliveryService = {
       throw new AppError("Failed to fetch nearby delivery agents", 500);
     }
   },
+
+  async getDriverById(driverId) {
+    try {
+      const DELIVERY_SERVICE_URL = getDeliveryServiceUrl();
+      const response = await axios.get(
+        `${DELIVERY_SERVICE_URL}/drivers/${driverId}`
+      );
+      return response.data;
+    } catch (error) {
+      console.error(
+        "Error calling Delivery Service:",
+        error.response?.data || error.message
+      );
+      throw new AppError("Failed to fetch driver details", 500);
+    }
+  },
 };
 
 module.exports = DeliveryService;

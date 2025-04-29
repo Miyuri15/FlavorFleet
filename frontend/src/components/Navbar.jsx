@@ -186,7 +186,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="dark:bg-background-dark shadow-sm p-4 m-3 flex items-center justify-between mb-4 relative sticky top-0 z-50">
+    <nav className="dark:bg-background-dark shadow-sm p-4 m-3 flex items-center justify-between mb-4 sticky top-0 z-50">
       {/* Background Image with Opacity */}
       <div
         className="absolute inset-0 -z-10 opacity-20 bg-cover bg-center"

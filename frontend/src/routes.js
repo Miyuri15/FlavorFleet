@@ -24,7 +24,7 @@ const ROUTES = {
 
   //Restaurant routes
   RESTAURANT_MENU: "/restaurant/menu",
-  RESTAURANT_ORDERS: "/restaurant/orders",
+  RESTAURANT_ORDERS: "/orders",
   ADD_RESTAURANT: "/add-restaurant",
   RESTAURANT_DETAILS: (id = ":id") => `/restaurant/${id}`,
   RESTAURANT_EDIT: (id = ":id") => `/restaurant/${id}/edit`,
@@ -36,6 +36,7 @@ const ROUTES = {
   //Delivery Routes
   DELIVERY_ORDERS: "/delivery/orders",
   DELIVERY_ORDER_DETAILS: (id = ":id") => `/delivery/orders/${id}`,
+  ORDER_DELIVERY_ROUTE: "/delivery/route",
 
   // Errors
   ERROR_PAGE: (errorType = ":errorType") => `/error/${errorType}`,

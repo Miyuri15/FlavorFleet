@@ -33,6 +33,8 @@ import RestaurantMenu from "./pages/MenuItems/RestaurantMenu";
 import MenuItemForm from "./pages/MenuItems/MenuItemForm";
 import RestaurantOrdersPage from "./pages/RestaurantOrders/RestaurantOrdersPage";
 import RestaurantMenuPage from "./components/OrderComponent/RestaurantMenuPage";
+import DeliveryOrdersPage from "./pages/DeliveryOrders/DeliveryOrdersPage";
+import DeliveryRoutePage from "./pages/DeliveryOrders/DeliveryRoutePage";
 
 function App() {
   return (
@@ -65,10 +67,7 @@ function App() {
                 element={<IncomingOrders />}
               />
               <Route path={ROUTES.PAYMENT} element={<PaymentPage />} />
-              {/* <Route
-                path="/FindDeliveryPerson"
-                element={<FindDeliveryPerson />}
-              /> */}
+
               <Route
                 path={ROUTES.DELIVERY_MAP}
                 element={<DeliveryDetailsPage />}
@@ -82,12 +81,29 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-
               <Route
                 path={ROUTES.DELIVERY_DASHBOARD}
                 element={
                   <ProtectedRoute requiredRole="delivery">
                     <DeliveryDashboard />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path={ROUTES.DELIVERY_ORDERS}
+                element={
+                  <ProtectedRoute requiredRole="delivery">
+                    <DeliveryOrdersPage />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path={ROUTES.ORDER_DELIVERY_ROUTE}
+                element={
+                  <ProtectedRoute requiredRole="delivery">
+                    <DeliveryRoutePage />
                   </ProtectedRoute>
                 }
               />
@@ -116,7 +132,6 @@ function App() {
                   </ProtectedRoute>
                 }
               /> */}
-
               <Route
                 path={ROUTES.RESTAURANT_DASHBOARD}
                 element={
@@ -141,7 +156,6 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-
               <Route
                 path={ROUTES.RESTAURANT_EDIT()}
                 element={
@@ -150,7 +164,6 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-
               <Route
                 path={ROUTES.RESTAURANT_MENU}
                 element={
@@ -159,7 +172,6 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-
               <Route
                 path={ROUTES.RESTAURANT_MENU_MANAGE()}
                 element={
@@ -192,10 +204,8 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-
               {/* Dynamic Error Pages (401, 403, 500, etc.) */}
               <Route path={ROUTES.ERROR_PAGE()} element={<Error />} />
-
               {/* Catch-all route for 404 */}
               <Route
                 path={ROUTES.NOT_FOUND}

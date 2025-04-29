@@ -1,32 +1,38 @@
 const express = require("express");
 const OrderController = require("../controllers/orderController");
 const authMiddleware = require("../middleware/authMiddleware");
-const Order = require("../models/orderModel");
 const router = express.Router();
+
+// Public routes
 router.get("/:id/track", OrderController.trackOrder);
 router.get("/:id/updates", OrderController.getOrderUpdates);
-// Apply authMiddleware to all routes
+
+// Apply authMiddleware to all routes below
 router.use(authMiddleware);
+
+// Routes for authenticated users
+router.get("/nearby", OrderController.getNearbyOrders);
 
 // Create a new order
 router.post("/", OrderController.createOrder);
 
-// Get order by ID
-router.get("/:id", OrderController.getOrder);
-
 // Get user's orders
 router.get("/user/orders", OrderController.getUserOrders);
+router.get("/user/orders/count", OrderController.getUserOrdersCount);
 
-// Get restaurant's orders (for restaurant owners/managers)
+// Get restaurant's orders
 router.get("/restaurant/orders", OrderController.getRestaurantOrders);
 
 // Get delivery agent's orders
 router.get("/delivery/orders", OrderController.getDeliveryAgentOrders);
 
+// Incoming orders for delivery person
+router.get("/delivery/incoming", OrderController.getDeliveryIncoming);
+
 // Update order status
 router.patch("/:id/status", OrderController.updateOrderStatus);
 
-//Notify nearby delivery agents
+// Notify nearby delivery agents
 router.post(
   "/:id/notify-delivery-agents",
   OrderController.notifyNearbyDeliveryAgents
@@ -35,24 +41,13 @@ router.post(
 // Cancel order
 router.post("/:id/cancel", OrderController.cancelOrder);
 
-//incoming orders of delivery person
-router.get(
-  "/delivery/incoming",
-  authMiddleware,
-  OrderController.getDeliveryIncoming
-);
-//adding for estimated time
-router.patch("/:id/status", authMiddleware, OrderController.updateOrderStatus);
-
-//count orders
-router.get("/user/orders/count", OrderController.getUserOrdersCount);
+router.post("/:id/accept-delivery", OrderController.acceptDelivery);
+router.patch("/:id/payment-status", OrderController.updatePaymentStatus);
 
 // Rating routes
-router.post("/:orderId/ratings", authMiddleware, OrderController.submitRating);
-router.get(
-  "/:orderId/ratings",
-  authMiddleware,
-  OrderController.getOrderRatings
-);
+router.post("/:orderId/ratings", OrderController.submitRating);
+router.get("/:orderId/ratings", OrderController.getOrderRatings);
+
+router.get("/:id", OrderController.getOrder);
 
 module.exports = router;

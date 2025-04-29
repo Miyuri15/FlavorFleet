@@ -1,3 +1,4 @@
+import React from "react";
 import Swal from "sweetalert2";
 
 export default function DialogBox({
@@ -6,6 +7,7 @@ export default function DialogBox({
   confirmText,
   onConfirm,
   afterConfirmText,
+  triggerRef,
 }) {
   const showDialog = () => {
     Swal.fire({
@@ -27,5 +29,9 @@ export default function DialogBox({
     });
   };
 
-  return <button onClick={showDialog} className="hidden"></button>;
+  return (
+    <button ref={triggerRef} onClick={showDialog} className="hidden">
+      Open Dialog
+    </button>
+  );
 }

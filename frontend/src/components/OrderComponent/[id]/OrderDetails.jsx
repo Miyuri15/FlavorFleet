@@ -133,18 +133,16 @@ const OrderDetails = () => {
     if (typeof address === "string") return address;
 
     try {
-      // Handle both object formats
-      if (address.street || address.city || address.postalCode) {
-        return `${address.street || ""}, ${address.city || ""}, ${
-          address.postalCode || ""
-        }`
-          .replace(/, ,/g, ",")
-          .replace(/, $/, "")
-          .replace(/^, /, "");
+      const parts = [address.street, address.city, address.postalCode].filter(
+        Boolean
+      );
+
+      if (parts.length) {
+        return parts.join(", ");
       }
 
-      // If it's an unexpected object format, stringify it
-      return JSON.stringify(address);
+      // If only coordinates exist, don't show them
+      return "Address not available";
     } catch {
       return "Invalid address format";
     }
@@ -490,10 +488,15 @@ const OrderDetails = () => {
                   <FaStore className="text-blue-500 mt-1 mr-3 flex-shrink-0" />
                   <div>
                     <h3 className="font-medium text-gray-900">
-                      {order.restaurantId?.name || "Unknown Restaurant"}
+                      {order.restaurantDetails?.name ||
+                        order.restaurantId?.name ||
+                        "Unknown Restaurant"}
                     </h3>
                     <p className="text-gray-600">
-                      {formatAddress(order.restaurantId?.address)}
+                      {formatAddress(
+                        order.restaurantDetails?.address ||
+                          order.restaurantId?.address
+                      )}
                     </p>
                     <button className="mt-3 text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors">
                       View Restaurant Details

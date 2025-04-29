@@ -1,22 +1,51 @@
 import React, { useState, useEffect } from "react";
-import { Table, Tag, Space, Spin, Button } from "antd";
+import { Table, Tag, Space, Spin, Button, Select } from "antd";
 import { cartServiceApi } from "../../../apiClients";
 import Layout from "../../components/Layout";
 import { CopyOutlined } from "@ant-design/icons";
 import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import { useAuth } from "../../context/AuthContext";
+import { useNavigate } from "react-router-dom";
+import ROUTES from "../../routes";
+import "react-toastify/dist/ReactToastify.css";
+
+const { Option } = Select;
 
 const DeliveryOrdersPage = () => {
   const [orders, setOrders] = useState([]);
+  const [filteredOrders, setFilteredOrders] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [statusFilter, setStatusFilter] = useState("All");
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const fetchOrders = async () => {
     try {
       setLoading(true);
-      const response = await cartServiceApi.get("orders/delivery/incoming");
-      setOrders(response.data);
+      const [nearbyResponse, assignedResponse] = await Promise.all([
+        cartServiceApi.get("orders/nearby"),
+        cartServiceApi.get("orders/delivery/orders"),
+      ]);
+
+      const nearbyOrders = Array.isArray(nearbyResponse.data)
+        ? nearbyResponse.data
+        : nearbyResponse.data.data || [];
+
+      const assignedOrders = Array.isArray(assignedResponse.data)
+        ? assignedResponse.data
+        : assignedResponse.data.data || [];
+
+      const mergedOrders = [...nearbyOrders, ...assignedOrders];
+
+      const uniqueOrders = mergedOrders.reduce((acc, current) => {
+        if (!acc.find((order) => order._id === current._id)) {
+          acc.push(current);
+        }
+        return acc;
+      }, []);
+
+      setOrders(uniqueOrders);
+      applyFilter(uniqueOrders, statusFilter);
     } catch (error) {
       toast.error(error.response?.data?.error || "Failed to fetch orders");
     } finally {
@@ -30,20 +59,36 @@ const DeliveryOrdersPage = () => {
     }
   }, [user]);
 
+  const applyFilter = (ordersList, status) => {
+    if (status === "All") {
+      setFilteredOrders(ordersList);
+    } else {
+      const filtered = ordersList.filter((order) => order.status === status);
+      setFilteredOrders(filtered);
+    }
+  };
+
+  const handleStatusChange = (value) => {
+    setStatusFilter(value);
+    applyFilter(orders, value);
+  };
+
   const handleAcceptOrder = async (orderId) => {
     try {
-      await cartServiceApi.patch(`/orders/${orderId}/status`, {
-        status: "Out for Delivery",
-      });
-      toast.success("Order accepted!");
+      setLoading(true);
+      await cartServiceApi.post(`/orders/${orderId}/accept-delivery`);
+      toast.success("Order accepted successfully!");
       fetchOrders();
     } catch (error) {
       toast.error(error.response?.data?.error || "Failed to accept order");
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleMarkDelivered = async (orderId) => {
     try {
+      setLoading(true);
       await cartServiceApi.patch(`/orders/${orderId}/status`, {
         status: "Delivered",
       });
@@ -51,7 +96,13 @@ const DeliveryOrdersPage = () => {
       fetchOrders();
     } catch (error) {
       toast.error(error.response?.data?.error || "Failed to update order");
+    } finally {
+      setLoading(false);
     }
+  };
+
+  const handleNavigate = (order) => {
+    navigate(ROUTES.ORDER_DELIVERY_ROUTE, { state: { order } });
   };
 
   const columns = [
@@ -74,7 +125,7 @@ const DeliveryOrdersPage = () => {
     },
     {
       title: "Restaurant",
-      dataIndex: ["restaurantId", "name"],
+      dataIndex: ["restaurantDetails", "name"],
       key: "restaurant",
     },
     {
@@ -95,6 +146,7 @@ const DeliveryOrdersPage = () => {
       render: (status) => {
         const statusColors = {
           Confirmed: "blue",
+          Prepared: "gold",
           "Out for Delivery": "geekblue",
           Delivered: "green",
           Cancelled: "red",
@@ -109,21 +161,26 @@ const DeliveryOrdersPage = () => {
         <Space size="middle">
           {record.status === "Prepared" && (
             <Button
-              type="primary"
-              onClick={() =>
-                handleStatusUpdate(record.orderId, "Out for Delivery")
-              }
+              style={{ backgroundColor: "#52c41a", borderColor: "#52c41a" }}
+              onClick={() => handleAcceptOrder(record._id)}
             >
               Accept Delivery
             </Button>
           )}
           {record.status === "Out for Delivery" && (
-            <Button
-              type="primary"
-              onClick={() => handleStatusUpdate(record.orderId, "Delivered")}
-            >
-              Mark as Delivered
-            </Button>
+            <>
+              <Button
+                style={{
+                  backgroundColor: "#FF9800",
+                  borderColor: "#FF9800",
+                  color: "#fff",
+                }}
+                onClick={() => handleMarkDelivered(record._id)}
+              >
+                Mark as Delivered
+              </Button>
+              <Button onClick={() => handleNavigate(record)}>Navigate</Button>
+            </>
           )}
         </Space>
       ),
@@ -132,12 +189,28 @@ const DeliveryOrdersPage = () => {
 
   return (
     <Layout>
-      <div className="delivery-orders-page">
-        <h1>Incoming Delivery Orders</h1>
+      <div className="delivery-orders-page" style={{ padding: "1rem" }}>
+        <h1>Incoming and Assigned Delivery Orders</h1>
+
+        {/* Status Filter */}
+        <div style={{ marginBottom: "1rem" }}>
+          <Select
+            defaultValue="All"
+            style={{ width: 200 }}
+            onChange={handleStatusChange}
+          >
+            <Option value="All">All</Option>
+            <Option value="Prepared">Prepared</Option>
+            <Option value="Out for Delivery">Out for Delivery</Option>
+            <Option value="Delivered">Delivered</Option>
+            <Option value="Cancelled">Cancelled</Option>
+          </Select>
+        </div>
+
         <Spin spinning={loading}>
           <Table
             columns={columns}
-            dataSource={orders}
+            dataSource={filteredOrders}
             rowKey="_id"
             scroll={{ x: true }}
           />

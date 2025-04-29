@@ -36,6 +36,7 @@ const ROUTES = {
   //Delivery Routes
   DELIVERY_ORDERS: "/delivery/orders",
   DELIVERY_ORDER_DETAILS: (id = ":id") => `/delivery/orders/${id}`,
+  ORDER_DELIVERY_ROUTE: "/delivery/route",
 
   // Errors
   ERROR_PAGE: (errorType = ":errorType") => `/error/${errorType}`,

@@ -488,6 +488,26 @@ const OrderController = {
       data: { order },
     });
   }),
+
+  async updatePaymentStatus(req, res) {
+    try {
+      const { id } = req.params;
+      const { paymentStatus } = req.body;
+
+      const order = await Order.findById(id);
+      if (!order) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+
+      order.paymentStatus = paymentStatus;
+      await order.save();
+
+      res.status(200).json({ message: "Payment status updated", order });
+    } catch (error) {
+      console.error("Error updating payment status:", error);
+      res.status(500).json({ message: "Internal Server Error" });
+    }
+  },
 };
 
 module.exports = OrderController;

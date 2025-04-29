@@ -55,6 +55,7 @@ const RestaurantOrdersPage = () => {
 
   const handleStatusUpdate = async (orderId, newStatus) => {
     try {
+      setLoading(true);
       await cartServiceApi.patch(`/orders/${orderId}/status`, {
         status: newStatus,
       });
@@ -64,11 +65,14 @@ const RestaurantOrdersPage = () => {
       toast.error(
         error.response?.data?.error || "Failed to update order status"
       );
+    } finally {
+      setLoading(false);
     }
   };
 
   const notifyNearbyDeliveryAgents = async (orderId, restaurantId) => {
     try {
+      setLoading(true);
       const response = await cartServiceApi.post(
         `/orders/${orderId}/notify-delivery-agents`,
         {
@@ -81,6 +85,8 @@ const RestaurantOrdersPage = () => {
       toast.error(
         error.response?.data?.error || "Failed to notify nearby delivery agents"
       );
+    } finally {
+      setLoading(false);
     }
   };
 

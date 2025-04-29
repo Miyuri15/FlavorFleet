@@ -41,6 +41,9 @@ router.post(
 // Cancel order
 router.post("/:id/cancel", OrderController.cancelOrder);
 
+router.post("/:id/accept-delivery", OrderController.acceptDelivery);
+router.patch("/:id/payment-status", OrderController.updatePaymentStatus);
+
 // Rating routes
 router.post("/:orderId/ratings", OrderController.submitRating);
 router.get("/:orderId/ratings", OrderController.getOrderRatings);

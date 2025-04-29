@@ -34,6 +34,7 @@ import MenuItemForm from "./pages/MenuItems/MenuItemForm";
 import RestaurantOrdersPage from "./pages/RestaurantOrders/RestaurantOrdersPage";
 import RestaurantMenuPage from "./components/OrderComponent/RestaurantMenuPage";
 import DeliveryOrdersPage from "./pages/DeliveryOrders/DeliveryOrdersPage";
+import DeliveryRoutePage from "./pages/DeliveryOrders/DeliveryRoutePage";
 
 function App() {
   return (
@@ -94,6 +95,15 @@ function App() {
                 element={
                   <ProtectedRoute requiredRole="delivery">
                     <DeliveryOrdersPage />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path={ROUTES.ORDER_DELIVERY_ROUTE}
+                element={
+                  <ProtectedRoute requiredRole="delivery">
+                    <DeliveryRoutePage />
                   </ProtectedRoute>
                 }
               />

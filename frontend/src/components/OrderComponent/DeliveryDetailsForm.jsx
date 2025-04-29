@@ -16,18 +16,20 @@ export default function DeliveryDetailsForm({
   });
 
   useEffect(() => {
-    // Fetch user details from your API
     const fetchUserDetails = async () => {
       try {
-        // const response = await fetch('/api/user/current');
         const response = await api.get(`/auth/current`);
-        const user = await response.json();
+        const user = response.data;
+
+        const { city, postalCode } = parseAddress(user?.address);
+
         setFormData({
-          fullName: `${user.firstName} ${user.lastName}`,
-          contactNo: user.phone || "",
-          address: user.address || "",
-          city: user.city || "",
-          postalCode: user.postalCode || "",
+          fullName: `${user?.firstName || ""} ${user?.lastName || ""}`.trim(),
+          contactNo: user?.contactNumber || "",
+          address: user?.address || "",
+          city, // Parsed city
+          postalCode, // Parsed postalCode
+          specialInstructions: "",
         });
       } catch (error) {
         console.error("Error fetching user details:", error);
@@ -50,6 +52,33 @@ export default function DeliveryDetailsForm({
     }
     const fullAddress = `${formData.address}, ${formData.city}, ${formData.postalCode}`;
     onDetailsSubmit({ ...formData, address: fullAddress });
+  };
+
+  const parseAddress = (fullAddress) => {
+    if (!fullAddress) {
+      return { city: "", postalCode: "" };
+    }
+
+    try {
+      const parts = fullAddress.split(",");
+
+      // Pick the part before country (example: "Galle 80000")
+      const secondLastPart = parts[parts.length - 2]?.trim() || "";
+
+      // Use regex to separate city and postal code
+      const match = secondLastPart.match(/^(.+?)\s(\d{4,6})$/);
+
+      if (match) {
+        const city = match[1]; // city name
+        const postalCode = match[2]; // postal code
+        return { city, postalCode };
+      } else {
+        return { city: "", postalCode: "" };
+      }
+    } catch (error) {
+      console.error("Error parsing address:", error);
+      return { city: "", postalCode: "" };
+    }
   };
 
   return (

@@ -19,7 +19,7 @@ services:
     volumes:
       - ./backend/microservices/order-service:/app
     ports:
-      - "5000:5000"
+      - "5005:5005"
     networks:
       - app-network
     environment:

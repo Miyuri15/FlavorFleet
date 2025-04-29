@@ -6,9 +6,6 @@ require('dotenv').config();
 const cookieParser = require('cookie-parser');
 const gatewayMiddleware = require('./middleware/gatewayMiddleware');
 
-
-
-
 const app = express();
 const PORT = process.env.PORT || 5004;
 
@@ -21,6 +18,7 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
   methods: ['GET', 'POST', 'PUT', 'DELETE','OPTIONS']
 }));
+
 app.options('*', cors());
 app.use(express.json());
 

@@ -35,6 +35,9 @@ import RestaurantOrdersPage from "./pages/RestaurantOrders/RestaurantOrdersPage"
 import RestaurantMenuPage from "./components/OrderComponent/RestaurantMenuPage";
 import DeliveryOrdersPage from "./pages/DeliveryOrders/DeliveryOrdersPage";
 import DeliveryRoutePage from "./pages/DeliveryOrders/DeliveryRoutePage";
+import Paynow from "./pages/Payment/Paynow";
+import PaymentCancled from "./pages/Payment/PaymentCancled";
+import PaymentSuccess from "./pages/Payment/PaymentSuccess";
 
 function App() {
   return (
@@ -51,6 +54,9 @@ function App() {
               <Route path={ROUTES.CART} element={<CartPage />} />
               <Route path={ROUTES.PROFILE} element={<ProfilePage />} />
               <Route path={ROUTES.PLACE_ORDER} element={<PlaceOrderPage />} />
+              <Route path="/paynow" element={<Paynow />} />
+              <Route path="/paymentcancled" element={<PaymentCancled />} />
+              <Route path="/paymentsuccess" element={<PaymentSuccess />} />
               <Route
                 path={ROUTES.RESTAURANT_MENU_PAGE}
                 element={<RestaurantMenuPage />}

@@ -202,9 +202,9 @@ function MenuManagement() {
                   className="border border-gray-200 rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow bg-white"
                 >
                   <div className="h-40 bg-gray-100 flex items-center justify-center relative">
-                    {restaurant.imageUrl ? (
+                    {restaurant.banner ? (
                       <img
-                        src={restaurant.imageUrl}
+                        src={restaurant.banner}
                         alt={restaurant.name}
                         className="h-full w-full object-cover"
                       />

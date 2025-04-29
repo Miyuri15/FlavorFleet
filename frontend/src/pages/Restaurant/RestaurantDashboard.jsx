@@ -95,13 +95,13 @@ const RestaurantDashboard = () => {
         text: "This will permanently delete the restaurant and all its menu items!",
         icon: "warning",
         showCancelButton: true,
-        customClass: {
-          confirmButton: "my-confirm-button",
-          cancelButton: "my-cancel-button",
-        },
         confirmButtonText: "Yes, delete it!",
+        confirmButtonColor: "#ff4d4f", // Red for delete
+        cancelButtonColor: "#1890ff", // Blue for cancel
         customClass: {
           container: "font-sans",
+          confirmButton: "my-confirm-button",
+          cancelButton: "my-cancel-button",
         },
       });
 

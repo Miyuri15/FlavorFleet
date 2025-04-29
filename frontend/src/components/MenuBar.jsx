@@ -20,9 +20,20 @@ const MenuBar = () => {
   const isDelivery = user?.role === "delivery";
   const isRestaurantOwner = user?.role === "restaurant_owner";
 
-  // Function to check if a route is active
-  const isActive = (...paths) =>
-    paths.some((path) => location.pathname.startsWith(path));
+  const currentPath = location.pathname;
+
+  const isActive = (...paths) => {
+    return paths.some((path) => {
+      const resolvedPath =
+        typeof path === "function" ? path().replace(/\/:.*$/, "") : path;
+      const segmentsCurrent = currentPath.split("/").filter(Boolean);
+      const segmentsTarget = resolvedPath.split("/").filter(Boolean);
+
+      if (segmentsTarget.length > segmentsCurrent.length) return false;
+
+      return segmentsTarget.every((seg, idx) => seg === segmentsCurrent[idx]);
+    });
+  };
 
   // Get dashboard path based on user role
   const getDashboardPath = () => {
@@ -40,18 +51,6 @@ const MenuBar = () => {
       text: "Dashboard",
       active: isActive(getDashboardPath()),
     },
-    {
-      to: ROUTES.DELIVERY_MAP,
-      icon: <FiMap />,
-      text: "Delivery Map",
-      active: isActive(ROUTES.DELIVERY_MAP),
-    },
-    {
-      to: ROUTES.PROFILE,
-      icon: <FiUser />,
-      text: "Profile",
-      active: isActive(ROUTES.PROFILE),
-    },
   ];
 
   // Regular user menu items
@@ -60,7 +59,12 @@ const MenuBar = () => {
       to: ROUTES.MY_ORDERS,
       icon: <FiClipboard />,
       text: "My Orders",
-      active: isActive(ROUTES.MY_ORDERS),
+      active: isActive(
+        ROUTES.MY_ORDERS,
+        ROUTES.ORDER_CONFIRMATION,
+        ROUTES.ORDER_DETAILS,
+        ROUTES.TRACK_ORDER
+      ),
     },
     {
       to: ROUTES.ORDER,
@@ -72,7 +76,13 @@ const MenuBar = () => {
       to: ROUTES.CART,
       icon: <FiShoppingCart />,
       text: "Cart",
-      active: isActive(ROUTES.CART),
+      active: isActive(ROUTES.CART, ROUTES.PLACE_ORDER),
+    },
+    {
+      to: ROUTES.PROFILE,
+      icon: <FiUser />,
+      text: "Profile",
+      active: isActive(ROUTES.PROFILE),
     },
   ];
 
@@ -81,8 +91,20 @@ const MenuBar = () => {
     {
       to: ROUTES.DELIVERY_ORDERS,
       icon: <FiTruck />,
-      text: "Delivery Orders",
+      text: "My Deliveries",
       active: isActive(ROUTES.DELIVERY_ORDERS),
+    },
+    {
+      to: ROUTES.ORDER_DELIVERY_ROUTE,
+      icon: <FiMap />,
+      text: "Current Route",
+      active: isActive(ROUTES.ORDER_DELIVERY_ROUTE),
+    },
+    {
+      to: ROUTES.PROFILE,
+      icon: <FiUser />,
+      text: "Profile",
+      active: isActive(ROUTES.PROFILE),
     },
   ];
 
@@ -92,13 +114,24 @@ const MenuBar = () => {
       to: ROUTES.RESTAURANT_MENU,
       icon: <FiMenu />,
       text: "Restaurant Menu",
-      active: isActive(ROUTES.RESTAURANT_MENU),
+      active: isActive(
+        ROUTES.RESTAURANT_MENU,
+        ROUTES.RESTAURANT_MENU_MANAGE,
+        ROUTES.RESTAURANT_MENU_ADD,
+        ROUTES.RESTAURANT_MENU_EDIT
+      ),
     },
     {
       to: ROUTES.RESTAURANT_ORDERS,
       icon: <FiClipboard />,
-      text: "Restaurant Orders",
+      text: "Orders",
       active: isActive(ROUTES.RESTAURANT_ORDERS),
+    },
+    {
+      to: ROUTES.PROFILE,
+      icon: <FiUser />,
+      text: "Profile",
+      active: isActive(ROUTES.PROFILE),
     },
   ];
 

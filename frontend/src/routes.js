@@ -24,7 +24,7 @@ const ROUTES = {
 
   //Restaurant routes
   RESTAURANT_MENU: "/restaurant/menu",
-  RESTAURANT_ORDERS: "/restaurant/orders",
+  RESTAURANT_ORDERS: "/orders",
   ADD_RESTAURANT: "/add-restaurant",
   RESTAURANT_DETAILS: (id = ":id") => `/restaurant/${id}`,
   RESTAURANT_EDIT: (id = ":id") => `/restaurant/${id}/edit`,

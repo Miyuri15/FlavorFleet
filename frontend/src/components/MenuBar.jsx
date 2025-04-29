@@ -132,7 +132,7 @@ const MenuBar = () => {
     {
       to: ROUTES.RESTAURANT_MENU,
       icon: <FiMenu />,
-      text: "Restaurant Menu",
+      text: "Menu",
       active: isActive(
         ROUTES.RESTAURANT_MENU,
         ROUTES.RESTAURANT_MENU_MANAGE,

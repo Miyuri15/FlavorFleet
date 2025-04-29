@@ -37,12 +37,24 @@ const RestaurantSchema = new mongoose.Schema(
     rating: { type: Number, default: 0 },
     cuisineType: { type: String, required: true },
     deliveryRadius: { type: Number, default: 5 },
-    logo: { type: String },
-    banner: { type: String },
+    logo: {
+      type: String,
+      get: (value) => {
+        if (!value) return null;
+        return `${process.env.BASE_URL || "http://localhost:5003"}${value}`;
+      },
+    },
+    banner: {
+      type: String,
+      get: (value) => {
+        if (!value) return null;
+        return `${process.env.BASE_URL || "http://localhost:5003"}${value}`;
+      },
+    },
     menuItems: [{ type: mongoose.Schema.Types.ObjectId, ref: "MenuItem" }],
   },
 
-  { timestamps: true }
+  { timestamps: true, toJSON: { getters: true }, toObject: { getters: true } }
 );
 
 module.exports = mongoose.model("Restaurant", RestaurantSchema);

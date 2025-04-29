@@ -209,18 +209,9 @@ const RestaurantDashboard = () => {
                     overflow: "hidden",
                   }}
                   cover={
-                    <div
-                      style={{
-                        height: "160px",
-                        backgroundColor: "#f0f2f5",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        overflow: "hidden",
-                      }}
-                    >
+                    <div style={{ height: "160px", overflow: "hidden" }}>
                       {restaurant.banner ? (
-                        <Image
+                        <img
                           src={restaurant.banner}
                           alt={restaurant.name}
                           style={{
@@ -228,12 +219,21 @@ const RestaurantDashboard = () => {
                             height: "100%",
                             objectFit: "cover",
                           }}
-                          preview={false}
                         />
                       ) : (
-                        <ShopOutlined
-                          style={{ fontSize: "48px", color: "#bfbfbf" }}
-                        />
+                        <div
+                          style={{
+                            height: "100%",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            backgroundColor: "#f0f2f5",
+                          }}
+                        >
+                          <ShopOutlined
+                            style={{ fontSize: "48px", color: "#bfbfbf" }}
+                          />
+                        </div>
                       )}
                     </div>
                   }
@@ -267,23 +267,19 @@ const RestaurantDashboard = () => {
                     }}
                   >
                     {restaurant.logo && (
-                      <Image
+                      <img
                         src={restaurant.logo}
                         alt="logo"
-                        width={50}
-                        height={50}
-                        style={{ borderRadius: "50%", marginRight: "12px" }}
-                        preview={false}
+                        style={{
+                          width: 50,
+                          height: 50,
+                          borderRadius: "50%",
+                          marginRight: 12,
+                          objectFit: "cover",
+                        }}
                       />
                     )}
-                    <Title
-                      level={4}
-                      style={{
-                        marginBottom: 0,
-                        color: "#1d1d1f",
-                        fontWeight: 600,
-                      }}
-                    >
+                    <Title level={4} style={{ marginBottom: 0 }}>
                       {restaurant.name}
                     </Title>
                   </div>

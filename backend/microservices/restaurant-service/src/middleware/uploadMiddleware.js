@@ -1,7 +1,19 @@
 const multer = require("multer");
 const path = require("path");
 
-const storage = multer.memoryStorage();
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const folder = file.fieldname === "logo" ? "logos" : "banners";
+    const uploadPath = path.join(__dirname, `../public/uploads/${folder}`);
+    require("fs").mkdirSync(uploadPath, { recursive: true });
+    cb(null, uploadPath);
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    const ext = path.extname(file.originalname);
+    cb(null, uniqueSuffix + ext);
+  },
+});
 
 const fileFilter = (req, file, cb) => {
   const filetypes = /jpeg|jpg|png|gif/;
@@ -19,8 +31,8 @@ const upload = multer({
   storage: storage,
   fileFilter: fileFilter,
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB limit
-    files: 2, // Maximum 2 files (logo and banner)
+    fileSize: 5 * 1024 * 1024, // 5MB
+    files: 2, // Max 2 files
   },
 });
 

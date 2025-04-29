@@ -24,7 +24,18 @@ const roleMiddleware = require("../middleware/roleMiddleware");
 const uploadFiles = require("../middleware/uploadMiddleware");
 
 // Public routes
-router.get("/", getAllRestaurants);
+// In restaurantRoutes.js, update the public GET route:
+
+router.get(
+  "/",
+  (req, res, next) => {
+    // This will now handle both:
+    // GET /api/restaurant
+    // GET /api/restaurant?status=pending (or approved/rejected)
+    next();
+  },
+  getAllRestaurants
+);
 router.get("/:id", getRestaurantById);
 
 // Restaurant owner routes

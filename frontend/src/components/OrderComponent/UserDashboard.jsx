@@ -133,10 +133,12 @@ const UserDashboard = () => {
 
   // Fetch restuarant data from API
   useEffect(() => {
+    // In the UserDashboard component, modify the fetchRestuarants function:
+
     const fetchRestuarants = async () => {
       try {
         const response = await axios.get(
-          `${RESTAURANT_BACKEND_URL}/api/restaurant/`,
+          `${RESTAURANT_BACKEND_URL}/api/restaurant?status=approved`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -150,7 +152,6 @@ const UserDashboard = () => {
         setLoading(false);
       }
     };
-
     fetchRestuarants();
   }, [token]);
 

@@ -98,6 +98,7 @@ const AddRestaurant = () => {
   const onFinish = async (values) => {
     try {
       setLoading(true);
+      const token = localStorage.getItem("token"); // Moved this line up before using token
 
       const openingHours = {};
       [
@@ -146,7 +147,6 @@ const AddRestaurant = () => {
       }
 
       // Add owner ID from token
-      const token = localStorage.getItem("token");
       if (token) {
         const decodedToken = parseJwt(token);
         if (decodedToken && decodedToken.id) {

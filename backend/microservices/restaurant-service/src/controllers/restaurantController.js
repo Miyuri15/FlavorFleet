@@ -58,7 +58,14 @@ const createRestaurant = async (req, res) => {
 // Get all restaurants (for customers and admin)
 const getAllRestaurants = async (req, res) => {
   try {
-    const restaurants = await Restaurant.find();
+    let query = {};
+
+    // Add status filter if provided
+    if (req.query.status) {
+      query.registrationStatus = req.query.status;
+    }
+
+    const restaurants = await Restaurant.find(query);
     res.json(restaurants);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -290,6 +297,24 @@ const deleteRestaurant = async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
+
+  // Get pending restaurants (admin only)
+  // const getPendingRestaurants = async (req, res) => {
+  //   try {
+  //     if (req.user.role !== "admin") {
+  //       return res
+  //         .status(403)
+  //         .json({ error: "Only admin can view pending restaurants" });
+  //     }
+
+  //     const restaurants = await Restaurant.find({
+  //       registrationStatus: "pending",
+  //     });
+  //     res.json(restaurants);
+  //   } catch (error) {
+  //     res.status(500).json({ error: error.message });
+  //   }
+  // };
 };
 
 module.exports = {
@@ -302,4 +327,5 @@ module.exports = {
   getRestaurantOrders,
   updateOrderStatus,
   deleteRestaurant,
+  // getPendingRestaurants,
 };

@@ -300,9 +300,11 @@ const RestaurantDashboard = () => {
                     </Tag>
                     <Tag color="blue">{restaurant.cuisineType}</Tag>
                     {restaurant.registrationStatus === "approved" ? (
-                      <Tag color="success">Verified</Tag>
-                    ) : (
+                      <Tag color="success">Approved</Tag>
+                    ) : restaurant.registrationStatus === "pending" ? (
                       <Tag color="warning">Pending Approval</Tag>
+                    ) : (
+                      <Tag color="error">Rejected</Tag>
                     )}
                   </Space>
 

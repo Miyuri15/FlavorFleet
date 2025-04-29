@@ -119,8 +119,6 @@ const AddRestaurant = () => {
             : null,
         };
       });
-      console.log(mapCenter);
-      alert(mapCenter);
 
       const formData = new FormData();
       formData.append("name", values.name.trim());

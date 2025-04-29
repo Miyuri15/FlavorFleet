@@ -63,7 +63,7 @@ function Register() {
       try {
         const dataToSend = { ...values, role };
         const response = await fetch(
-          ${GATEWAY_BACKEND_URL}/api/auth/register,
+          `${GATEWAY_BACKEND_URL}/api/auth/register`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },

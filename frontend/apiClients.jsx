@@ -37,6 +37,13 @@ const createApiClient = (baseURL) => {
 export const foodServiceApi = createApiClient(
   `${import.meta.env.VITE_RESTAURANT_BACKEND_URL}/api`
 );
+
+foodServiceApi.interceptors.request.use((config) => {
+  if (config.data instanceof FormData) {
+    config.headers["Content-Type"] = "multipart/form-data";
+  }
+  return config;
+});
 export const cartServiceApi = createApiClient(
   `${import.meta.env.VITE_ORDER_BACKEND_URL}/api`
 );

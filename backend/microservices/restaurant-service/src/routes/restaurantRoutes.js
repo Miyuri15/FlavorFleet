@@ -21,14 +21,15 @@ const {
 } = require("../controllers/menuItemController");
 const authMiddleware = require("../middleware/authMiddleware");
 const roleMiddleware = require("../middleware/roleMiddleware");
+const uploadFiles = require("../middleware/uploadMiddleware");
 
 // Public routes
 router.get("/", getAllRestaurants);
 router.get("/:id", getRestaurantById);
 
 // Restaurant owner routes
-router.post("/", authMiddleware, createRestaurant);
-router.put("/:id", authMiddleware, updateRestaurant);
+router.post("/", authMiddleware, uploadFiles, createRestaurant);
+router.put("/:id", authMiddleware, uploadFiles, updateRestaurant);
 router.patch("/:id/availability", authMiddleware, updateRestaurantAvailability);
 router.delete("/:id", authMiddleware, deleteRestaurant);
 

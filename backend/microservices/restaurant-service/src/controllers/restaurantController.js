@@ -1,26 +1,65 @@
 const Restaurant = require("../models/Restaurant");
 const MenuItem = require("../models/MenuItem");
 const axios = require("axios");
+const fs = require("fs");
+const path = require("path");
 
-// Create a new restaurant (for restaurant owners)
+// Helper function to handle file upload
+const handleFileUpload = (file, folder) => {
+  if (!file) return null;
+
+  const uploadDir = path.join(__dirname, `../public/uploads/${folder}`);
+  if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+  }
+
+  const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+  const ext = path.extname(file.originalname);
+  const filename = `${uniqueSuffix}${ext}`;
+  const filePath = path.join(uploadDir, filename);
+
+  fs.writeFileSync(filePath, file.buffer);
+  return `/uploads/${folder}/${filename}`;
+};
+
+// Create a new restaurant
 const createRestaurant = async (req, res) => {
   try {
     // Check if user is a restaurant owner
     if (req.user.role !== "restaurant_owner") {
-      return res
-        .status(403)
-        .json({ error: "Only restaurant owners can create restaurants" });
+      return res.status(403).json({
+        error: "Only restaurant owners can create restaurants",
+      });
     }
 
-    const restaurantData = req.body;
-    restaurantData.owner = req.user.id; // Store user ID as string
+    let restaurantData = {
+      ...req.body,
+      owner: req.user.id,
+    };
+
+    // Handle file uploads if present
+    if (req.files?.logo) {
+      restaurantData.logo = handleFileUpload(req.files.logo[0], "logos");
+    }
+    if (req.files?.banner) {
+      restaurantData.banner = handleFileUpload(req.files.banner[0], "banners");
+    }
+
+    // Parse opening hours if sent as string
+    if (typeof restaurantData.openingHours === "string") {
+      restaurantData.openingHours = JSON.parse(restaurantData.openingHours);
+    }
 
     const newRestaurant = new Restaurant(restaurantData);
     await newRestaurant.save();
 
     res.status(201).json(newRestaurant);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("Error creating restaurant:", error);
+    res.status(500).json({
+      error: error.message,
+      details: error.errors, // Include validation errors if any
+    });
   }
 };
 

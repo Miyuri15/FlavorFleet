@@ -1,7 +1,17 @@
 import React, { useState, useEffect } from "react";
 import Layout from "../../components/Layout";
 import { useNavigate } from "react-router-dom";
-import { Button, Switch, Card, Row, Col, Tag, Typography, Space } from "antd";
+import {
+  Button,
+  Switch,
+  Card,
+  Row,
+  Col,
+  Tag,
+  Typography,
+  Space,
+  Image,
+} from "antd";
 import {
   PlusOutlined,
   EditOutlined,
@@ -206,17 +216,19 @@ const RestaurantDashboard = () => {
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
+                        overflow: "hidden",
                       }}
                     >
-                      {restaurant.imageUrl ? (
-                        <img
-                          src={restaurant.imageUrl}
+                      {restaurant.banner ? (
+                        <Image
+                          src={restaurant.banner}
                           alt={restaurant.name}
                           style={{
                             width: "100%",
                             height: "100%",
                             objectFit: "cover",
                           }}
+                          preview={false}
                         />
                       ) : (
                         <ShopOutlined
@@ -247,28 +259,44 @@ const RestaurantDashboard = () => {
                     </Button>,
                   ]}
                 >
-                  <div style={{ marginBottom: "16px" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      marginBottom: "12px",
+                    }}
+                  >
+                    {restaurant.logo && (
+                      <Image
+                        src={restaurant.logo}
+                        alt="logo"
+                        width={50}
+                        height={50}
+                        style={{ borderRadius: "50%", marginRight: "12px" }}
+                        preview={false}
+                      />
+                    )}
                     <Title
                       level={4}
                       style={{
-                        marginBottom: "8px",
+                        marginBottom: 0,
                         color: "#1d1d1f",
                         fontWeight: 600,
                       }}
                     >
                       {restaurant.name}
                     </Title>
-                    <Text
-                      type="secondary"
-                      style={{
-                        display: "block",
-                        marginBottom: "12px",
-                        fontSize: "14px",
-                      }}
-                    >
-                      {restaurant.description || "No description provided"}
-                    </Text>
                   </div>
+                  <Text
+                    type="secondary"
+                    style={{
+                      display: "block",
+                      marginBottom: "12px",
+                      fontSize: "14px",
+                    }}
+                  >
+                    {restaurant.description || "No description provided"}
+                  </Text>
 
                   <Space size={[8, 8]} wrap style={{ marginBottom: "16px" }}>
                     <Tag color={restaurant.isAvailable ? "green" : "red"}>

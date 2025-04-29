@@ -202,9 +202,9 @@ const RestaurantDetails = () => {
                 overflow: "hidden",
               }}
             >
-              {restaurant.imageUrl ? (
+              {restaurant.banner ? (
                 <img
-                  src={restaurant.imageUrl}
+                  src={restaurant.banner}
                   alt={restaurant.name}
                   style={{ width: "100%", height: "100%", objectFit: "cover" }}
                 />

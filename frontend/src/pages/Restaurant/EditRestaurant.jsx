@@ -47,6 +47,8 @@ const EditRestaurant = () => {
   const [bannerFile, setBannerFile] = useState(null);
   const [currentLogo, setCurrentLogo] = useState("");
   const [currentBanner, setCurrentBanner] = useState("");
+  const [logoUploading, setLogoUploading] = useState(false);
+  const [bannerUploading, setBannerUploading] = useState(false);
 
   const cuisineTypes = [
     "Sri Lankan",
@@ -511,24 +513,34 @@ const EditRestaurant = () => {
                     >
                       <Upload
                         beforeUpload={(file) => {
+                          setLogoUploading(true);
                           const isImage = file.type.startsWith("image/");
                           if (!isImage) {
                             message.error("You can only upload image files!");
+                            setLogoUploading(false);
                             return false;
                           }
                           const isLt5M = file.size / 1024 / 1024 < 5;
                           if (!isLt5M) {
                             message.error("Image must be smaller than 5MB!");
+                            setLogoUploading(false);
                             return false;
                           }
                           setLogoFile(file);
+                          setLogoUploading(false);
                           return false;
                         }}
                         maxCount={1}
                         accept="image/*"
                         listType="picture"
+                        loading={logoUploading}
                       >
-                        <Button icon={<UploadOutlined />}>Upload Logo</Button>
+                        <Button
+                          icon={<UploadOutlined />}
+                          loading={logoUploading}
+                        >
+                          {logoUploading ? "Uploading..." : "Upload Logo"}
+                        </Button>
                       </Upload>
                     </Form.Item>
                   )}
@@ -560,24 +572,34 @@ const EditRestaurant = () => {
                     >
                       <Upload
                         beforeUpload={(file) => {
+                          setBannerUploading(true);
                           const isImage = file.type.startsWith("image/");
                           if (!isImage) {
                             message.error("You can only upload image files!");
+                            setBannerUploading(false);
                             return false;
                           }
                           const isLt5M = file.size / 1024 / 1024 < 5;
                           if (!isLt5M) {
                             message.error("Image must be smaller than 5MB!");
+                            setBannerUploading(false);
                             return false;
                           }
                           setBannerFile(file);
+                          setBannerUploading(false);
                           return false;
                         }}
                         maxCount={1}
                         accept="image/*"
                         listType="picture"
+                        loading={bannerUploading}
                       >
-                        <Button icon={<UploadOutlined />}>Upload Banner</Button>
+                        <Button
+                          icon={<UploadOutlined />}
+                          loading={bannerUploading}
+                        >
+                          {bannerUploading ? "Uploading..." : "Upload Banner"}
+                        </Button>
                       </Upload>
                     </Form.Item>
                   )}

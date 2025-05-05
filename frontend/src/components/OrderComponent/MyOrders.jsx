@@ -22,6 +22,7 @@ const statusTabs = [
   { id: "Pending", label: "Pending" },
   { id: "Confirmed", label: "Confirmed" },
   { id: "Preparing", label: "Preparing" },
+  { id: "Prepared", label: "Prepared" },
   { id: "Out for Delivery", label: "Out for Delivery" },
   { id: "Delivered", label: "Delivered" },
   { id: "Cancelled", label: "Cancelled" },
@@ -79,52 +80,68 @@ export default function MyOrders() {
 
   const handleSubmitRating = async (ratings) => {
     try {
-      // Corrected endpoint - added the order ID and fixed the typo
       await api.post(`/api/orders/${selectedOrder._id}/ratings`, {
         ...ratings,
-        orderId: selectedOrder._id
+        orderId: selectedOrder._id,
       });
-      
-      // Update the order to show it's been rated
-      setOrders(orders.map(order => 
-        order._id === selectedOrder._id ? { ...order, hasRated: true } : order
-      ));
+
+      setOrders(
+        orders.map((order) =>
+          order._id === selectedOrder._id ? { ...order, hasRated: true } : order
+        )
+      );
       setShowRatingModal(false);
     } catch (err) {
       setError(err.response?.data?.error || "Failed to submit rating");
     }
   };
 
-  
   const getStatusIcon = (status) => {
     switch (status) {
-      case "Pending": return <FaClock className="text-yellow-500" />;
-      case "Confirmed": return <FaCheckCircle className="text-blue-500" />;
-      case "Preparing": return <FaBoxOpen className="text-orange-500" />;
-      case "Out for Delivery": return <FaTruck className="text-purple-500" />;
-      case "Delivered": return <FaCheckCircle className="text-green-500" />;
-      case "Cancelled": return <FaTimesCircle className="text-red-500" />;
-      default: return <FaHistory className="text-gray-500" />;
+      case "Pending":
+        return <FaClock className="text-yellow-500" />;
+      case "Confirmed":
+        return <FaCheckCircle className="text-blue-500" />;
+      case "Preparing":
+        return <FaBoxOpen className="text-orange-500" />;
+      case "Out for Delivery":
+        return <FaTruck className="text-purple-500" />;
+      case "Delivered":
+        return <FaCheckCircle className="text-green-500" />;
+      case "Cancelled":
+        return <FaTimesCircle className="text-red-500" />;
+      default:
+        return <FaHistory className="text-gray-500" />;
     }
   };
 
   const getStatusColor = (status) => {
     switch (status) {
-      case "Pending": return "bg-yellow-100 text-yellow-800";
-      case "Confirmed": return "bg-blue-100 text-blue-800";
-      case "Preparing": return "bg-orange-100 text-orange-800";
-      case "Out for Delivery": return "bg-purple-100 text-purple-800";
-      case "Delivered": return "bg-green-100 text-green-800";
-      case "Cancelled": return "bg-red-100 text-red-800";
-      default: return "bg-gray-100 text-gray-800";
+      case "Pending":
+        return "bg-yellow-100 text-yellow-800";
+      case "Confirmed":
+        return "bg-blue-100 text-blue-800";
+      case "Preparing":
+        return "bg-orange-100 text-orange-800";
+      case "Out for Delivery":
+        return "bg-purple-100 text-purple-800";
+      case "Delivered":
+        return "bg-green-100 text-green-800";
+      case "Cancelled":
+        return "bg-red-100 text-red-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
 
   const getPaymentMethodIcon = (method) => {
     switch (method) {
-      case "Cash on Delivery": return <FaMoneyBillWave className="text-green-600" />;
-      case "Online Payment": return <FaCreditCard className="text-blue-600" />;
-      default: return <FaReceipt className="text-gray-500" />;
+      case "Cash on Delivery":
+        return <FaMoneyBillWave className="text-green-600" />;
+      case "Online Payment":
+        return <FaCreditCard className="text-blue-600" />;
+      default:
+        return <FaReceipt className="text-gray-500" />;
     }
   };
 
@@ -192,11 +209,12 @@ export default function MyOrders() {
                   }`}
                 >
                   {tab.label}
-                  {tab.id !== "all" && (
-                    <span className="ml-1 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                      {orders.filter((order) => order.status === tab.id).length}
-                    </span>
-                  )}
+                  <span className="ml-1 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                    {tab.id === "all"
+                      ? orders.length
+                      : orders.filter((order) => order.status === tab.id)
+                          .length}
+                  </span>
                 </button>
               ))}
             </nav>
@@ -234,9 +252,14 @@ export default function MyOrders() {
                     <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start">
                       <div className="mb-4 sm:mb-0">
                         <div className="flex items-center">
-                          <span className="mr-3">{getStatusIcon(order.status)}</span>
+                          <span className="mr-3">
+                            {getStatusIcon(order.status)}
+                          </span>
                           <h3 className="text-lg leading-6 font-medium text-gray-900">
-                            Order #{order._id.substring(order._id.length - 6).toUpperCase()}
+                            Order #
+                            {order._id
+                              .substring(order._id.length - 6)
+                              .toUpperCase()}
                           </h3>
                           <span
                             className={`ml-3 px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(
@@ -313,7 +336,11 @@ export default function MyOrders() {
                     </div>
                     <div className="mt-4 flex justify-between items-center">
                       <p className="text-sm text-gray-500">
-                        {order.items.reduce((sum, item) => sum + item.quantity, 0)} items
+                        {order.items.reduce(
+                          (sum, item) => sum + item.quantity,
+                          0
+                        )}{" "}
+                        items
                       </p>
                       <p className="text-lg font-semibold text-gray-900">
                         LKR {order.totalAmount.toFixed(2)}

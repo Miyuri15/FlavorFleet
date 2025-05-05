@@ -461,7 +461,9 @@ const UserDashboard = () => {
                         </div>
                         <div>
                           <p className="font-bold text-gray-800 text-lg">
-                            {order.restaurantId?.name || "Unknown Restaurant"}
+                            {order.restaurantDetails?.name ||
+                              order.restaurantId?.name ||
+                              "Unknown Restaurant"}
                           </p>
                           <p className="text-gray-600 text-sm">
                             Order #{order._id.slice(-6).toUpperCase()}

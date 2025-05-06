@@ -1,7 +1,17 @@
 import React, { useState, useEffect } from "react";
 import Layout from "../../components/Layout";
 import { useNavigate } from "react-router-dom";
-import { Button, Switch, Card, Row, Col, Tag, Typography, Space } from "antd";
+import {
+  Button,
+  Switch,
+  Card,
+  Row,
+  Col,
+  Tag,
+  Typography,
+  Space,
+  Image,
+} from "antd";
 import {
   PlusOutlined,
   EditOutlined,
@@ -12,6 +22,7 @@ import { foodServiceApi } from "../../../apiClients";
 import Swal from "sweetalert2";
 import ROUTES from "../../routes";
 import Loading from "../../components/Loading/Loading";
+import { useAuth } from "../../context/AuthContext";
 
 const { Title, Text } = Typography;
 
@@ -19,14 +30,17 @@ const RestaurantDashboard = () => {
   const navigate = useNavigate();
   const [restaurants, setRestaurants] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
 
   useEffect(() => {
-    fetchRestaurants();
-  }, []);
+    if (user) {
+      fetchRestaurants();
+    }
+  }, [user]);
 
   const fetchRestaurants = async () => {
     try {
-      const { data } = await foodServiceApi.get("/restaurant");
+      const { data } = await foodServiceApi.get("/restaurant/owner/me");
       setRestaurants(data);
       setLoading(false);
     } catch (error) {
@@ -81,11 +95,13 @@ const RestaurantDashboard = () => {
         text: "This will permanently delete the restaurant and all its menu items!",
         icon: "warning",
         showCancelButton: true,
-        confirmButtonColor: "#ff4d4f",
-        cancelButtonColor: "#1890ff",
         confirmButtonText: "Yes, delete it!",
+        confirmButtonColor: "#ff4d4f", // Red for delete
+        cancelButtonColor: "#1890ff", // Blue for cancel
         customClass: {
           container: "font-sans",
+          confirmButton: "my-confirm-button",
+          cancelButton: "my-cancel-button",
         },
       });
 
@@ -199,18 +215,10 @@ const RestaurantDashboard = () => {
                     overflow: "hidden",
                   }}
                   cover={
-                    <div
-                      style={{
-                        height: "160px",
-                        backgroundColor: "#f0f2f5",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      {restaurant.imageUrl ? (
+                    <div style={{ height: "160px", overflow: "hidden" }}>
+                      {restaurant.banner ? (
                         <img
-                          src={restaurant.imageUrl}
+                          src={restaurant.banner}
                           alt={restaurant.name}
                           style={{
                             width: "100%",
@@ -219,9 +227,19 @@ const RestaurantDashboard = () => {
                           }}
                         />
                       ) : (
-                        <ShopOutlined
-                          style={{ fontSize: "48px", color: "#bfbfbf" }}
-                        />
+                        <div
+                          style={{
+                            height: "100%",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            backgroundColor: "#f0f2f5",
+                          }}
+                        >
+                          <ShopOutlined
+                            style={{ fontSize: "48px", color: "#bfbfbf" }}
+                          />
+                        </div>
                       )}
                     </div>
                   }
@@ -247,28 +265,40 @@ const RestaurantDashboard = () => {
                     </Button>,
                   ]}
                 >
-                  <div style={{ marginBottom: "16px" }}>
-                    <Title
-                      level={4}
-                      style={{
-                        marginBottom: "8px",
-                        color: "#1d1d1f",
-                        fontWeight: 600,
-                      }}
-                    >
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      marginBottom: "12px",
+                    }}
+                  >
+                    {restaurant.logo && (
+                      <img
+                        src={restaurant.logo}
+                        alt="logo"
+                        style={{
+                          width: 50,
+                          height: 50,
+                          borderRadius: "50%",
+                          marginRight: 12,
+                          objectFit: "cover",
+                        }}
+                      />
+                    )}
+                    <Title level={4} style={{ marginBottom: 0 }}>
                       {restaurant.name}
                     </Title>
-                    <Text
-                      type="secondary"
-                      style={{
-                        display: "block",
-                        marginBottom: "12px",
-                        fontSize: "14px",
-                      }}
-                    >
-                      {restaurant.description || "No description provided"}
-                    </Text>
                   </div>
+                  <Text
+                    type="secondary"
+                    style={{
+                      display: "block",
+                      marginBottom: "12px",
+                      fontSize: "14px",
+                    }}
+                  >
+                    {restaurant.description || "No description provided"}
+                  </Text>
 
                   <Space size={[8, 8]} wrap style={{ marginBottom: "16px" }}>
                     <Tag color={restaurant.isAvailable ? "green" : "red"}>
@@ -276,9 +306,11 @@ const RestaurantDashboard = () => {
                     </Tag>
                     <Tag color="blue">{restaurant.cuisineType}</Tag>
                     {restaurant.registrationStatus === "approved" ? (
-                      <Tag color="success">Verified</Tag>
-                    ) : (
+                      <Tag color="success">Approved</Tag>
+                    ) : restaurant.registrationStatus === "pending" ? (
                       <Tag color="warning">Pending Approval</Tag>
+                    ) : (
+                      <Tag color="error">Rejected</Tag>
                     )}
                   </Space>
 

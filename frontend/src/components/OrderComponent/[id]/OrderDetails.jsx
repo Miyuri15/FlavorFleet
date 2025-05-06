@@ -18,7 +18,7 @@ import {
 } from "react-icons/fa";
 import { FiArrowLeft } from "react-icons/fi";
 import { motion } from "framer-motion";
-import { GiCookingPot } from "react-icons/gi";
+import { GiCardboardBox, GiCookingPot } from "react-icons/gi";
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -85,6 +85,7 @@ const OrderDetails = () => {
     { status: "Pending", icon: <FaClock />, label: "Order Received" },
     { status: "Confirmed", icon: <FaCheckCircle />, label: "Confirmed" },
     { status: "Preparing", icon: <GiCookingPot />, label: "Preparing" },
+    { status: "Prepared", icon: <GiCardboardBox />, label: "Prepared" },
     { status: "Out for Delivery", icon: <FaMotorcycle />, label: "On the Way" },
     { status: "Delivered", icon: <FaCheckCircle />, label: "Delivered" },
   ];

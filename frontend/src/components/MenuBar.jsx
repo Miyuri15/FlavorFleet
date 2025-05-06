@@ -132,7 +132,7 @@ const MenuBar = () => {
     {
       to: ROUTES.RESTAURANT_MENU,
       icon: <FiMenu />,
-      text: "Restaurant Menu",
+      text: "Menu",
       active: isActive(
         ROUTES.RESTAURANT_MENU,
         ROUTES.RESTAURANT_MENU_MANAGE,
@@ -154,12 +154,22 @@ const MenuBar = () => {
     },
   ];
 
+  const adminMenuItems = [
+    {
+      to: ROUTES.PROFILE,
+      icon: <FiUser />,
+      text: "Profile",
+      active: isActive(ROUTES.PROFILE),
+    },
+  ];
+
   // Combine menu items based on user role
   const menuItems = [
     ...commonMenuItems,
     ...(!isAdmin && !isDelivery && !isRestaurantOwner ? userMenuItems : []),
     ...(isDelivery ? deliveryMenuItems : []),
     ...(isRestaurantOwner ? restaurantMenuItems : []),
+    ...(isAdmin ? adminMenuItems : []),
   ];
 
   return (

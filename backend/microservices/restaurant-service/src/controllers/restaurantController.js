@@ -1,48 +1,94 @@
 const Restaurant = require("../models/Restaurant");
 const MenuItem = require("../models/MenuItem");
 const axios = require("axios");
+const fs = require("fs");
+const path = require("path");
 
-// Create a new restaurant (for restaurant owners)
+// Helper function to handle file upload
+const handleFileUpload = (file, folder) => {
+  if (!file) return null;
+
+  const uploadDir = path.join(__dirname, `../public/uploads/${folder}`);
+  if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+  }
+
+  const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+  const ext = path.extname(file.originalname);
+  const filename = `${uniqueSuffix}${ext}`;
+  const filePath = path.join(uploadDir, filename);
+
+  // Handle both express-fileupload and multer
+  if (file.buffer) {
+    fs.writeFileSync(filePath, file.buffer); // For express-fileupload
+  } else if (file.path) {
+    fs.renameSync(file.path, filePath); // For multer
+  } else {
+    throw new Error("Invalid file upload: no buffer or path found");
+  }
+
+  return `/uploads/${folder}/${filename}`;
+};
+
+// Create a new restaurant
 const createRestaurant = async (req, res) => {
   try {
-    // Check if user is a restaurant owner
     if (req.user.role !== "restaurant_owner") {
       return res
         .status(403)
         .json({ error: "Only restaurant owners can create restaurants" });
     }
 
-    const restaurantData = req.body;
-    restaurantData.owner = req.user.id; // Store user ID as string
+    let restaurantData = req.body;
+
+    // Convert lat/lng to numbers
+    if (restaurantData.coordinates) {
+      restaurantData.coordinates.lat = parseFloat(
+        restaurantData.coordinates.lat
+      );
+      restaurantData.coordinates.lng = parseFloat(
+        restaurantData.coordinates.lng
+      );
+    }
+
+    // Handle file uploads
+    if (req.files?.logo) {
+      restaurantData.logo = handleFileUpload(req.files.logo[0], "logos");
+    }
+    if (req.files?.banner) {
+      restaurantData.banner = handleFileUpload(req.files.banner[0], "banners");
+    }
+
+    restaurantData.owner = req.user.id;
 
     const newRestaurant = new Restaurant(restaurantData);
     await newRestaurant.save();
 
     res.status(201).json(newRestaurant);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({
+      error: error.message,
+      details: error.errors,
+    });
   }
 };
 
 // Get all restaurants (for customers and admin)
 const getAllRestaurants = async (req, res) => {
   try {
-    const { cuisineType, isAvailable } = req.query;
-    const filter = {};
+    let query = {};
 
-    if (cuisineType) filter.cuisineType = cuisineType;
-    if (isAvailable) filter.isAvailable = isAvailable === "true";
+    // Add status filter if provided
+    if (req.query.status) {
+      query.registrationStatus = req.query.status;
+    }
 
-    const restaurants = await Restaurant.find(filter);
-
-    // If you need user details, you would need to call the User Service here
-    // For now, we'll just return the restaurants without user details
+    const restaurants = await Restaurant.find(query);
     res.json(restaurants);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
-
 // Get restaurant by ID
 const getRestaurantById = async (req, res) => {
   try {
@@ -70,7 +116,10 @@ const updateRestaurant = async (req, res) => {
     }
 
     // Check if user is owner or admin
-    if (req.user.role !== "admin" && restaurant.owner !== req.user.id) {
+    if (
+      req.user.role !== "admin" &&
+      restaurant.owner.toString() !== req.user.id
+    ) {
       return res.status(403).json({
         error: "Not authorized to update this restaurant",
       });
@@ -82,17 +131,16 @@ const updateRestaurant = async (req, res) => {
     if (req.body.data) {
       // Parse the JSON string from FormData
       updateData = JSON.parse(req.body.data);
-
-      // Handle file uploads if present
-      if (req.files?.logo) {
-        updateData.logo = req.files.logo[0].path; // Adjust based on your storage
-      }
-      if (req.files?.banner) {
-        updateData.banner = req.files.banner[0].path;
-      }
     } else {
-      // Regular JSON request
       updateData = req.body;
+    }
+
+    // Handle file uploads consistently
+    if (req.files?.logo) {
+      updateData.logo = handleFileUpload(req.files.logo[0], "logos");
+    }
+    if (req.files?.banner) {
+      updateData.banner = handleFileUpload(req.files.banner[0], "banners");
     }
 
     // Clean up opening hours - convert empty strings to null
@@ -112,7 +160,7 @@ const updateRestaurant = async (req, res) => {
       updateData,
       {
         new: true,
-        runValidators: true, // Important for validation
+        runValidators: true,
         omitUndefined: true,
       }
     );
@@ -122,7 +170,7 @@ const updateRestaurant = async (req, res) => {
     console.error("Update error:", error);
     res.status(500).json({
       error: error.message,
-      details: error.errors, // Include validation errors if any
+      details: error.errors,
     });
   }
 };
@@ -271,6 +319,15 @@ const deleteRestaurant = async (req, res) => {
   }
 };
 
+const getRestaurantsByOwner = async (req, res) => {
+  try {
+    const restaurants = await Restaurant.find({ owner: req.user.id });
+    res.json(restaurants);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   createRestaurant,
   getAllRestaurants,
@@ -281,4 +338,5 @@ module.exports = {
   getRestaurantOrders,
   updateOrderStatus,
   deleteRestaurant,
+  getRestaurantsByOwner,
 };

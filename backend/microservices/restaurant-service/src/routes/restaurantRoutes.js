@@ -10,6 +10,7 @@ const {
   getRestaurantOrders,
   updateOrderStatus,
   deleteRestaurant,
+  getRestaurantsByOwner,
 } = require("../controllers/restaurantController");
 const {
   addMenuItem,
@@ -21,16 +22,29 @@ const {
 } = require("../controllers/menuItemController");
 const authMiddleware = require("../middleware/authMiddleware");
 const roleMiddleware = require("../middleware/roleMiddleware");
+const uploadFiles = require("../middleware/uploadMiddleware");
 
 // Public routes
-router.get("/", getAllRestaurants);
+// In restaurantRoutes.js, update the public GET route:
+
+router.get(
+  "/",
+  (req, res, next) => {
+    // This will now handle both:
+    // GET /api/restaurant
+    // GET /api/restaurant?status=pending (or approved/rejected)
+    next();
+  },
+  getAllRestaurants
+);
 router.get("/:id", getRestaurantById);
 
 // Restaurant owner routes
-router.post("/", authMiddleware, createRestaurant);
-router.put("/:id", authMiddleware, updateRestaurant);
+router.post("/", authMiddleware, uploadFiles, createRestaurant);
+router.put("/:id", authMiddleware, uploadFiles, updateRestaurant);
 router.patch("/:id/availability", authMiddleware, updateRestaurantAvailability);
 router.delete("/:id", authMiddleware, deleteRestaurant);
+router.get("/owner/me", authMiddleware, getRestaurantsByOwner);
 
 // Order management routes (restaurant owner only)
 router.get("/:id/orders", authMiddleware, getRestaurantOrders);

@@ -84,14 +84,14 @@ async function findNearbyDrivers(req, res) {
     }
 
     const drivers = await Driver.find({
-      status: "available", // Only available drivers
+      status: "available",
       currentLocation: {
         $near: {
           $geometry: {
             type: "Point",
             coordinates: [parseFloat(lng), parseFloat(lat)],
           },
-          $maxDistance: parseFloat(radius), // search radius in meters
+          $maxDistance: parseFloat(radius),
         },
       },
     });
@@ -121,9 +121,9 @@ async function updateDriverLocation(req, res) {
 
     driver.currentLocation = {
       type: "Point",
-      coordinates: [parseFloat(lng), parseFloat(lat)], // GeoJSON format [lng, lat]
+      coordinates: [parseFloat(lng), parseFloat(lat)],
     };
-    driver.lastActive = new Date(); // Update last active time
+    driver.lastActive = new Date();
 
     await driver.save();
 

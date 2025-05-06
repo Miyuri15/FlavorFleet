@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { io } from "socket.io-client";
 import Layout from "../Layout";
 import { deliveryServiceApi, cartServiceApi } from "../../../apiClients";
 import { useAuth } from "../../context/AuthContext";
@@ -16,6 +17,8 @@ const defaultCenter = {
   lng: 79.8612,
 };
 
+const BASE_DELIVERY_URL = import.meta.env.VITE_DELIVERY_BACKEND_URL;
+
 const DeliveryDashboard = () => {
   const [driverStatus, setDriverStatus] = useState("offline");
   const [driver, setDriver] = useState(null);
@@ -26,7 +29,31 @@ const DeliveryDashboard = () => {
   const [hasActiveOrder, setHasActiveOrder] = useState(false);
   const { user } = useAuth();
   const locationIntervalRef = useRef(null);
+  const socketRef = useRef(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!user?.userId) return;
+
+    socketRef.current = io(BASE_DELIVERY_URL || "http://localhost:3001", {
+      query: { driverId: user.userId },
+      transports: ["websocket"],
+    });
+
+    socketRef.current.on("connect", () => {
+      console.log("Connected to WebSocket server");
+    });
+
+    socketRef.current.on("disconnect", () => {
+      console.log("Disconnected from WebSocket server");
+    });
+
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+      }
+    };
+  }, [user]);
 
   useEffect(() => {
     const initializeDriver = async () => {
@@ -128,21 +155,45 @@ const DeliveryDashboard = () => {
     }
   };
 
-  const sendLocationToBackend = async (latitude, longitude) => {
-    try {
-      await deliveryServiceApi.patch("drivers/update-location", {
+  const sendLocationToBackend = (latitude, longitude) => {
+    if (socketRef.current && socketRef.current.connected) {
+      // Send location via WebSocket
+      socketRef.current.emit("locationUpdate", {
         driverId: user.userId,
         lat: latitude,
         lng: longitude,
       });
-      console.log("Location updated to backend:", latitude, longitude);
-    } catch (error) {
-      console.error("Failed to update location", error);
+      console.log("Location sent via WebSocket:", latitude, longitude);
+    } else {
+      // Fallback to HTTP if WebSocket is not available
+      deliveryServiceApi
+        .patch("drivers/update-location", {
+          driverId: user.userId,
+          lat: latitude,
+          lng: longitude,
+        })
+        .then(() =>
+          console.log("Location updated via HTTP:", latitude, longitude)
+        )
+        .catch((error) => console.error("Failed to update location", error));
     }
   };
 
   const startLocationUpdates = () => {
     if (navigator.geolocation) {
+      // Get immediate location first
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          setCurrentLocation({ lat: latitude, lng: longitude });
+          sendLocationToBackend(latitude, longitude);
+        },
+        (error) => {
+          console.error("Error getting current location", error);
+        }
+      );
+
+      // Then set up interval for continuous updates
       locationIntervalRef.current = setInterval(() => {
         navigator.geolocation.getCurrentPosition(
           (position) => {
@@ -152,9 +203,10 @@ const DeliveryDashboard = () => {
           },
           (error) => {
             console.error("Error getting current location", error);
-          }
+          },
+          { enableHighAccuracy: true, maximumAge: 10000 }
         );
-      }, 10000); // every 10 sec
+      }, 10000); // every 10 seconds
       console.log("Started live location updates...");
     }
   };

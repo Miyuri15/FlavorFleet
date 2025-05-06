@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import Layout from "../../components/Layout";
 import Swal from "sweetalert2";
@@ -12,7 +12,6 @@ import {
 } from "react-icons/fa";
 import RestaurantList from "../../components/OrderComponent/RestaurantList";
 import MenuItemDetails from "../../components/OrderComponent/MenuItemDetails";
-import { useNavigate } from "react-router-dom";
 import RatingStars from "../../components/OrderComponent/RatingStars";
 
 const ORDER_BACKEND_URL = import.meta.env.VITE_ORDER_BACKEND_URL;
@@ -65,7 +64,7 @@ const OrderPage = () => {
       try {
         // Fetch restaurants
         const restaurantsResponse = await axios.get(
-          `${RESTAURANT_BACKEND_URL}/api/restaurant/`,
+          `${RESTAURANT_BACKEND_URL}/api/restaurant?status=approved`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -97,7 +96,9 @@ const OrderPage = () => {
         const transformedData = foodResponse.data.map((item) => ({
           ...item,
           isAvailable: item.isAvailable, // Keep original boolean value
-          imageUrl: item.image || "/img/ChocolateLavaCake.jpeg",
+          imageUrl:
+            item.image ||
+            "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60",
           restaurant: {
             ...item.restaurant,
             address: item.restaurant?.address,

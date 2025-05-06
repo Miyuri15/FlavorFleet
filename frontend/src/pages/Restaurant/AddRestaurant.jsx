@@ -11,6 +11,7 @@ import {
   Row,
   Col,
   Upload,
+  Image,
 } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import Swal from "sweetalert2";
@@ -20,6 +21,21 @@ import { GoogleMap, Marker } from "@react-google-maps/api";
 
 const { Option } = Select;
 const { TextArea } = Input;
+
+const cuisineTypes = [
+  "Italian",
+  "Chinese",
+  "Indian",
+  "Mexican",
+  "Japanese",
+  "Thai",
+  "American",
+  "Mediterranean",
+  "French",
+  "Vietnamese",
+  "Korean",
+  "Other",
+];
 
 const DayTimePicker = ({ day }) => (
   <Row gutter={16}>
@@ -41,16 +57,24 @@ const DayTimePicker = ({ day }) => (
     </Col>
   </Row>
 );
-// Helper function to capitalize the first letter
+
 const capitalizeFirstLetter = (string) =>
   string.charAt(0).toUpperCase() + string.slice(1);
+
+const parseJwt = (token) => {
+  try {
+    return JSON.parse(atob(token.split(".")[1]));
+  } catch (e) {
+    return null;
+  }
+};
 
 const AddRestaurant = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [logoFile, setLogoFile] = useState(null);
-  const [bannerFile, setBannerFile] = useState(null);
+  const [logoPreview, setLogoPreview] = useState(null);
+  const [bannerPreview, setBannerPreview] = useState(null);
   const [mapCenter, setMapCenter] = useState({ lat: 6.9271, lng: 79.8612 });
 
   const geocodeAddress = async (addressString) => {
@@ -74,6 +98,7 @@ const AddRestaurant = () => {
   const onFinish = async (values) => {
     try {
       setLoading(true);
+      const token = localStorage.getItem("token"); // Moved this line up before using token
 
       const openingHours = {};
       [
@@ -95,28 +120,46 @@ const AddRestaurant = () => {
         };
       });
 
-      const restaurantData = {
-        name: values.name.trim(),
-        description: values.description.trim(),
-        cuisineType: values.cuisineType.trim(),
-        contactNumber: values.contactNumber.trim(),
-        email: values.email.trim(),
-        address: {
-          street: values.street.trim(),
-          city: values.city.trim(),
-          postalCode: values.postalCode.trim(),
-          coordinates: mapCenter, // Using mapCenter
+      const formData = new FormData();
+      formData.append("name", values.name.trim());
+      formData.append("description", values.description.trim());
+      formData.append("cuisineType", values.cuisineType);
+      formData.append("contactNumber", values.contactNumber.trim());
+      formData.append("email", values.email.trim());
+      formData.append("address[street]", values.street.trim());
+      formData.append("address[city]", values.city.trim());
+      formData.append("address[postalCode]", values.postalCode.trim());
+      formData.append("coordinates[lat]", mapCenter.lat);
+      formData.append("coordinates[lng]", mapCenter.lng);
+
+      // Append opening hours
+      Object.entries(openingHours).forEach(([day, hours]) => {
+        formData.append(`openingHours[${day}][open]`, hours.open || "");
+        formData.append(`openingHours[${day}][close]`, hours.close || "");
+      });
+
+      // Append files if they exist
+      if (values.logo && values.logo[0]) {
+        formData.append("logo", values.logo[0].originFileObj);
+      }
+      if (values.banner && values.banner[0]) {
+        formData.append("banner", values.banner[0].originFileObj);
+      }
+
+      // Add owner ID from token
+      if (token) {
+        const decodedToken = parseJwt(token);
+        if (decodedToken && decodedToken.id) {
+          formData.append("owner", decodedToken.id);
+        }
+      }
+
+      const response = await foodServiceApi.post("/restaurant", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
         },
-        openingHours,
-      };
-
-      // If you need to upload files, use FormData
-      // const formData = new FormData();
-      // formData.append("data", JSON.stringify(restaurantData));
-      // if (logoFile) formData.append("logo", logoFile);
-      // if (bannerFile) formData.append("banner", bannerFile);
-
-      const response = await foodServiceApi.post("/restaurant", restaurantData);
+      });
 
       Swal.fire({
         icon: "success",
@@ -129,20 +172,44 @@ const AddRestaurant = () => {
       navigate("/restaurant-dashboard");
     } catch (error) {
       console.error("Submission error:", error);
+      let errorMessage = "Something went wrong";
+      if (error.response) {
+        errorMessage =
+          error.response.data.message ||
+          error.response.data.error ||
+          JSON.stringify(error.response.data);
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
       Swal.fire({
         icon: "error",
         title: "Failed to add restaurant",
-        text:
-          error.response?.data?.message ||
-          error.message ||
-          "Something went wrong",
+        text: errorMessage,
       });
     } finally {
       setLoading(false);
     }
   };
 
-  const normFile = (e) => (Array.isArray(e) ? e : e && e.fileList);
+  const handleLogoChange = ({ fileList }) => {
+    if (fileList.length > 0 && fileList[0].originFileObj) {
+      const reader = new FileReader();
+      reader.onload = (e) => setLogoPreview(e.target.result);
+      reader.readAsDataURL(fileList[0].originFileObj);
+    } else {
+      setLogoPreview(null);
+    }
+  };
+
+  const handleBannerChange = ({ fileList }) => {
+    if (fileList.length > 0 && fileList[0].originFileObj) {
+      const reader = new FileReader();
+      reader.onload = (e) => setBannerPreview(e.target.result);
+      reader.readAsDataURL(fileList[0].originFileObj);
+    } else {
+      setBannerPreview(null);
+    }
+  };
 
   return (
     <Layout>
@@ -178,7 +245,9 @@ const AddRestaurant = () => {
               <Form.Item
                 name="name"
                 label="Restaurant Name"
-                rules={[{ required: true }]}
+                rules={[
+                  { required: true, message: "Please input restaurant name!" },
+                ]}
               >
                 <Input />
               </Form.Item>
@@ -187,9 +256,17 @@ const AddRestaurant = () => {
               <Form.Item
                 name="cuisineType"
                 label="Cuisine Type"
-                rules={[{ required: true }]}
+                rules={[
+                  { required: true, message: "Please select cuisine type!" },
+                ]}
               >
-                <Input />
+                <Select placeholder="Select cuisine type">
+                  {cuisineTypes.map((type) => (
+                    <Option key={type} value={type}>
+                      {type}
+                    </Option>
+                  ))}
+                </Select>
               </Form.Item>
             </Col>
           </Row>
@@ -197,7 +274,7 @@ const AddRestaurant = () => {
           <Form.Item
             name="description"
             label="Description"
-            rules={[{ required: true }]}
+            rules={[{ required: true, message: "Please input description!" }]}
           >
             <TextArea rows={4} />
           </Form.Item>
@@ -208,13 +285,19 @@ const AddRestaurant = () => {
               <Form.Item
                 name="street"
                 label="Street"
-                rules={[{ required: true }]}
+                rules={[
+                  { required: true, message: "Please input street address!" },
+                ]}
               >
                 <Input />
               </Form.Item>
             </Col>
             <Col span={8}>
-              <Form.Item name="city" label="City" rules={[{ required: true }]}>
+              <Form.Item
+                name="city"
+                label="City"
+                rules={[{ required: true, message: "Please input city!" }]}
+              >
                 <Input />
               </Form.Item>
             </Col>
@@ -222,7 +305,9 @@ const AddRestaurant = () => {
               <Form.Item
                 name="postalCode"
                 label="Postal Code"
-                rules={[{ required: true }]}
+                rules={[
+                  { required: true, message: "Please input postal code!" },
+                ]}
               >
                 <Input />
               </Form.Item>
@@ -256,7 +341,13 @@ const AddRestaurant = () => {
               <Form.Item
                 name="contactNumber"
                 label="Phone Number"
-                rules={[{ required: true }]}
+                rules={[
+                  { required: true, message: "Please input phone number!" },
+                  {
+                    pattern: /^\+?[0-9]{10,15}$/,
+                    message: "Please enter a valid phone number!",
+                  },
+                ]}
               >
                 <Input />
               </Form.Item>
@@ -265,7 +356,10 @@ const AddRestaurant = () => {
               <Form.Item
                 name="email"
                 label="Email"
-                rules={[{ required: true, type: "email" }]}
+                rules={[
+                  { required: true, message: "Please input email!" },
+                  { type: "email", message: "Please enter a valid email!" },
+                ]}
               >
                 <Input />
               </Form.Item>
@@ -292,16 +386,33 @@ const AddRestaurant = () => {
                 name="logo"
                 label="Logo"
                 valuePropName="fileList"
-                getValueFromEvent={normFile}
+                getValueFromEvent={(e) => {
+                  if (Array.isArray(e)) {
+                    return e;
+                  }
+                  return e && e.fileList;
+                }}
+                rules={[{ required: true, message: "Please upload logo!" }]}
               >
                 <Upload
-                  beforeUpload={(file) => {
-                    setLogoFile(file);
-                    return false;
-                  }}
+                  listType="picture-card"
+                  beforeUpload={() => false}
                   maxCount={1}
+                  onChange={handleLogoChange}
                 >
-                  <Button icon={<UploadOutlined />}>Upload Logo</Button>
+                  {logoPreview ? (
+                    <Image
+                      src={logoPreview}
+                      alt="logo"
+                      style={{ width: "100%" }}
+                      preview={false}
+                    />
+                  ) : (
+                    <div>
+                      <UploadOutlined />
+                      <div style={{ marginTop: 8 }}>Upload Logo</div>
+                    </div>
+                  )}
                 </Upload>
               </Form.Item>
             </Col>
@@ -310,16 +421,33 @@ const AddRestaurant = () => {
                 name="banner"
                 label="Banner"
                 valuePropName="fileList"
-                getValueFromEvent={normFile}
+                getValueFromEvent={(e) => {
+                  if (Array.isArray(e)) {
+                    return e;
+                  }
+                  return e && e.fileList;
+                }}
+                rules={[{ required: true, message: "Please upload banner!" }]}
               >
                 <Upload
-                  beforeUpload={(file) => {
-                    setBannerFile(file);
-                    return false;
-                  }}
+                  listType="picture-card"
+                  beforeUpload={() => false}
                   maxCount={1}
+                  onChange={handleBannerChange}
                 >
-                  <Button icon={<UploadOutlined />}>Upload Banner</Button>
+                  {bannerPreview ? (
+                    <Image
+                      src={bannerPreview}
+                      alt="banner"
+                      style={{ width: "100%" }}
+                      preview={false}
+                    />
+                  ) : (
+                    <div>
+                      <UploadOutlined />
+                      <div style={{ marginTop: 8 }}>Upload Banner</div>
+                    </div>
+                  )}
                 </Upload>
               </Form.Item>
             </Col>

@@ -13,7 +13,11 @@ const MenuItemSchema = new mongoose.Schema(
       ref: "Restaurant",
       required: true,
     },
-    image: { type: String },
+    image: {
+      type: String,
+      default:
+        "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60",
+    },
     ingredients: [{ type: String }],
     dietaryTags: [{ type: String }],
   },

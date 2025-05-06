@@ -4,6 +4,9 @@ const {
   loginUser,
   getAllUsers,
   restrictUser,
+  getCurrentUser,
+  changePassword,
+  updateResidence,
 } = require("../controllers/userController");
 const authMiddleware = require("../middleware/authMiddleware");
 
@@ -20,5 +23,13 @@ router.get("/all", authMiddleware, getAllUsers);
 
 // Restrict a user (Admin Only)
 router.put("/:userId/restrict", authMiddleware, restrictUser);
+
+router.get("/current", authMiddleware, getCurrentUser);
+
+// Change password
+router.post("/change-password", authMiddleware, changePassword);
+
+// Update residence
+router.put("/update-residence", authMiddleware, updateResidence);
 
 module.exports = router;

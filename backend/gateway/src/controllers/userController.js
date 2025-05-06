@@ -10,6 +10,7 @@ const registerUser = async (req, res) => {
       firstName,
       lastName,
       email,
+      address,
       contactNumber,
       password,
       confirmPassword,
@@ -23,6 +24,7 @@ const registerUser = async (req, res) => {
       !firstName ||
       !lastName ||
       !email ||
+      !address ||
       !contactNumber ||
       !password ||
       !confirmPassword
@@ -70,6 +72,7 @@ const registerUser = async (req, res) => {
       firstName,
       lastName,
       email,
+      address,
       contactNumber,
       password: hashedPassword,
       role: role || "user", // Default role is "user"
@@ -93,6 +96,7 @@ const registerUser = async (req, res) => {
     res
       .status(500)
       .json({ message: "Error registering user", error: error.message });
+      console.error("Error registering user:", error);
   }
 };
 
@@ -170,4 +174,94 @@ const restrictUser = async (req, res) => {
   }
 };
 
-module.exports = { registerUser, loginUser, getAllUsers, restrictUser };
+// Add to userController
+const getCurrentUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("-password");
+    if (!user) return res.status(404).json({ message: "User not found" });
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+//change password
+const changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword, confirmNewPassword } = req.body;
+    const userId = req.user.id; // From the authenticated token
+
+    // Check if all fields are provided
+    if (!currentPassword || !newPassword || !confirmNewPassword) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    // Check if new passwords match
+    if (newPassword !== confirmNewPassword) {
+      return res.status(400).json({ message: "New passwords do not match" });
+    }
+
+    // Find the user
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Verify current password
+    const isPasswordValid = await bcrypt.compare(
+      currentPassword,
+      user.password
+    );
+    if (!isPasswordValid) {
+      return res.status(400).json({ message: "Current password is incorrect" });
+    }
+
+    // Hash the new password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    // Update the password
+    user.password = hashedPassword;
+    await user.save();
+
+    res.status(200).json({ message: "Password changed successfully" });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error changing password", error: error.message });
+  }
+};
+
+// Update residence
+const updateResidence = async (req, res) => {
+  try {
+    const { residence, address } = req.body;
+
+    // Validate the residence object
+    if (!residence || !residence.type || !residence.coordinates) {
+      return res.status(400).json({ message: "Invalid residence data" });
+    }
+
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      { residence, address },
+      { new: true }
+    );
+
+    res.json(user);
+  } catch (err) {
+    res
+      .status(500)
+      .json({ message: "Error updating residence", error: err.message });
+  }
+};
+
+module.exports = {
+  registerUser,
+  loginUser,
+  getAllUsers,
+  restrictUser,
+  getCurrentUser,
+  changePassword,
+  updateResidence,
+};

@@ -6,6 +6,8 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
+const GATEWAY_BACKEND_URL = import.meta.env.VITE_GATEWAY_BACKEND_URL;
+
 function Register() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
@@ -18,12 +20,14 @@ function Register() {
       firstName: "",
       lastName: "",
       email: "",
+      address: "",
       contactNumber: "",
       password: "",
       confirmPassword: "",
       adminName: "",
       organization: "",
       preferredRoute: "",
+      restaurantName: "",
     },
     validationSchema: Yup.lazy((values) =>
       Yup.object({
@@ -32,6 +36,7 @@ function Register() {
         email: Yup.string()
           .email("Invalid email")
           .required("Email is required"),
+        address: Yup.string().required("address is required"),
         contactNumber: Yup.string()
           .matches(/^\d{10}$/, "Must be 10 digits")
           .required("Contact Number is required"),
@@ -48,6 +53,9 @@ function Register() {
         ...(role === "delivery" && {
           preferredRoute: Yup.string().required("Preferred route is required"),
         }),
+        ...(role === "restaurant_owner" && {
+          restaurantName: Yup.string().required("Restaurant name is required"),
+        }),
       })
     ),
     onSubmit: async (values) => {
@@ -55,11 +63,12 @@ function Register() {
       try {
         const dataToSend = { ...values, role };
         const response = await fetch(
-          "http://localhost:5004/api/auth/register",
+          `${GATEWAY_BACKEND_URL}/api/auth/register`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(dataToSend),
+            credentials: "include",
           }
         );
 
@@ -124,21 +133,21 @@ function Register() {
 
         <div className="flex flex-col justify-center mt-6">
           {/* Role Buttons */}
-          <div className="flex space-x-4 mb-4">
-            {["user", "admin", "delivery"].map((r) => (
+          <div className="flex flex-wrap gap-2 mb-4">
+            {["user", "delivery", "restaurant_owner"].map((r) => (
               <button
                 key={r}
                 type="button"
                 onClick={() => setRole(r)}
-                className={`w-full border-2 rounded-lg py-2 ${
+                className={`flex-1 min-w-[120px] border-2 rounded-lg py-2 ${
                   role === r
                     ? "bg-blue-900 text-white"
                     : "bg-gray-50 text-blue-900"
                 }`}
               >
                 {r === "user" && "User"}
-                {r === "admin" && "Admin"}
                 {r === "delivery" && "Delivery Person"}
+                {r === "restaurant_owner" && "Restaurant Owner"}
               </button>
             ))}
           </div>
@@ -174,6 +183,23 @@ function Register() {
               </>
             )}
 
+            {role === "restaurant_owner" && (
+              <>
+                <input
+                  name="restaurantName"
+                  placeholder="Restaurant Name"
+                  className="input"
+                  {...formik.getFieldProps("restaurantName")}
+                />
+                {formik.touched.restaurantName &&
+                  formik.errors.restaurantName && (
+                    <p className="text-red-500">
+                      {formik.errors.restaurantName}
+                    </p>
+                  )}
+              </>
+            )}
+
             <input
               name="firstName"
               placeholder="First Name"
@@ -206,6 +232,17 @@ function Register() {
             )}
 
             <input
+              name="address"
+              type="text"
+              placeholder="Address"
+              className="input"
+              {...formik.getFieldProps("address")}
+            />
+            {formik.touched.address && formik.errors.address && (
+              <p className="text-red-500">{formik.errors.address}</p>
+            )}
+
+            <input
               name="contactNumber"
               placeholder="Contact Number"
               className="input"
@@ -222,9 +259,10 @@ function Register() {
                   className="input"
                   {...formik.getFieldProps("preferredRoute")}
                 >
-                  <option value="">Select Preferred Route</option>
+                  <option value="">Select Preferred Area</option>
                   {[
                     "Colombo",
+                    "Kelaniya",
                     "Gampaha",
                     "Kalutara",
                     "Kandy",
@@ -298,7 +336,7 @@ function Register() {
                 <p className="text-red-500">{formik.errors.confirmPassword}</p>
               )}
 
-            <Button type="submit" disabled={isLoading || !formik.isValid}>
+            <Button type="button" disabled={isLoading || !formik.isValid}>
               {isLoading ? "Registering..." : "Register"}
             </Button>
           </form>

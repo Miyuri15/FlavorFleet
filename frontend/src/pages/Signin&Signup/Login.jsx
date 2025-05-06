@@ -7,6 +7,9 @@ import * as Yup from "yup";
 import Button from "./Button";
 import { useAuth } from "../../context/AuthContext";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import ROUTES from "../../routes";
+
+const GATEWAY_BACKEND_URL = import.meta.env.VITE_GATEWAY_BACKEND_URL;
 
 function Login() {
   const navigate = useNavigate();
@@ -31,7 +34,7 @@ function Login() {
     onSubmit: async (values) => {
       setIsLoading(true);
       try {
-        const response = await fetch("http://localhost:5004/api/auth/login", {
+        const response = await fetch(`${GATEWAY_BACKEND_URL}/api/auth/login`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(values),
@@ -53,6 +56,7 @@ function Login() {
           token: result.token,
           username: decodedToken.username,
           role: decodedToken.role,
+          userId: decodedToken.id,
         };
 
         // Set user in AuthContext
@@ -60,11 +64,13 @@ function Login() {
 
         // Redirect based on role
         if (decodedToken.role === "admin") {
-          navigate("/admindashboard");
+          navigate(ROUTES.ADMIN_DASHBOARD);
         } else if (decodedToken.role === "delivery") {
-          navigate("/deliverydashboard");
-        }else {
-          navigate("/userdashboard");
+          navigate(ROUTES.DELIVERY_DASHBOARD);
+        } else if (decodedToken.role === "restaurant_owner") {
+          navigate(ROUTES.RESTAURANT_DASHBOARD);
+        } else {
+          navigate(ROUTES.USER_DASHBOARD);
         }
       } catch (error) {
         Swal.fire({

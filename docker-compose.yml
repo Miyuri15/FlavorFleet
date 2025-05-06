@@ -1,4 +1,3 @@
-
 services:
   delivery-service:
     container_name: delivery-service
@@ -7,9 +6,12 @@ services:
       - ./backend/microservices/delivery-service:/app
     ports:
       - "5001:5001"
+    networks:
+      - app-network
+    environment:
+      - DOCKERIZED=true
     env_file:
       - ./backend/microservices/delivery-service/.env
-
 
   order-service:
     container_name: order-service
@@ -17,7 +19,11 @@ services:
     volumes:
       - ./backend/microservices/order-service:/app
     ports:
-      - "5000:5000"
+      - "5005:5005"
+    networks:
+      - app-network
+    environment:
+      - DOCKERIZED=true
     env_file:
       - ./backend/microservices/order-service/.env
 
@@ -28,6 +34,10 @@ services:
       - ./backend/microservices/payment-service:/app
     ports:
       - "5002:5002"
+    networks:
+      - app-network
+    environment:
+      - DOCKERIZED=true
     env_file:
       - ./backend/microservices/payment-service/.env
 
@@ -38,6 +48,10 @@ services:
       - ./backend/microservices/restaurant-service:/app
     ports:
       - "5003:5003"
+    networks:
+      - app-network
+    environment:
+      - DOCKERIZED=true
     env_file:
       - ./backend/microservices/restaurant-service/.env
 
@@ -48,20 +62,27 @@ services:
       - ./backend/gateway:/app
     ports:
       - "5004:5004"
+    networks:
+      - app-network
+    environment:
+      - DOCKERIZED=true
     env_file:
       - ./backend/gateway/.env
-
-
 
   frontend:
     container_name: frontend
     build: ./frontend
     volumes:
       - ./frontend:/app
-      - /app/node_modules
     ports:
       - "3000:3000"
+    networks:
+      - app-network
     environment:
       - NODE_ENV=development
     stdin_open: true
     tty: true
+
+networks:
+  app-network:
+    driver: bridge

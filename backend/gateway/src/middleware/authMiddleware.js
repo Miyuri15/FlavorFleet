@@ -2,18 +2,19 @@ const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
 const authMiddleware = (req, res, next) => {
-  console.log("Headers received:", req.headers);
+  // console.log("Headers received:", req.headers);
 
-  const token = req.headers.authorization?.split(" ")[1]; // This is correct
-  console.log("Extracted token:", token);
-  
+  const token =
+    req.cookies.access_token || req.headers.authorization?.split(" ")[1]; // This is correct
+  // console.log("Extracted token:", token);
+
   if (!token) {
     return res.status(401).json({ message: "No token, authorization denied" });
   }
-  
+
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    console.log("Decoded token:", decoded);
+    // console.log("Decoded token:", decoded);
 
     // Attach the decoded user data (including role) to the request object
     req.user = {

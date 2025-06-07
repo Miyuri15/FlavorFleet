@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { FiSun, FiMoon, FiX, FiClock } from "react-icons/fi";
+import { FiSun, FiMoon, FiX, FiClock, FiSearch } from "react-icons/fi";
 import { FaUser, FaBell, FaCheck, FaRegBell } from "react-icons/fa";
 import { useTheme } from "../ThemeContext";
 import { useAuth } from "../context/AuthContext";
@@ -24,30 +24,32 @@ const NotificationItem = ({ notification, onMarkAsRead }) => {
 
   return (
     <div
-      className={`p-3 rounded-lg transition-all duration-200 ${
+      className={`p-3 transition-all duration-200 ${
         isHovered ? "bg-gray-100 dark:bg-gray-700" : "bg-white dark:bg-gray-800"
       }`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       <div className="flex items-start gap-3">
-        <div className="bg-blue-100 dark:bg-blue-900 p-2 rounded-full">
+        <div className="bg-blue-100 dark:bg-blue-900 p-2 rounded-full flex-shrink-0">
           <FaRegBell className="text-blue-500 dark:text-blue-300" />
         </div>
-        <div className="flex-1">
-          <p className="text-sm font-medium text-gray-800 dark:text-gray-100">
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium text-gray-800 dark:text-gray-100 break-words">
             {notification.message}
           </p>
-          <div className="flex items-center mt-1 text-xs text-gray-500 dark:text-gray-400">
-            <FiClock className="mr-1" />
-            <span>
+          <div className="flex items-center mt-1 text-xs text-gray-500 dark:text-gray-400 flex-wrap">
+            <FiClock className="mr-1 flex-shrink-0" />
+            <span className="whitespace-nowrap">
               {new Date(notification.createdAt).toLocaleTimeString([], {
                 hour: "2-digit",
                 minute: "2-digit",
               })}
             </span>
             <span className="mx-1">•</span>
-            <span>{new Date(notification.createdAt).toLocaleDateString()}</span>
+            <span className="whitespace-nowrap">
+              {new Date(notification.createdAt).toLocaleDateString()}
+            </span>
           </div>
           {notification.relatedEntity && (
             <span className="inline-block mt-2 px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded-full">
@@ -57,7 +59,7 @@ const NotificationItem = ({ notification, onMarkAsRead }) => {
         </div>
         <button
           onClick={() => onMarkAsRead(notification._id)}
-          className={`p-1 rounded-full transition-colors ${
+          className={`p-1 rounded-full transition-colors flex-shrink-0 ${
             isHovered
               ? "text-blue-500 hover:bg-blue-100 dark:hover:bg-blue-900"
               : "text-transparent"
@@ -78,6 +80,8 @@ const Navbar = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
 
   useEffect(() => {
     const fetchNotifications = async () => {
@@ -185,56 +189,81 @@ const Navbar = () => {
     }
   };
 
-  return (
-    <nav className="dark:bg-background-dark shadow-sm p-4 m-3 flex items-center justify-between mb-4 sticky top-0 z-50">
-      {/* Background Image with Opacity */}
-      <div
-        className="absolute inset-0 -z-10 opacity-20 bg-cover bg-center"
-        style={{
-          backgroundImage: "url('https://i.ibb.co/BKQtYkPr/navbarbanner.jpg')",
-          backgroundRepeat: "no-repeat",
-        }}
-      ></div>
+  // Add click outside handler for notifications
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        showNotifications &&
+        !event.target.closest(".notification-container")
+      ) {
+        setShowNotifications(false);
+      }
+    };
 
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showNotifications]);
+
+  return (
+    <nav className="bg-white dark:bg-gray-900 shadow-sm p-4 m-3 flex items-center justify-between mb-4 sticky top-0 z-50 rounded-xl backdrop-blur-sm bg-opacity-90 dark:bg-opacity-90">
       {/* Logo */}
-      <div className="text-2xl font-bold text-blue-600 dark:text-white">
+      <div className="flex items-center">
         <img
           src="/img/flavorfleetlogo.png"
-          alt="logo"
-          width={100}
-          height={50}
-          className="z-10"
+          alt="FlavorFleet Logo"
+          className="h-10 w-auto"
         />
       </div>
 
       {/* Search Bar */}
-      <div className="flex-grow mx-4 z-10">
-        <input
-          type="text"
-          placeholder="Search..."
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/80 text-blue-900 backdrop-blur-sm dark:bg-gray-700/80 dark:text-white"
-        />
+      <div className="flex-grow mx-4 max-w-2xl relative">
+        <div
+          className={`relative transition-all duration-300 ${
+            isSearchFocused ? "w-full" : "w-3/4"
+          }`}
+        >
+          <input
+            type="text"
+            placeholder="Search restaurants, food..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onFocus={() => setIsSearchFocused(true)}
+            onBlur={() => setIsSearchFocused(false)}
+            className="w-full px-4 py-2 pl-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-all duration-300"
+          />
+          <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery("")}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+            >
+              <FiX size={18} />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Right-side Icons */}
-      <div className="flex items-center space-x-4 z-10">
+      <div className="flex items-center space-x-4">
         {/* Dark Mode Toggle */}
         <button
           onClick={() => setDarkMode(!darkMode)}
-          className="p-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+          className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+          aria-label={darkMode ? "Switch to light mode" : "Switch to dark mode"}
         >
           {darkMode ? (
-            <FiSun className="text-yellow-500" size={18} />
+            <FiSun className="text-yellow-500" size={20} />
           ) : (
-            <FiMoon className="text-gray-900" size={18} />
+            <FiMoon className="text-gray-700" size={20} />
           )}
         </button>
 
         {/* Notifications */}
-        <div className="relative">
-          <div
-            className="cursor-pointer relative p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+        <div className="relative notification-container">
+          <button
             onClick={() => setShowNotifications(!showNotifications)}
+            className="relative p-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+            aria-label="View notifications"
           >
             <FaBell className="text-gray-700 dark:text-gray-300 text-lg" />
             {notifications.length > 0 && (
@@ -242,86 +271,80 @@ const Navbar = () => {
                 {notifications.length}
               </span>
             )}
-          </div>
+          </button>
 
           {showNotifications && (
-            <div className="absolute right-0 mt-2 w-96 bg-white dark:bg-gray-800 rounded-xl shadow-xl overflow-hidden border border-gray-200 dark:border-gray-700">
-              <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-lg font-bold text-gray-800 dark:text-white">
-                    Notifications
-                  </h3>
-                  <div className="flex items-center space-x-3">
-                    {notifications.length > 0 && (
+            <>
+              {/* Overlay for mobile */}
+              <div
+                className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
+                onClick={() => setShowNotifications(false)}
+              />
+
+              {/* Notification Panel */}
+              <div className="fixed md:absolute right-4 md:right-6 mt-2 w-[calc(100vw-2rem)] md:w-80 lg:w-96 bg-white dark:bg-gray-800 rounded-xl shadow-xl overflow-hidden border border-gray-200 dark:border-gray-700 z-50 md:top-full">
+                <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+                  <div className="flex justify-between items-center">
+                    <h3 className="font-semibold text-gray-900 dark:text-white">
+                      Notifications
+                    </h3>
+                    <div className="flex items-center space-x-3">
+                      {notifications.length > 0 && (
+                        <button
+                          onClick={markAllAsRead}
+                          className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
+                        >
+                          Mark all as read
+                        </button>
+                      )}
                       <button
-                        onClick={markAllAsRead}
-                        className="text-sm flex items-center text-blue-500 hover:text-blue-700 dark:hover:text-blue-400 transition-colors"
+                        onClick={() => setShowNotifications(false)}
+                        className="p-1 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 md:hidden"
+                        aria-label="Close notifications"
                       >
-                        <FaCheck className="mr-1" size={12} /> Mark all
+                        <FiX
+                          className="text-gray-500 dark:text-gray-400"
+                          size={20}
+                        />
                       </button>
-                    )}
-                    <button
-                      onClick={() => setShowNotifications(false)}
-                      className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
-                    >
-                      <FiX size={18} />
-                    </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-
-              <div className="max-h-96 overflow-y-auto scrollbar-hide">
-                {" "}
-                {loading ? (
-                  <div className="flex flex-col items-center justify-center py-8">
-                    <div className="animate-spin rounded-full h-10 w-10 border-2 border-blue-500 border-t-transparent mb-3"></div>
-                    <p className="text-gray-500 dark:text-gray-400">
+                <div className="max-h-[60vh] md:max-h-96 overflow-y-auto">
+                  {loading ? (
+                    <div className="p-4 text-center text-gray-500 dark:text-gray-400">
                       Loading notifications...
-                    </p>
-                  </div>
-                ) : error ? (
-                  <div className="text-center p-6">
-                    <div className="text-red-500 mb-3">{error}</div>
-                    <button
-                      onClick={() => window.location.reload()}
-                      className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm"
-                    >
-                      Try again
-                    </button>
-                  </div>
-                ) : notifications.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-8">
-                    <FaBell className="text-gray-400 mb-3" size={24} />
-                    <p className="text-gray-500 dark:text-gray-400">
+                    </div>
+                  ) : error ? (
+                    <div className="p-4 text-center text-red-500">{error}</div>
+                  ) : notifications.length === 0 ? (
+                    <div className="p-4 text-center text-gray-500 dark:text-gray-400">
                       No new notifications
-                    </p>
-                    <p className="text-xs text-gray-400 mt-1">
-                      We'll notify you when something arrives
-                    </p>
-                  </div>
-                ) : (
-                  <div className="space-y-1 p-2">
-                    {notifications.map((notification) => (
-                      <NotificationItem
-                        key={notification._id}
-                        notification={notification}
-                        onMarkAsRead={markAsRead}
-                      />
-                    ))}
-                  </div>
-                )}
+                    </div>
+                  ) : (
+                    <div className="divide-y divide-gray-200 dark:divide-gray-700">
+                      {notifications.map((notification) => (
+                        <NotificationItem
+                          key={notification._id}
+                          notification={notification}
+                          onMarkAsRead={markAsRead}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
+            </>
           )}
         </div>
 
         {/* User Profile */}
         <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white">
-            <FaUser size={14} />
+          <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+            <FaUser className="text-gray-600 dark:text-gray-300" />
           </div>
-          <span className="text-lg font-medium text-gray-700 dark:text-gray-300 hidden md:inline">
-            {user ? user.username : "Guest"}
+          <span className="hidden md:block text-sm font-medium text-gray-700 dark:text-gray-300">
+            {user?.name || "User"}
           </span>
         </div>
       </div>

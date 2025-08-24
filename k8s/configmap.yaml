@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: flavorfleet-config
+data:
+  NODE_ENV: "production"
+  BACKEND_URL: "http://backend-service"

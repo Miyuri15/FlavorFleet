@@ -13,6 +13,7 @@ import {
 import RestaurantList from "../../components/OrderComponent/RestaurantList";
 import MenuItemDetails from "../../components/OrderComponent/MenuItemDetails";
 import RatingStars from "../../components/OrderComponent/RatingStars";
+import ROUTES from "../../routes";
 
 const ORDER_BACKEND_URL = import.meta.env.VITE_ORDER_BACKEND_URL;
 const RESTAURANT_BACKEND_URL = import.meta.env.VITE_RESTAURANT_BACKEND_URL;
@@ -333,7 +334,7 @@ const OrderPage = () => {
             </Link>
 
             <button
-              onClick={() => navigate("/favourite-menuitems")}
+              onClick={() => navigate(ROUTES.FAVOURITE_MENUITEMS)}
               className="p-2 text-gray-700 hover:text-red-500 transition-colors"
               title="View Favorites"
               aria-label="Favorites"

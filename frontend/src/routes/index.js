@@ -19,6 +19,30 @@ const RestaurantDashboard = lazy(() =>
 );
 const Error = lazy(() => import("../pages/Error/Error"));
 
+// Additional lazy-loaded components
+const PlaceOrderPage = lazy(() => import("../components/OrderComponent/PlaceOrderPage"));
+const OrderConfirmationPage = lazy(() => import("../components/OrderComponent/OrderConfirmationPage"));
+const MyOrders = lazy(() => import("../components/OrderComponent/MyOrders"));
+const OrderDetails = lazy(() => import("../components/OrderComponent/[id]/OrderDetails"));
+const TrackOrder = lazy(() => import("../components/OrderComponent/[id]/TrackOrder"));
+const IncomingOrders = lazy(() => import("../components/OrderComponent/IncomingOrders"));
+const PaymentPage = lazy(() => import("../components/OrderComponent/PaymentPage"));
+const FavoritesPage = lazy(() => import("../components/OrderComponent/FavoritesPage"));
+const RestaurantMenuPage = lazy(() => import("../components/OrderComponent/RestaurantMenuPage"));
+const DeliveryDetailsPage = lazy(() => import("../pages/Delivery/DeliveryDetailsPage"));
+const AddRestaurant = lazy(() => import("../pages/Restaurant/AddRestaurant"));
+const RestaurantDetails = lazy(() => import("../pages/Restaurant/RestaurantDetails"));
+const EditRestaurant = lazy(() => import("../pages/Restaurant/EditRestaurant"));
+const MenuManagement = lazy(() => import("../pages/MenuItems/MenuManagement"));
+const RestaurantMenu = lazy(() => import("../pages/MenuItems/RestaurantMenu"));
+const MenuItemForm = lazy(() => import("../pages/MenuItems/MenuItemForm"));
+const RestaurantOrdersPage = lazy(() => import("../pages/RestaurantOrders/RestaurantOrdersPage"));
+const DeliveryOrdersPage = lazy(() => import("../pages/DeliveryOrders/DeliveryOrdersPage"));
+const DeliveryRoutePage = lazy(() => import("../pages/DeliveryOrders/DeliveryRoutePage"));
+const Paynow = lazy(() => import("../pages/Payment/Paynow"));
+const PaymentCancled = lazy(() => import("../pages/Payment/PaymentCancled"));
+const PaymentSuccess = lazy(() => import("../pages/Payment/PaymentSuccess"));
+
 // Route constants (keeping your existing structure)
 export const ROUTES = {
   HOME: "/",
@@ -69,4 +93,26 @@ export {
   DeliveryDashboard,
   RestaurantDashboard,
   Error,
+  PlaceOrderPage,
+  OrderConfirmationPage,
+  MyOrders,
+  OrderDetails,
+  TrackOrder,
+  IncomingOrders,
+  PaymentPage,
+  FavoritesPage,
+  RestaurantMenuPage,
+  DeliveryDetailsPage,
+  AddRestaurant,
+  RestaurantDetails,
+  EditRestaurant,
+  MenuManagement,
+  RestaurantMenu,
+  MenuItemForm,
+  RestaurantOrdersPage,
+  DeliveryOrdersPage,
+  DeliveryRoutePage,
+  Paynow,
+  PaymentCancled,
+  PaymentSuccess,
 };

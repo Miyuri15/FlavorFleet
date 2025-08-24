@@ -426,116 +426,152 @@ const UserDashboard = () => {
 
         {/* Ongoing Orders Section */}
         <div className="mb-6">
-          <h2 className="text-xl md:text-2xl font-semibold mb-4">
-            Ongoing Orders
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {ongoingOrders.map((order) => (
-              <div
-                key={order._id}
-                className="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow"
-              >
-                <div className="flex justify-between items-start">
-                  <div className="flex items-center space-x-4">
-                    <div className="bg-orange-100 p-3 rounded-full">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-6 w-6 text-orange-500"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
-                        />
-                      </svg>
-                    </div>
-                    <div>
-                      <p className="font-bold text-gray-800 text-lg">
-                        {order.restaurantDetails?.name ||
-                          order.restaurantId?.name ||
-                          "Unknown Restaurant"}
-                      </p>
-                      <p className="text-gray-600 text-sm">
-                        Order #{order._id.slice(-6).toUpperCase()}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    {getStatusIcon(order.status)}
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(
-                        order.status
-                      )}`}
-                    >
-                      {order.status}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="bg-gray-50 p-3 rounded-lg">
-                    <p className="text-xs text-gray-500 uppercase font-medium">
-                      Total Amount
-                    </p>
-                    <p className="font-bold text-gray-800 text-xl">
-                      ${order.totalAmount.toFixed(2)}
-                    </p>
-                  </div>
-
-                  {order.estimatedDeliveryTime && (
-                    <div className="bg-gray-50 p-3 rounded-lg">
-                      <p className="text-xs text-gray-500 uppercase font-medium">
-                        Estimated Delivery
-                      </p>
-                      <p className="font-bold text-gray-800 text-xl">
-                        {new Date(
-                          order.estimatedDeliveryTime
-                        ).toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </p>
-                    </div>
-                  )}
-
-                  {order.deliveryAgentId ? (
-                    <div className="bg-gray-50 p-3 rounded-lg">
-                      <p className="text-xs text-gray-500 uppercase font-medium">
-                        Delivery Agent
-                      </p>
-                      <p className="font-bold text-gray-800">
-                        {order.deliveryAgentId}
-                        {/* <span className="block text-sm text-gray-600">{order.deliveryAgentId.phone}</span> */}
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="bg-gray-50 p-3 rounded-lg">
-                      <p className="text-xs text-gray-500 uppercase font-medium">
-                        Delivery Agent
-                      </p>
-                      <p className="font-bold text-gray-800">
-                        Not assigned yet
-                      </p>
-                    </div>
-                  )}
-                </div>
-
-                <div className="mt-4 flex justify-end">
-                  <button
-                    className="text-orange-500 hover:text-orange-600 font-medium flex items-center"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigate(`/orders/${order._id}`);
-                    }}
+          <div
+            className="flex items-center cursor-pointer p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-all"
+            onClick={() => setShowOngoingOrders(!showOngoingOrders)}
+          >
+            <h2 className="text-xl font-semibold text-gray-700">
+              Ongoing Orders
+            </h2>
+            <span
+              className={`ml-2 transition-transform ${
+                showOngoingOrders ? "rotate-90" : ""
+              }`}
+            >
+              →
+            </span>
+          </div>
+          {showOngoingOrders && (
+            <div className="mt-4 space-y-4">
+              {ongoingOrders.length > 0 ? (
+                ongoingOrders.map((order) => (
+                  <div
+                    key={order._id}
+                    className="bg-white p-6 rounded-xl shadow-md border-l-4 border-orange-500 hover:shadow-lg transition-all cursor-pointer transform hover:-translate-y-1"
+                    onClick={() => navigate(`/orders/${order._id}`)}
                   >
-                    View Details
+                    <div className="flex justify-between items-start">
+                      <div className="flex items-center space-x-4">
+                        <div className="bg-orange-100 p-3 rounded-full">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-6 w-6 text-orange-500"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+                            />
+                          </svg>
+                        </div>
+                        <div>
+                          <p className="font-bold text-gray-800 text-lg">
+                            {order.restaurantDetails?.name ||
+                              order.restaurantId?.name ||
+                              "Unknown Restaurant"}
+                          </p>
+                          <p className="text-gray-600 text-sm">
+                            Order #{order._id.slice(-6).toUpperCase()}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        {getStatusIcon(order.status)}
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(
+                            order.status
+                          )}`}
+                        >
+                          {order.status}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="bg-gray-50 p-3 rounded-lg">
+                        <p className="text-xs text-gray-500 uppercase font-medium">
+                          Total Amount
+                        </p>
+                        <p className="font-bold text-gray-800 text-xl">
+                          ${order.totalAmount.toFixed(2)}
+                        </p>
+                      </div>
+
+                      {order.estimatedDeliveryTime && (
+                        <div className="bg-gray-50 p-3 rounded-lg">
+                          <p className="text-xs text-gray-500 uppercase font-medium">
+                            Estimated Delivery
+                          </p>
+                          <p className="font-bold text-gray-800 text-xl">
+                            {new Date(
+                              order.estimatedDeliveryTime
+                            ).toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </p>
+                        </div>
+                      )}
+
+                      {order.deliveryAgentId ? (
+                        <div className="bg-gray-50 p-3 rounded-lg">
+                          <p className="text-xs text-gray-500 uppercase font-medium">
+                            Delivery Agent
+                          </p>
+                          <p className="font-bold text-gray-800">
+                            {order.deliveryAgentId}
+                            {/* <span className="block text-sm text-gray-600">{order.deliveryAgentId.phone}</span> */}
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="bg-gray-50 p-3 rounded-lg">
+                          <p className="text-xs text-gray-500 uppercase font-medium">
+                            Delivery Agent
+                          </p>
+                          <p className="font-bold text-gray-800">
+                            Not assigned yet
+                          </p>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="mt-4 flex justify-end">
+                      <button
+                        className="text-orange-500 hover:text-orange-600 font-medium flex items-center"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/orders/${order._id}`);
+                        }}
+                      >
+                        View Details
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-4 w-4 ml-1"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9 5l7 7-7 7"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="bg-white p-8 rounded-lg shadow-sm text-center">
+                  <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      className="h-4 w-4 ml-1"
+                      className="h-12 w-12 text-gray-400"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -544,14 +580,26 @@ const UserDashboard = () => {
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         strokeWidth={2}
-                        d="M9 5l7 7-7 7"
+                        d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
                       />
                     </svg>
-                  </button>
+                  </div>
+                  <h3 className="text-lg font-medium text-gray-700 mb-1">
+                    No ongoing orders
+                  </h3>
+                  <p className="text-gray-500 mb-4">
+                    You don't have any active orders right now.
+                  </p>
+                  <Link
+                    to="/order"
+                    className="inline-block bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 transition-all font-medium"
+                  >
+                    Place New Order
+                  </Link>
                 </div>
-              </div>
-            ))}
-          </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Order Count Cards Section */}

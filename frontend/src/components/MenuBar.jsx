@@ -174,27 +174,39 @@ const MenuBar = () => {
 
   return (
     <>
-      <div className="fixed top-4 left-4 z-50 md:hidden">
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          className="text-3xl bg-gray-100 dark:bg-gray-800 p-2 rounded-lg shadow-md"
-        >
-          {isOpen ? <IoMdClose /> : <IoMdMenu />}
-        </button>
-      </div>
+      {/* Mobile Menu Toggle Button */}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="fixed top-4 left-4 z-[60] md:hidden bg-white dark:bg-gray-800 p-2 rounded-lg shadow-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+        aria-label="Toggle menu"
+      >
+        {isOpen ? <IoMdClose size={24} /> : <IoMdMenu size={24} />}
+      </button>
+
+      {/* Overlay */}
+      {isOpen && isMobile && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-[45] md:hidden"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
       <aside
         className={`
-          fixed md:static z-40
-          w-64 bg-gray-100 dark:bg-gray-900
+          fixed md:static z-[50]
+          w-64 bg-white dark:bg-gray-900
           text-text-light dark:text-white
           h-screen p-4 shadow-md
           transform transition-transform duration-300 ease-in-out
           ${isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
         `}
       >
+        {/* Close Button */}
         <button
           onClick={() => setIsOpen(false)}
-          className="md:hidden absolute top-4 right-4 p-1 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 -z-20"
+          className="md:hidden absolute top-4 right-4 p-2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 bg-white dark:bg-gray-800 rounded-lg shadow-sm"
+          aria-label="Close menu"
         >
           <FiChevronLeft size={20} />
         </button>
@@ -213,13 +225,6 @@ const MenuBar = () => {
           <LogoutDialog logout={logout} />
         </ul>
       </aside>
-
-      {isOpen && isMobile && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden"
-          onClick={() => setIsOpen(false)}
-        />
-      )}
     </>
   );
 };

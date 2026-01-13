@@ -10,6 +10,7 @@ router.get("/:id/updates", OrderController.getOrderUpdates);
 // Apply authMiddleware to all routes below
 router.use(authMiddleware);
 
+router.get("/payment-history", OrderController.getPaymentHistory);
 // Routes for authenticated users
 router.get("/nearby", OrderController.getNearbyOrders);
 
@@ -49,5 +50,7 @@ router.post("/:orderId/ratings", OrderController.submitRating);
 router.get("/:orderId/ratings", OrderController.getOrderRatings);
 
 router.get("/:id", OrderController.getOrder);
+
+
 
 module.exports = router;

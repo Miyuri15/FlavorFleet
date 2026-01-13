@@ -498,7 +498,7 @@ const OrderController = {
       if (!order) {
         return res.status(404).json({ message: "Order not found" });
       }
-
+      
       order.paymentStatus = paymentStatus;
       await order.save();
 
@@ -508,6 +508,19 @@ const OrderController = {
       res.status(500).json({ message: "Internal Server Error" });
     }
   },
+
+  async getPaymentHistory(req, res) {
+    try {
+      const userId = req.user.id; // Extract the user ID from the request (assuming user is authenticated)
+      
+      const orders = await Order.find({ userId }).sort({ updatedAt: -1 }); // Get all orders for the user, sorted by most recent
+      res.json(orders);
+      console.log("Payment history fetched successfully:", orders);
+    } catch (err) {
+      console.error("Error fetching payment history:", err);
+      res.status(500).json({ message: "Failed to fetch payment history." });
+    }
+  }
 };
 
 module.exports = OrderController;

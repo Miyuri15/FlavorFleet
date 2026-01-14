@@ -10,7 +10,7 @@ app.use("/uploads", express.static(path.join(__dirname, "public/uploads")));
 // Middleware
 app.use(
   cors({
-    origin: ["http://localhost:3000", "http://localhost:5000"],
+    origin: ["http://localhost:3000", "http://localhost:5000", "http://172.18.208.1:3000"], // Added your frontend URL
     credentials: true,
   })
 );

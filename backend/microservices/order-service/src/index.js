@@ -8,7 +8,7 @@ const PORT = process.env.PORT || 5005;
 // Middleware
 // CORS configuration for cart service
 app.use(cors({
-  origin: ['http://localhost:3000','http://frontend:3000'], // Gateway service URL
+  origin: ['http://localhost:3000','http://frontend:3000','http://172.18.208.1:3000'], // Added your frontend URL
   credentials: true,
   allowedHeaders: ['Content-Type', 'Authorization','X-Requested-With'],
   methods: ['GET', 'POST', 'PUT', 'DELETE','OPTIONS','PATCH']

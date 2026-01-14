@@ -13,10 +13,10 @@ const PORT = process.env.PORT || 5004;
 app.use(cookieParser());
 
 app.use(cors({
-  origin: ['http://localhost:3000','http://localhost:5004','http://localhost:5000'], // Your frontend URL
+  origin: ['http://localhost:3000', 'http://localhost:5004', 'http://localhost:5000', 'http://172.18.208.1:3000'], // Added your frontend URL
   credentials: true,
   allowedHeaders: ['Content-Type', 'Authorization'],
-  methods: ['GET', 'POST', 'PUT', 'DELETE','OPTIONS']
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
 }));
 
 app.options('*', cors());

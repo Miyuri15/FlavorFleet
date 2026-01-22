@@ -207,9 +207,8 @@ const OrderService = {
         emailSubject: "Order Delivered",
       },
       Cancelled: {
-        message: `Order #${order._id} has been cancelled${
-          order.cancellationReason ? `: ${order.cancellationReason}` : ""
-        }`,
+        message: `Order #${order._id} has been cancelled${order.cancellationReason ? `: ${order.cancellationReason}` : ""
+          }`,
         type: "order_cancelled",
         sendEmail: true,
         emailSubject: "Order Cancelled",
@@ -388,8 +387,8 @@ const OrderService = {
         index === 0
           ? order.createdAt
           : index <= currentIndex
-          ? order.updatedAt
-          : null,
+            ? order.updatedAt
+            : null,
     }));
   },
 
@@ -480,11 +479,11 @@ const OrderService = {
       return counts.length > 0
         ? counts[0]
         : {
-            total: 0,
-            delivered: 0,
-            canceled: 0,
-            pending: 0,
-          };
+          total: 0,
+          delivered: 0,
+          canceled: 0,
+          pending: 0,
+        };
     } catch (error) {
       console.error("Error in orderService.getUserOrdersCount:", error);
       throw error;

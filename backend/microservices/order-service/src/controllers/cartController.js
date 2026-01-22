@@ -72,8 +72,8 @@ async removeCheckedItems(req, res) {
     const userId = req.user.id;
     const { itemIds } = req.body;
 
-    console.log("Received User ID:", userId);
-    console.log("Received Item IDs for deletion:", itemIds); // Debugging log
+    // console.log("Received User ID:", userId);
+    // console.log("Received Item IDs for deletion:", itemIds); // Debugging log
 
     if (!itemIds || !Array.isArray(itemIds) || itemIds.length === 0) {
       return res.status(400).json({ message: "No items provided for deletion" });

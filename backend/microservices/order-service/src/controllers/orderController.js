@@ -17,54 +17,59 @@ const OrderController = {
         deliveryAddress,
         paymentMethod,
       } = req.body;
-      const userId = req.user.id;
 
+      const userId = req.user.id;
       let restaurantDetails = null;
 
-      try {
-        const restaurant = await RestaurantService.getRestaurantById(
-          restaurantId
-        );
+      // 1️⃣ Fetch restaurant
+      const restaurant = await RestaurantService.getRestaurantById(restaurantId);
 
-        if (!restaurant) {
-          return res.status(404).json({ message: "Restaurant not found" });
-        }
-
-        const { address } = restaurant;
-
-        if (!address || !address.coordinates) {
-          return res
-            .status(400)
-            .json({ message: "Restaurant address or coordinates missing" });
-        }
-
-        const { lat, lng } = address.coordinates;
-
-        if (lat == null || lng == null) {
-          return res
-            .status(400)
-            .json({ message: "Restaurant coordinates incomplete" });
-        }
-
-        restaurantDetails = {
-          name: restaurant.name,
-          address: {
-            street: address.street || "",
-            city: address.city || "",
-            postalCode: address.postalCode || "",
-            coordinates: {
-              type: "Point",
-              coordinates: [lng, lat], // GeoJSON format
-            },
-          },
-        };
-      } catch (error) {
-        console.error("Failed to fetch restaurant info:", error.message);
-        return res
-          .status(500)
-          .json({ message: "Failed to fetch restaurant information" });
+      if (!restaurant) {
+        return res.status(404).json({ message: "Restaurant not found" });
       }
 
+      const { address } = restaurant;
+
+      // console.log(
+      //   "FULL RESTAURANT OBJECT:",
+      //   JSON.stringify(restaurant, null, 2)
+      // );
+
+      // 2️⃣ ✅ USE GEOJSON (SOURCE OF TRUTH)
+      if (
+        !address?.geo ||
+        !Array.isArray(address.geo.coordinates) ||
+        address.geo.coordinates.length !== 2
+      ) {
+        return res.status(400).json({
+          message: "Restaurant geo coordinates missing",
+        });
+      }
+
+      // MongoDB GeoJSON order → [lng, lat]
+      const [lng, lat] = address.geo.coordinates;
+
+      if (typeof lat !== "number" || typeof lng !== "number") {
+        return res.status(400).json({
+          message: "Restaurant geo coordinates invalid",
+        });
+      }
+
+      // 3️⃣ Build order snapshot (GeoJSON-safe)
+      restaurantDetails = {
+        name: restaurant.name,
+        address: {
+          street: address.street || "",
+          city: address.city || "",
+          postalCode: address.postalCode || "",
+          geo: {
+            type: "Point",
+            coordinates: [lng, lat],
+          },
+        },
+      };
+
+      // 4️⃣ Create order
       const newOrder = new Order({
         userId,
         restaurantId,
@@ -78,16 +83,20 @@ const OrderController = {
 
       await newOrder.save();
 
-      // Send response immediately
+      // 5️⃣ Respond immediately
       res.status(201).json(newOrder);
 
-      // Notify user (this happens after response is sent)
+      // 6️⃣ Notify user (non-blocking)
       try {
-        await OrderService.sendStatusNotifications(newOrder, "Pending", "user");
+        await OrderService.sendStatusNotifications(
+          newOrder,
+          "Pending",
+          "user"
+        );
       } catch (notificationError) {
         console.error("Notification error:", notificationError);
-        // Don't fail the request if notifications fail
       }
+
     } catch (error) {
       console.error("Order creation error:", error);
       res.status(500).json({ message: error.message });
@@ -133,6 +142,60 @@ const OrderController = {
       });
     }
   },
+
+  async getOrderForCheckout(req, res) {
+    try {
+      if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+        return res.status(400).json({ error: "Invalid order ID" });
+      }
+
+      const order = await Order.findById(req.params.id)
+        .select("items totalAmount paymentStatus userId")
+        .lean();
+
+      if (!order) {
+        return res.status(404).json({ error: "Order not found" });
+      }
+
+      /* =========================
+         AUTHORIZATION
+      ========================= */
+      const currentUserId = req.user.id.toString();
+
+      if (
+        req.user.role !== "admin" &&
+        currentUserId !== order.userId.toString()
+      ) {
+        return res.status(403).json({ error: "Unauthorized access" });
+      }
+
+      /* =========================
+         CHECK PAYMENT STATE
+      ========================= */
+      if (order.paymentStatus === "Completed") {
+        return res.status(400).json({
+          error: "Order already paid",
+        });
+      }
+
+      /* =========================
+         STRIPE-COMPATIBLE RESPONSE
+      ========================= */
+      return res.json({
+        orderId: order._id,
+        totalAmount: order.totalAmount,
+        items: order.items.map((item) => ({
+          name: item.name,
+          price: item.price,
+          quantity: item.quantity,
+        })),
+      });
+    } catch (error) {
+      console.error("Checkout order fetch error:", error);
+      return res.status(500).json({ error: "Server error" });
+    }
+  },
+
 
   async getUserOrders(req, res) {
     try {
@@ -494,20 +557,27 @@ const OrderController = {
       const { id } = req.params;
       const { paymentStatus } = req.body;
 
-      const order = await Order.findById(id);
-      if (!order) {
-        return res.status(404).json({ message: "Order not found" });
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({ error: "Invalid order ID" });
       }
 
-      order.paymentStatus = paymentStatus;
-      await order.save();
+      const order = await Order.findByIdAndUpdate(
+        id,
+        {
+          paymentStatus: paymentStatus || "Completed"
+        },
+        { new: true }
+      ).lean();
 
-      res.status(200).json({ message: "Payment status updated", order });
-    } catch (error) {
-      console.error("Error updating payment status:", error);
-      res.status(500).json({ message: "Internal Server Error" });
+      if (!order) return res.status(404).json({ error: "Order not found" });
+
+      return res.json(order);
+    } catch (e) {
+      console.error("updatePaymentStatus error:", e);
+      return res.status(500).json({ error: "Server error" });
     }
-  },
+  }
+
 };
 
 module.exports = OrderController;

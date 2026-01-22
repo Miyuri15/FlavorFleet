@@ -26,7 +26,7 @@ const getRestaurantServiceUrl = () => {
 const cartService = {
   async getCartItems(userId, authToken) {
     const cartItems = await CartItem.find({ userId });
-    console.log(`Fetching cart items for user ${userId}`);
+    //console.log(`Fetching cart items for user ${userId}`);
 
     try {
       const enrichedItems = await Promise.all(

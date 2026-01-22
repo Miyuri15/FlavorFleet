@@ -34,24 +34,37 @@ const handleFileUpload = (file, folder) => {
 const createRestaurant = async (req, res) => {
   try {
     if (req.user.role !== "restaurant_owner") {
-      return res
-        .status(403)
-        .json({ error: "Only restaurant owners can create restaurants" });
+      return res.status(403).json({
+        error: "Only restaurant owners can create restaurants",
+      });
     }
 
     let restaurantData = req.body;
 
-    // Convert lat/lng to numbers
-    if (restaurantData.coordinates) {
-      restaurantData.coordinates.lat = parseFloat(
-        restaurantData.coordinates.lat
-      );
-      restaurantData.coordinates.lng = parseFloat(
-        restaurantData.coordinates.lng
-      );
+    /* =========================
+       COORDINATES HANDLING
+    ========================= */
+    if (
+      restaurantData.address?.coordinates?.lat != null &&
+      restaurantData.address?.coordinates?.lng != null
+    ) {
+      const lat = parseFloat(restaurantData.address.coordinates.lat);
+      const lng = parseFloat(restaurantData.address.coordinates.lng);
+
+      // Keep legacy format
+      restaurantData.address.coordinates.lat = lat;
+      restaurantData.address.coordinates.lng = lng;
+
+      // ALSO store GeoJSON (for orders & spatial queries)
+      restaurantData.address.geo = {
+        type: "Point",
+        coordinates: [lng, lat],
+      };
     }
 
-    // Handle file uploads
+    /* =========================
+       FILE UPLOADS
+    ========================= */
     if (req.files?.logo) {
       restaurantData.logo = handleFileUpload(req.files.logo[0], "logos");
     }
@@ -72,6 +85,7 @@ const createRestaurant = async (req, res) => {
     });
   }
 };
+
 
 // Get all restaurants (for customers and admin)
 const getAllRestaurants = async (req, res) => {

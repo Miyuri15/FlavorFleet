@@ -42,12 +42,15 @@ router.post(
 router.post("/:id/cancel", OrderController.cancelOrder);
 
 router.post("/:id/accept-delivery", OrderController.acceptDelivery);
-router.patch("/:id/payment-status", OrderController.updatePaymentStatus);
+router.patch("/:id/payment",authMiddleware,OrderController.updatePaymentStatus);
+
 
 // Rating routes
 router.post("/:orderId/ratings", OrderController.submitRating);
 router.get("/:orderId/ratings", OrderController.getOrderRatings);
 
 router.get("/:id", OrderController.getOrder);
+router.get("/:id/checkout",OrderController.getOrderForCheckout);
+
 
 module.exports = router;

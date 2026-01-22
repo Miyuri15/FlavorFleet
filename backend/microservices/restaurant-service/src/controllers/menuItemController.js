@@ -54,6 +54,31 @@ const getMenuItemsByRestaurant = async (req, res) => {
   }
 };
 
+const getAllMenuItems = async (req, res) => {
+  try {
+    const { category, dietaryTags } = req.query;
+    const filter = { isAvailable: true };
+
+    // Check for category and dietary tags filters
+    if (category) filter.category = category;
+    if (dietaryTags) filter.dietaryTags = { $in: dietaryTags.split(",") };
+
+    // Fetch menu items that belong to approved restaurants
+    const menuItems = await MenuItem.find(filter).populate({
+      path: "restaurant",
+      match: { registrationStatus: "approved" }, // Ensure the restaurant is approved
+      select: "name logo", // Only select necessary fields from the restaurant
+    });
+
+    // Filter out menu items from non-approved restaurants (restaurant will be null for non-approved)
+    const filteredMenuItems = menuItems.filter((item) => item.restaurant);
+
+    res.json(filteredMenuItems);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 // Update menu item (restaurant owner only)
 const updateMenuItem = async (req, res) => {
   try {
@@ -114,31 +139,6 @@ const deleteMenuItem = async (req, res) => {
     await MenuItem.findByIdAndDelete(req.params.menuItemId);
 
     res.json({ message: "Menu item deleted successfully" });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
-const getAllMenuItems = async (req, res) => {
-  try {
-    const { category, dietaryTags } = req.query;
-    const filter = { isAvailable: true };
-
-    // Check for category and dietary tags filters
-    if (category) filter.category = category;
-    if (dietaryTags) filter.dietaryTags = { $in: dietaryTags.split(",") };
-
-    // Fetch menu items that belong to approved restaurants
-    const menuItems = await MenuItem.find(filter).populate({
-      path: "restaurant",
-      match: { registrationStatus: "approved" }, // Ensure the restaurant is approved
-      select: "name logo", // Only select necessary fields from the restaurant
-    });
-
-    // Filter out menu items from non-approved restaurants (restaurant will be null for non-approved)
-    const filteredMenuItems = menuItems.filter((item) => item.restaurant);
-
-    res.json(filteredMenuItems);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

@@ -1,37 +1,64 @@
 import { loadStripe } from "@stripe/stripe-js";
 import axios from "axios";
 
-export const makePayment = async () => {
+const STRIPE_PUBLISHABLE_KEY =
+  "pk_test_51RFqDTQ4uyAwVSIn5OcGRds8O50CkseXeIRMznOTgFBEv7TYPjX9XC1J6vbGMsEKyxBrJiaBGD0UWWJkdwcfSOdR00mFBmWDVY";
+
+const PAYMENT_BACKEND_URL = "http://localhost:5002";
+
+export const makePayment = async (orderId) => {
+  if (!orderId) {
+    console.error("❌ makePayment called without orderId");
+    return;
+  }
+
   try {
-    const api = axios.create({
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    });
+    /* =========================
+       LOAD STRIPE
+    ========================= */
+    const stripe = await loadStripe(STRIPE_PUBLISHABLE_KEY);
 
-    const { data } = await api.get("http://localhost:5005/api/cart");
-    const items = Array.isArray(data) ? data : data.items || [];
+    if (!stripe) {
+      throw new Error("Stripe failed to initialize");
+    }
 
-    const stripe = await loadStripe("pk_test_51RFqDTQ4uyAwVSIn5OcGRds8O50CkseXeIRMznOTgFBEv7TYPjX9XC1J6vbGMsEKyxBrJiaBGD0UWWJkdwcfSOdR00mFBmWDVY");
-
-    console.log("Items to be paid:", items);
-    // Use api.post() instead of fetch
-    const response = await api.post(
-      "http://localhost:5002/api/payment/create-checkout-session",
-      { products: items }
+    /* =========================
+       CREATE CHECKOUT SESSION
+       (ORDER-BASED, NOT CART)
+    ========================= */
+    const response = await axios.post(
+      `${PAYMENT_BACKEND_URL}/api/payment/create-checkout-session`,
+      { orderId },
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
     );
 
-    const session = response.data; // Axios stores response data in .data
+    const sessionId = response?.data?.id;
 
-    const result = await stripe.redirectToCheckout({
-      sessionId: session.id,
+    if (!sessionId) {
+      throw new Error("Invalid Stripe session ID");
+    }
+
+    /* =========================
+       REDIRECT TO STRIPE
+    ========================= */
+    const { error } = await stripe.redirectToCheckout({
+      sessionId,
     });
 
-    if (result.error) {
-      console.error(result.error.message);
+    if (error) {
+      console.error("❌ Stripe redirect error:", error.message);
     }
   } catch (error) {
-    console.error("Error during payment:", error);
+    console.error("❌ Payment initialization failed:", error);
+
+    alert(
+      error?.response?.data?.message ||
+        "Failed to initiate payment. Please try again."
+    );
   }
 };
 

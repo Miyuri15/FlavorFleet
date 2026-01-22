@@ -5,6 +5,7 @@ require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 5002;
+const webhookController = require("./controllers/webhookController");
 
 // Middleware
 app.use(cors({
@@ -13,6 +14,13 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization','X-Requested-With'],
   methods: ['GET', 'POST', 'PUT', 'DELETE','OPTIONS','PATCH']
 }));
+
+app.post(
+  "/api/payment/webhook",
+  express.raw({ type: "application/json" }),
+  webhookController.handleStripeWebhook
+);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -27,7 +35,6 @@ app.get('/', (req, res) => {
 });
 
 app.use('/api/payment', require('./routes/paymentRoutes'));
-
 
 // New API Endpoint
 app.get('/', (req, res) => {

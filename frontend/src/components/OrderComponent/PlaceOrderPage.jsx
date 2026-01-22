@@ -41,8 +41,7 @@ export default function PlaceOrderPage() {
           setLoading(false);
         }
       };
-      fetchCart();
-    }
+x    }
   }, [location.state]);
 
   const calculateTotals = () => {
@@ -62,9 +61,34 @@ export default function PlaceOrderPage() {
   };
 
   const handlePlaceOrder = async () => {
+    // Prevent double submission
+    if (handlePlaceOrder.isSubmitting) return;
+    handlePlaceOrder.isSubmitting = true;
+
     try {
-      if (!cartItems || cartItems.length === 0) {
-        Swal.fire({
+      /* =========================
+         VALIDATIONSx
+      ========================= */
+      if (!deliveryDetails) {
+        await Swal.fire({
+          icon: "warning",
+          title: "Delivery details missing",
+          text: "Please save delivery details before placing the order.",
+        });
+        return;
+      }
+
+      if (!paymentMethod) {
+        await Swal.fire({
+          icon: "warning",
+          title: "Payment method missing",
+          text: "Please select a payment method.",
+        });
+        return;
+      }
+
+      if (!cartItems?.length) {
+        await Swal.fire({
           icon: "warning",
           title: "Empty Cart",
           text: "Your cart is empty. Please add items before proceeding.",
@@ -72,8 +96,12 @@ export default function PlaceOrderPage() {
         return;
       }
 
+      /* =========================
+         CALCULATIONS
+      ========================= */
       const totals = calculateTotals();
-      const orderData = {
+
+      const orderPayload = {
         restaurantId: cartItems[0].restaurantId,
         items: cartItems.map((item) => ({
           itemId: item.menuItemId || item._id,
@@ -82,58 +110,63 @@ export default function PlaceOrderPage() {
           price: item.price,
           specialInstructions: item.specialInstructions || "",
         })),
-        totalAmount: parseFloat(totals.total),
-        deliveryAddress: deliveryDetails?.address,
+        totalAmount: Number(totals.total),
+        deliveryAddress: deliveryDetails.deliveryAddress,
         paymentMethod:
           paymentMethod === "cash" ? "Cash on Delivery" : "Online Payment",
       };
 
-      const response = await api.post("/api/orders", orderData);
-      if (!response.data?._id) {
-        throw new Error("Invalid order data received from server");
+      /* =========================
+         CREATE ORDER
+      ========================= */
+      const { data: order } = await api.post("/api/orders", orderPayload);
+
+      if (!order?._id) {
+        throw new Error("Order creation failed");
       }
 
-      // **Check what itemIds are being sent**
+      /* =========================
+         CLEAR CART (NON-BLOCKING)
+      ========================= */
       const itemIds = cartItems.map((item) => item._id);
-      console.log("✅ Sending these item IDs to remove:", itemIds);
+      api.delete("/api/cart/removeChecked", { data: { itemIds } }).catch(() => {
+        console.warn("Cart cleanup failed — order is safe");
+      });
 
-      // **Check if API request works**
-      try {
-        const removeResponse = await api.delete("/api/cart/removeChecked", {
-          data: { itemIds },
-        });
-        console.log("🛒 Response from cart removal:", removeResponse.data);
-      } catch (clearError) {
-        console.error("❌ Error clearing checked items from cart:", clearError);
-      }
+      localStorage.setItem("currentOrder", order._id);
 
-      localStorage.setItem("currentOrder", response.data._id);
-
+      /* =========================
+         POST-ORDER FLOW
+      ========================= */
       if (paymentMethod === "card") {
-        navigate("/paymentPortal", { state: { orderId: response.data._id } });
-      } else {
-        await Swal.fire({
-          icon: "success",
-          title: "Order Placed Successfully!",
-          text: "Your order has been confirmed and will be delivered soon.",
-          confirmButtonText: "View My Orders",
-          timer: 3000,
-          timerProgressBar: true,
-          willClose: () => {
-            navigate("/myorders");
-          },
-        });
-        navigate("/myorders");
+        navigate("/paymentPortal", { state: { orderId: order._id } });
+        return;
       }
+
+      await Swal.fire({
+        icon: "success",
+        title: "Order Placed Successfully!",
+        text: "Your order has been confirmed and will be delivered soon.",
+        timer: 2500,
+        showConfirmButton: false,
+      });
+
+      navigate("/myorders");
     } catch (error) {
-      console.error("❌ Error placing order:", error);
-      Swal.fire({
+      console.error("Order placement failed:", error);
+
+      await Swal.fire({
         icon: "error",
         title: "Order Failed",
-        text: "Failed to place order. Please try again.",
+        text:
+          error?.response?.data?.message ||
+          "Something went wrong. Please try again.",
       });
+    } finally {
+      handlePlaceOrder.isSubmitting = false;
     }
   };
+
 
   if (loading) {
     return (

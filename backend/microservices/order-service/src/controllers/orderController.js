@@ -35,36 +35,51 @@ const OrderController = {
       //   JSON.stringify(restaurant, null, 2)
       // );
 
-      // 2️⃣ ✅ USE GEOJSON (SOURCE OF TRUTH)
+      // 2️⃣ Read restaurant GeoJSON safely (support both formats)
+      let geoSource = null;
+
+      // Preferred (old team format)
       if (
-        !address?.geo ||
-        !Array.isArray(address.geo.coordinates) ||
-        address.geo.coordinates.length !== 2
+        address?.coordinates &&
+        Array.isArray(address.coordinates.coordinates) &&
+        address.coordinates.coordinates.length === 2
       ) {
+        geoSource = address.coordinates;
+      }
+      // Fallback (newer format, if any service used it)
+      else if (
+        address?.geo &&
+        Array.isArray(address.geo.coordinates) &&
+        address.geo.coordinates.length === 2
+      ) {
+        geoSource = address.geo;
+      }
+
+      if (!geoSource) {
         return res.status(400).json({
-          message: "Restaurant geo coordinates missing",
+          message: "Restaurant geo coordinates missing or invalid",
         });
       }
 
       // MongoDB GeoJSON order → [lng, lat]
-      const [lng, lat] = address.geo.coordinates;
+      const [lng, lat] = geoSource.coordinates;
 
-      if (typeof lat !== "number" || typeof lng !== "number") {
+      if (typeof lng !== "number" || typeof lat !== "number") {
         return res.status(400).json({
           message: "Restaurant geo coordinates invalid",
         });
       }
 
-      // 3️⃣ Build order snapshot (GeoJSON-safe)
+      // 3️⃣ Build order snapshot (MATCH ORDER SCHEMA EXACTLY)
       restaurantDetails = {
         name: restaurant.name,
         address: {
           street: address.street || "",
           city: address.city || "",
           postalCode: address.postalCode || "",
-          geo: {
+          coordinates: {
             type: "Point",
-            coordinates: [lng, lat],
+            coordinates: [lng, lat], // [lng, lat]
           },
         },
       };

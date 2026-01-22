@@ -42,14 +42,14 @@ const orderSchema = new mongoose.Schema(
         street: { type: String },
         city: { type: String },
         postalCode: { type: String },
-        geo: {
+        coordinates: {
           type: {
             type: String,
             enum: ["Point"],
             default: "Point",
           },
           coordinates: {
-            type: [Number], // [lng, lat]
+            type: [Number],
             required: true,
           },
         },
@@ -103,16 +103,12 @@ orderSchema.index({ userId: 1 });
 orderSchema.index({ restaurantId: 1 });
 orderSchema.index({ deliveryAgentId: 1 });
 orderSchema.index({ status: 1 });
-
-// ✅ CORRECT GEO INDEX
-orderSchema.index({ "restaurantDetails.address.geo": "2dsphere" });
-
+orderSchema.index({ "restaurantDetails.address.coordinates": "2dsphere" });
 orderSchema.index({
   normalizedAddress: "text",
   status: 1,
   deliveryAgentId: 1,
 });
-
 
 // Normalize delivery address before save
 orderSchema.pre("save", function (next) {

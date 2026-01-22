@@ -185,19 +185,21 @@ const UserDashboard = () => {
 
   // Settings for the carousel
   const carouselSettings = {
-    dots: true,
-    infinite: true,
+    dots: featuredFoods.length > 1,
+    infinite: featuredFoods.length > 1,
     speed: 500,
-    slidesToShow: 3,
+    slidesToShow: Math.min(3, featuredFoods.length),
     slidesToScroll: 1,
-    autoplay: true,
+    autoplay: featuredFoods.length > 1,
     autoplaySpeed: 3000,
     responsive: [
       {
         breakpoint: 1024,
         settings: {
-          slidesToShow: 2,
+          slidesToShow: Math.min(2, featuredFoods.length),
           slidesToScroll: 1,
+          infinite: featuredFoods.length > 1,
+          dots: featuredFoods.length > 1,
         },
       },
       {
@@ -205,12 +207,14 @@ const UserDashboard = () => {
         settings: {
           slidesToShow: 1,
           slidesToScroll: 1,
-          dots: true,
+          infinite: featuredFoods.length > 1,
+          dots: featuredFoods.length > 1,
           arrows: false,
         },
       },
     ],
   };
+
 
   // Function to get status color
   const getStatusColor = (status) => {
@@ -434,9 +438,8 @@ const UserDashboard = () => {
               Ongoing Orders
             </h2>
             <span
-              className={`ml-2 transition-transform ${
-                showOngoingOrders ? "rotate-90" : ""
-              }`}
+              className={`ml-2 transition-transform ${showOngoingOrders ? "rotate-90" : ""
+                }`}
             >
               →
             </span>
@@ -719,25 +722,20 @@ const UserDashboard = () => {
           <div className="px-2 md:px-4">
             <Slider {...carouselSettings}>
               {featuredFoods.map((food) => (
-                <div key={food._id} className="px-2">
-                  <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                <div key={food._id} className="px-1 flex justify-center">
+                  <div className="bg-white rounded-lg shadow-md overflow-hidden w-[260px] sm:w-[280px]">
                     <img
-                      src={
-                        food.image ||
-                        "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60"
-                      }
+                      src={food.image || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c"}
                       alt={food.name}
-                      className="w-full h-40 object-cover mb-2 rounded-lg"
+                      className="w-full h-40 object-cover"
                     />
-                    <p className="font-bold text-gray-800">{food.name}</p>
-                    {food.restaurant && (
-                      <p className="text-gray-600 text-sm">
-                        {food.restaurant.name}
+                    <div className="p-3">
+                      <p className="font-bold text-gray-800">{food.name}</p>
+                      <p className="text-gray-600 text-sm">{food.restaurant?.name}</p>
+                      <p className="font-bold text-orange-500 mt-1">
+                        ${food.price}
                       </p>
-                    )}
-                    <p className="font-bold text-orange-500 mt-1">
-                      ${food.price}
-                    </p>
+                    </div>
                   </div>
                 </div>
               ))}

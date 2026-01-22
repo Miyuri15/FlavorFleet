@@ -38,6 +38,7 @@ import DeliveryRoutePage from "./pages/DeliveryOrders/DeliveryRoutePage";
 import Paynow from "./pages/Payment/Paynow";
 import PaymentCancled from "./pages/Payment/PaymentCancled";
 import PaymentSuccess from "./pages/Payment/PaymentSuccess";
+import PaymentPortal from "./pages/Payment/PaymentPortal";
 
 function App() {
   return (
@@ -57,6 +58,7 @@ function App() {
               <Route path="/paynow" element={<Paynow />} />
               <Route path="/paymentcancled" element={<PaymentCancled />} />
               <Route path="/paymentsuccess" element={<PaymentSuccess />} />
+              <Route path="/paymentPortal" element={<PaymentPortal />} />
               <Route
                 path={ROUTES.RESTAURANT_MENU_PAGE}
                 element={<RestaurantMenuPage />}

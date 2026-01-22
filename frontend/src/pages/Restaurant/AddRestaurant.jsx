@@ -129,8 +129,8 @@ const AddRestaurant = () => {
       formData.append("address[street]", values.street.trim());
       formData.append("address[city]", values.city.trim());
       formData.append("address[postalCode]", values.postalCode.trim());
-      formData.append("coordinates[lat]", mapCenter.lat);
-      formData.append("coordinates[lng]", mapCenter.lng);
+      formData.append("address[coordinates][lat]", mapCenter.lat);
+      formData.append("address[coordinates][lng]", mapCenter.lng);
 
       // Append opening hours
       Object.entries(openingHours).forEach(([day, hours]) => {
@@ -222,9 +222,8 @@ const AddRestaurant = () => {
           autoComplete="off"
           onValuesChange={async (changed, allValues) => {
             if (changed.street || changed.city || changed.postalCode) {
-              const addressString = `${allValues.street || ""}, ${
-                allValues.city || ""
-              }, ${allValues.postalCode || ""}`;
+              const addressString = `${allValues.street || ""}, ${allValues.city || ""
+                }, ${allValues.postalCode || ""}`;
               try {
                 const coords = await geocodeAddress(addressString);
                 setMapCenter(coords);

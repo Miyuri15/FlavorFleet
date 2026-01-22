@@ -46,13 +46,21 @@ export default function DeliveryDetailsForm({
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
     if (!formData.address || !formData.city) {
       alert("Please fill complete address details");
       return;
     }
+
     const fullAddress = `${formData.address}, ${formData.city}, ${formData.postalCode}`;
-    onDetailsSubmit({ ...formData, address: fullAddress });
+
+    onDetailsSubmit({
+      deliveryAddress: fullAddress,
+      contactNo: formData.contactNo,
+      specialInstructions: formData.specialInstructions,
+    });
   };
+
 
   const parseAddress = (fullAddress) => {
     if (!fullAddress) {
@@ -185,21 +193,19 @@ export default function DeliveryDetailsForm({
           <div className="flex space-x-4">
             <button
               onClick={() => onPaymentMethodSelect("cash")}
-              className={`flex-1 py-3 rounded-md border-2 ${
-                paymentMethod === "cash"
+              className={`flex-1 py-3 rounded-md border-2 ${paymentMethod === "cash"
                   ? "border-green-500 bg-green-50"
                   : "border-gray-300"
-              }`}
+                }`}
             >
               Cash on Delivery
             </button>
             <button
               onClick={() => onPaymentMethodSelect("card")}
-              className={`flex-1 py-3 rounded-md border-2 ${
-                paymentMethod === "card"
+              className={`flex-1 py-3 rounded-md border-2 ${paymentMethod === "card"
                   ? "border-green-500 bg-green-50"
                   : "border-gray-300"
-              }`}
+                }`}
             >
               Pay Now
             </button>

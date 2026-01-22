@@ -13,7 +13,7 @@ const authMiddleware = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    console.log("Decoded token:", decoded);
+    //console.log("Decoded token:", decoded);
 
     // Attach the decoded user data (including role) to the request object
     req.user = {

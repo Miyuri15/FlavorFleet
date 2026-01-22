@@ -82,6 +82,8 @@ const OrderPage = () => {
           }
         );
 
+        console.log("Food response data:", foodResponse.data);
+
         if (!foodResponse.data) throw new Error("Failed to fetch food items");
 
         // Combine restaurants with their menu items

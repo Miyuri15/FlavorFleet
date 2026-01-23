@@ -54,6 +54,7 @@ export default function MyOrders() {
         );
         setOrders(sortedOrders);
         setFilteredOrders(sortedOrders);
+        console.log("sortedOrders: ",sortedOrders)
       } catch (err) {
         setError(err.response?.data?.error || "Failed to fetch orders");
       } finally {

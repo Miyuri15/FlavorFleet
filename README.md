@@ -21,7 +21,16 @@ FlavorFleet is a full-stack **Food Ordering Application** built with a **Microse
                        │           │          │              │
                        └───────────┴──────────┴──────────────┘
                                          │
-                                    MongoDB Atlas
+                                    Separate Databases
+
+┌──────────────────────────────────┐
+│ MongoDB for each service         │
+├──────────────────────────────────┤
+│ restaurant_db (restaurant svc)   │
+│ order_db (order svc)             │
+│ payment_db (payment svc)         │
+│ delivery_db (delivery svc)       │
+└──────────────────────────────────┘
 ```
 
 ---
